@@ -59,6 +59,7 @@ function AppContent() {
 
   const handleLogout = () => {
     localStorage.setItem('sahab_logged_in', 'false');
+    localStorage.removeItem('sahab_access_token');
     setScreen('login');
   };
 

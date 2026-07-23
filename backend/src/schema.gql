@@ -1,0 +1,171 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthPayload {
+  accessToken: String!
+  user: User!
+}
+
+input CreateProductInput {
+  category: String!
+  description: String
+  name: String!
+  version: String
+}
+
+input CreateTicketInput {
+  assignedToId: String
+  customerId: String!
+  priority: TicketPriority!
+  productId: String
+  title: String!
+}
+
+type Customer {
+  activeProductsCount: Float!
+  address: String
+  commercialName: String
+  connections: [ProductCustomerConnection!]!
+  id: String!
+  industry: String!
+  lastActivity: DateTime
+  partnershipStartDate: DateTime
+  phone: String
+  status: CustomerStatus!
+  tickets: [Ticket!]!
+  tier: CustomerTier!
+  user: User!
+  userId: String!
+  usersCount: Float!
+  website: String
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum CustomerTier {
+  BRONZE
+  GOLD
+  SILVER
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  createProduct(input: CreateProductInput!): Product!
+  createTicket(input: CreateTicketInput!): Ticket!
+  login(email: String!, password: String!): AuthPayload!
+  register(email: String!, name: String!, password: String!): AuthPayload!
+  updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
+}
+
+type Product {
+  category: String!
+  clientsCount: Float!
+  connections: [ProductCustomerConnection!]!
+  createdAt: DateTime!
+  description: String
+  id: String!
+  lastUpdated: DateTime!
+  logoColor: String
+  logoInitials: String
+  name: String!
+  status: ProductStatus!
+  version: String!
+}
+
+type ProductCustomerConnection {
+  activationKey: String!
+  customer: Customer!
+  customerId: String!
+  endDate: DateTime!
+  id: String!
+  licenseStatus: String!
+  notes: String
+  startDate: DateTime!
+  subscriptionType: String!
+  userCount: Float!
+}
+
+enum ProductStatus {
+  ACTIVE
+  EXPIRED
+  INACTIVE
+}
+
+type Query {
+  customer(id: String!): Customer
+  customers: [Customer!]!
+  product(id: String!): Product
+  products: [Product!]!
+  ticket(id: String!): Ticket
+  tickets: [Ticket!]!
+  users: [User!]!
+}
+
+type Ticket {
+  assignedTo: User
+  assignedToId: String
+  customer: Customer!
+  customerId: String!
+  date: DateTime!
+  id: String!
+  messages: [TicketMessage!]!
+  priority: TicketPriority!
+  product: Product
+  productId: String
+  status: TicketStatus!
+  title: String!
+}
+
+type TicketMessage {
+  createdAt: DateTime!
+  id: String!
+  isInternal: Boolean!
+  senderName: String!
+  text: String!
+}
+
+enum TicketPriority {
+  CRITICAL
+  HIGH
+  LOW
+  MEDIUM
+}
+
+enum TicketStatus {
+  AWAITING_CUSTOMER
+  CLOSED
+  INVESTIGATING
+  OPEN
+  RESOLVED
+}
+
+input UpdateTicketStatusInput {
+  id: String!
+  status: String!
+}
+
+type User {
+  active: Boolean!
+  avatar: String
+  createdAt: DateTime!
+  email: String!
+  id: String!
+  name: String!
+  role: UserRole!
+  updatedAt: DateTime!
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+  CUSTOMER
+}

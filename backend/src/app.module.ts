@@ -7,7 +7,7 @@ import { UsersModule } from './users/users.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { ProductsModule } from './products/products.module';
 import { CustomersModule } from './customers/customers.module';
-import { PrismaService } from './common/prisma.service';
+import { DatabaseModule } from './common/database.module';
 
 @Module({
   imports: [
@@ -16,12 +16,12 @@ import { PrismaService } from './common/prisma.service';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
     }),
+    DatabaseModule,
     AuthModule,
     UsersModule,
     TicketsModule,
     ProductsModule,
     CustomersModule,
   ],
-  providers: [PrismaService],
 })
 export class AppModule {}

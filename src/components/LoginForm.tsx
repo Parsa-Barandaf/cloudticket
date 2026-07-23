@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthScreen, PortalRole, FormErrors } from '../types';
+import { useAuth } from '../hooks/useAuth';
 import { 
   Mail, 
   Lock, 
@@ -26,6 +27,8 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: LoginFormProps) {
+  const { login: apiLogin, error: apiError } = useAuth();
+
   // Role State
   const [selectedRole, setSelectedRole] = useState<PortalRole>('admin');
 
@@ -97,11 +100,12 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
     setErrors({});
     setIsLoading(true);
 
-    // Simulate server response delay
-    setTimeout(() => {
-      setIsLoading(false);
-      onSuccess(email, selectedRole);
-    }, 1200);
+    const result = await apiLogin(email, password);
+    setIsLoading(false);
+
+    if (result) {
+      onSuccess(result.email, result.role);
+    }
   };
 
   const handleForgotPasswordSubmit = (e: React.FormEvent) => {
@@ -285,6 +289,18 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
               <span className="text-xs text-slate-500 dark:text-slate-400">مرا به خاطر بسپار</span>
             </label>
           </div>
+
+          {/* API Error */}
+          {apiError && (
+            <motion.p
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-[10px] text-rose-500 flex items-center gap-1 font-semibold bg-rose-50 dark:bg-rose-500/10 p-3 rounded-xl"
+            >
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {apiError}
+            </motion.p>
+          )}
 
           {/* Submit Button */}
           <button

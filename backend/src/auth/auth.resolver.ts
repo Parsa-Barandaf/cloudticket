@@ -1,28 +1,14 @@
 import { Args, Mutation, ObjectType, Field, Resolver } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
+import { User } from '../common/models/user.model';
 
 @ObjectType()
 class AuthPayload {
   @Field()
   accessToken: string;
 
-  @Field(() => UserProfile)
-  user: UserProfile;
-}
-
-@ObjectType()
-class UserProfile {
-  @Field()
-  id: string;
-
-  @Field()
-  email: string;
-
-  @Field()
-  name: string;
-
-  @Field()
-  role: string;
+  @Field(() => User)
+  user: User;
 }
 
 @Resolver()

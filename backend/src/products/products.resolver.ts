@@ -1,12 +1,24 @@
-import { Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ProductsService } from './products.service';
+import { Product } from '../common/models/product.model';
+import { CreateProductInput } from '../common/dto/product.input';
 
-@Resolver()
+@Resolver(() => Product)
 export class ProductsResolver {
   constructor(private productsService: ProductsService) {}
 
-  @Query(() => String)
+  @Query(() => [Product])
   async products() {
-    return 'products placeholder';
+    return this.productsService.findAll();
+  }
+
+  @Query(() => Product, { nullable: true })
+  async product(@Args('id') id: string) {
+    return this.productsService.findById(id);
+  }
+
+  @Mutation(() => Product)
+  async createProduct(@Args('input') input: CreateProductInput) {
+    return this.productsService.create(input);
   }
 }
