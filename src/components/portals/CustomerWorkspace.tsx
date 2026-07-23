@@ -1,0 +1,1246 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Building, 
+  Layers, 
+  Users2, 
+  Inbox, 
+  Clock, 
+  ClipboardList, 
+  Activity, 
+  Settings, 
+  CheckCircle, 
+  AlertTriangle, 
+  PlusCircle, 
+  Edit, 
+  RefreshCw, 
+  UserCheck, 
+  MapPin, 
+  ExternalLink, 
+  User, 
+  Mail, 
+  Phone, 
+  Plus, 
+  UserPlus, 
+  Copy, 
+  Shield, 
+  ShieldAlert,
+  X
+} from 'lucide-react';
+import type { Customer, Product, Ticket } from '../../types';
+
+interface CustomerWorkspaceViewProps {
+  selectedCustomerWorkspace: Customer | null;
+  customers: Customer[];
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
+  tickets: Ticket[];
+  setTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
+  products: Product[];
+  setActiveTab: (tab: any) => void;
+  setTicketSearch: (search: string) => void;
+  setShowTicketModal: (show: boolean) => void;
+  setNewTicketCustomer: React.Dispatch<React.SetStateAction<string>>;
+  setNewTicketProduct: React.Dispatch<React.SetStateAction<string>>;
+  showCustomerToast: (msg: string, type?: 'success' | 'error') => void;
+}
+
+export default function CustomerWorkspaceView({
+  selectedCustomerWorkspace,
+  customers,
+  setCustomers,
+  tickets,
+  setTickets,
+  products,
+  setActiveTab,
+  setTicketSearch,
+  setShowTicketModal,
+  setNewTicketCustomer,
+  setNewTicketProduct,
+  showCustomerToast
+}: CustomerWorkspaceViewProps) {
+  // Currently active internal tab
+  const [customerWorkspaceTab, setCustomerWorkspaceTab] = useState<'overview' | 'products' | 'users' | 'tickets' | 'licenses' | 'activities' | 'settings'>('overview');
+
+  // Load selected customer or fallback to standard enterprise customer
+  const c = selectedCustomerWorkspace || customers.find(x => x.id === 'CST-100') || customers[0];
+
+  // Internal interactive data lists for this workspace
+  const [customerWorkspaceUsers, setCustomerWorkspaceUsers] = useState<any[]>([
+    { id: 'USR-201', name: 'مهندس آرش کریمی', email: 'a.karimi@ariasecurity.ir', role: 'مدیر', lastLogin: '۱۰ دقیقه پیش', status: 'فعال' },
+    { id: 'USR-202', name: 'مهندس حسام نوری', email: 'h.noori@ariasecurity.ir', role: 'کاربر', lastLogin: '۱ ساعت پیش', status: 'فعال' },
+    { id: 'USR-203', name: 'خانم الهام سلیمی', email: 'e.salimi@ariasecurity.ir', role: 'مشاهده‌گر', lastLogin: 'دیروز', status: 'غیرفعال' }
+  ]);
+
+  const [customerWorkspaceProducts, setCustomerWorkspaceProducts] = useState<any[]>([
+    { id: 'PRD-01', name: 'Cloud Security Platform', logoInitials: 'CS', logoColor: 'from-blue-500 to-indigo-600', version: 'v2.4.1', status: 'فعال', expDate: '۱۴۰۵/۰۴/۱۵', type: 'Enterprise', userLimit: 50, licenseKey: 'SEC-PLAT-88392-SAHAB' },
+    { id: 'PRD-02', name: 'Identity Protection Server', logoInitials: 'IP', logoColor: 'from-emerald-500 to-teal-600', version: 'v3.1.2', status: 'فعال', expDate: '۱۴۰۴/۱۲/۲۰', type: 'Enterprise', userLimit: 100, licenseKey: 'ID-PROT-10029-SAHAB' },
+    { id: 'PRD-03', name: 'Elastic Compute Node', logoInitials: 'EC', logoColor: 'from-rose-500 to-orange-500', version: 'v5.0.1', status: 'فعال', expDate: '۱۴۰۴/۱۰/۰1', type: 'Business', userLimit: 15, licenseKey: 'EL-COMP-49301-SAHAB' },
+    { id: 'PRD-05', name: 'Global Edge CDN', logoInitials: 'GC', logoColor: 'from-purple-500 to-pink-500', version: 'v2.0.0', status: 'فعال', expDate: '۱۴۰۵/۰۱/۱۰', type: 'Business', userLimit: 20, licenseKey: 'EDGE-CDN-00392-SAHAB' },
+    { id: 'PRD-06', name: 'AI Analytics Framework', logoInitials: 'AI', logoColor: 'from-violet-500 to-fuchsia-500', version: 'v1.5.0', status: 'غیرفعال', expDate: '۱۴۰۳/۰۴/۰۱', type: 'Standard', userLimit: 10, licenseKey: 'AI-ANLT-22910-SAHAB' }
+  ]);
+
+  // Modals visibility state
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showEditOrgModal, setShowEditOrgModal] = useState(false);
+
+  // New User Form State
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserRole, setNewUserRole] = useState('کاربر');
+
+  // New Product Form State
+  const [newProductId, setNewProductId] = useState('');
+  const [newProductLimit, setNewProductLimit] = useState(20);
+
+  // Edit Org Form State
+  const [orgCommercialName, setOrgCommercialName] = useState(c.commercialName || c.name);
+  const [orgPhone, setOrgPhone] = useState(c.phone || '۰۲۱-۸۸۲۲۳۳۹۹');
+  const [orgWebsite, setOrgWebsite] = useState(c.website || 'www.ariasecurity.ir');
+  const [orgAddress, setOrgAddress] = useState(c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری سحاب');
+
+  // Filter tickets matching active customer name
+  const matchesTickets = tickets.filter(t => t.customer === c.name);
+
+  // Workspace feedback messages
+  const [workspaceFeedback, setWorkspaceFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showWorkspaceToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setWorkspaceFeedback({ message: msg, type });
+    setTimeout(() => setWorkspaceFeedback(null), 4000);
+  };
+
+  const handleCreateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserName.trim() || !newUserEmail.trim()) {
+      showWorkspaceToast('لطفا تمامی فیلدهای الزامی را تکمیل نمایید.', 'error');
+      return;
+    }
+    const newUser = {
+      id: `USR-${Math.floor(100 + Math.random() * 900)}`,
+      name: newUserName,
+      email: newUserEmail,
+      role: newUserRole,
+      lastLogin: 'هرگز',
+      status: 'فعال'
+    };
+    setCustomerWorkspaceUsers([...customerWorkspaceUsers, newUser]);
+    // Increment customer users count globally
+    setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, usersCount: (cust.usersCount || 0) + 1 } : cust));
+    setNewUserName('');
+    setNewUserEmail('');
+    setShowAddUserModal(false);
+    showWorkspaceToast(`کاربر جدید «${newUserName}» با موفقیت تعریف شد.`, 'success');
+  };
+
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProductId) {
+      showWorkspaceToast('لطفا یک محصول را انتخاب کنید.', 'error');
+      return;
+    }
+    const selectedProd = products.find(p => p.id === newProductId);
+    if (!selectedProd) return;
+
+    // Check if product is already added
+    if (customerWorkspaceProducts.some(p => p.name === selectedProd.name)) {
+      showWorkspaceToast('این محصول در حال حاضر در کارپوشه سازمان فعال است.', 'error');
+      return;
+    }
+
+    const newProdItem = {
+      id: selectedProd.id,
+      name: selectedProd.name,
+      logoInitials: selectedProd.logoInitials || 'AP',
+      logoColor: selectedProd.logoColor || 'from-blue-500 to-indigo-600',
+      version: selectedProd.version,
+      status: 'فعال',
+      expDate: '۱۴۰۶/۰۱/۰۱',
+      type: 'Enterprise',
+      userLimit: newProductLimit,
+      licenseKey: `${selectedProd.logoInitials}-PLAT-${Math.floor(10000 + Math.random() * 90000)}-SAHAB`
+    };
+
+    setCustomerWorkspaceProducts([...customerWorkspaceProducts, newProdItem]);
+    // Increment active products count globally
+    setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, activeProductsCount: (cust.activeProductsCount || 0) + 1 } : cust));
+    setShowAddProductModal(false);
+    showWorkspaceToast(`محصول «${selectedProd.name}» با موفقیت به سازمان تخصیص یافت.`, 'success');
+  };
+
+  const handleSaveOrgDetails = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCustomers(customers.map(cust => cust.id === c.id ? {
+      ...cust,
+      commercialName: orgCommercialName,
+      phone: orgPhone,
+      website: orgWebsite,
+      address: orgAddress
+    } : cust));
+    setShowEditOrgModal(false);
+    showWorkspaceToast('اطلاعات هویتی و ثبتی سازمان با موفقیت بروزرسانی شد.', 'success');
+  };
+
+  return (
+    <motion.div
+      key="customer-details-tab"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      className="space-y-6 text-right pb-12"
+    >
+      {/* Toast Feedback */}
+      {workspaceFeedback && (
+        <div className={`fixed bottom-6 left-6 z-50 flex items-center gap-2.5 p-4 rounded-xl shadow-2xl border transition-all ${
+          workspaceFeedback.type === 'success' 
+            ? 'bg-emerald-50 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-400 border-emerald-500/30' 
+            : 'bg-rose-50 dark:bg-rose-950/90 text-rose-800 dark:text-rose-400 border-rose-500/30'
+        }`}>
+          {workspaceFeedback.type === 'success' ? <CheckCircle className="w-5 h-5 shrink-0 text-emerald-500" /> : <AlertTriangle className="w-5 h-5 shrink-0 text-rose-500" />}
+          <span className="text-xs font-black">{workspaceFeedback.message}</span>
+        </div>
+      )}
+
+      {/* HERO HEADER SECTION */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 md:p-8 shadow-xs relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-brand-500/10 to-transparent rounded-bl-full pointer-events-none" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start md:items-center gap-5">
+            {/* Company Circle Initials */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-brand-500/10 shrink-0">
+              {c.name.includes('آریا') ? 'آریا' : c.name.substring(0, 3)}
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h2 className="text-xl font-black text-slate-900 dark:text-white leading-none">{c.name}</h2>
+                <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/25">
+                  {c.tier}
+                </span>
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                  c.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'
+                }`}>
+                  {c.status || 'فعال'}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-450 dark:text-slate-500 font-bold">
+                <span className="font-mono flex items-center gap-1.5"><Building className="w-3.5 h-3.5 text-slate-300" />{c.id}</span>
+                <span>•</span>
+                <span>صنعت: {c.industry}</span>
+                <span>•</span>
+                <span>شروع همکاری: {c.partnershipStartDate || '۱۴۰۰/۰۴/۱۵'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-end md:self-center">
+            <button 
+              onClick={() => {
+                setNewTicketCustomer(c.name);
+                if (customerWorkspaceProducts.length > 0) {
+                  setNewTicketProduct(customerWorkspaceProducts[0].name);
+                }
+                setShowTicketModal(true);
+              }}
+              className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-4.5 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-brand-600/10"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>ثبت تیکت پشتیبانی</span>
+            </button>
+            <button 
+              onClick={() => {
+                setShowEditOrgModal(true);
+              }}
+              className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-bold px-4.5 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Edit className="w-4 h-4" />
+              <span>ویرایش اطلاعات</span>
+            </button>
+            <button 
+              onClick={() => {
+                const newStatus = c.status === 'فعال' ? 'غیرفعال' : 'فعال';
+                setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, status: newStatus } : cust));
+                showCustomerToast(`وضعیت سازمان با موفقیت به «${newStatus}» تغییر یافت.`, 'success');
+              }}
+              className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-bold px-4.5 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>تغییر وضعیت به {c.status === 'فعال' ? 'غیرفعال' : 'فعال'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 4 KPI METRICS CARDS ROW GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        {/* KPI CARD 1: ACTIVE PRODUCTS */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">محصولات فعال سازمان</span>
+            <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{c.activeProductsCount || customerWorkspaceProducts.length}</h4>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">لایسنس‌های معتبر ابری</span>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <Layers className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* KPI CARD 2: ACTIVE USERS LIMIT */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تعداد کل کاربران</span>
+            <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{c.usersCount || customerWorkspaceUsers.length}</h4>
+            <span className="text-[10px] font-bold text-emerald-650 dark:text-emerald-400 flex items-center gap-1 font-sans">
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>تمامی حساب‌ها فعال</span>
+            </span>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <Users2 className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* KPI CARD 3: ACTIVE TICKETS */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز جاری</span>
+            <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{matchesTickets.length}</h4>
+            <span className="text-[10px] font-bold text-rose-650 dark:text-rose-450">نیازمند اقدام فوری</span>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center shrink-0">
+            <Inbox className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* KPI CARD 4: SUBSCRIPTION EXPIRY */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">انقضای نزدیک‌ترین سرویس</span>
+            <h4 className="text-lg font-black text-slate-900 dark:text-white font-mono leading-none mt-1">۱۴۰۵/۰۴/۱۵</h4>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">پلتفرم مدیریت ابری</span>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* PREMIUM WORKSPACE TABBED CONTAINER */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs overflow-hidden">
+        {/* HORIZONTAL TAB SWITCHER */}
+        <div className="overflow-x-auto border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 px-6">
+          <div className="flex gap-1 py-3 whitespace-nowrap">
+            {[
+              { id: 'overview', label: 'خلاصه وضعیت', icon: ClipboardList },
+              { id: 'products', label: 'محصولات فعال', icon: Layers, count: customerWorkspaceProducts.length },
+              { id: 'users', label: 'کاربران سیستم', icon: Users2, count: customerWorkspaceUsers.length },
+              { id: 'tickets', label: 'تیکت‌های پشتیبانی', icon: Inbox, count: matchesTickets.length },
+              { id: 'licenses', label: 'مدیریت لایسنس‌ها', icon: Shield },
+              { id: 'activities', label: 'تاریخچه فعالیت‌ها', icon: Activity },
+              { id: 'settings', label: 'تنظیمات پیشرفته', icon: Settings }
+            ].map((t) => {
+              const Icon = t.icon;
+              const isActive = customerWorkspaceTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setCustomerWorkspaceTab(t.id as any)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    isActive 
+                      ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-xs border border-slate-200/60 dark:border-slate-700' 
+                      : 'text-slate-550 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
+                  }`}
+                >
+                  <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-brand-500' : 'text-slate-400'}`} />
+                  <span>{t.label}</span>
+                  {t.count !== undefined && (
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                      isActive ? 'bg-brand-500/10 text-brand-500 font-extrabold' : 'bg-slate-200/60 dark:bg-slate-800 text-slate-500'
+                    }`}>
+                      {t.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* TAB CONTENTS CONTAINER */}
+        <div className="p-6">
+          <AnimatePresence mode="wait">
+            
+            {/* TAB A: OVERVIEW */}
+            {customerWorkspaceTab === 'overview' && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+              >
+                {/* Company Identity Details */}
+                <div className="bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 p-6 rounded-2xl space-y-5">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <Building className="w-4.5 h-4.5 text-brand-500" />
+                    <span>اطلاعات هویتی و ثبتی سازمان</span>
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs text-slate-750 dark:text-slate-300">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">نام ثبتی شرکت</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{c.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">نام تجاری سیستم</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{c.commercialName || 'توسعه امنیت آریا'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">صنعت و حوزه تخصصی</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{c.industry}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">تلفن تماس مرکزی</span>
+                      <span className="font-bold text-slate-900 dark:text-white font-mono">{c.phone || '۰۲۱-۸۸۲۲۳۳۹۹'}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">وب‌سایت رسمی سازمان</span>
+                      <a 
+                        href={`https://${c.website || 'www.ariasecurity.ir'}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="font-bold text-brand-500 hover:underline flex items-center gap-1.5 w-fit"
+                      >
+                        <span>{c.website || 'www.ariasecurity.ir'}</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-brand-500" />
+                      </a>
+                    </div>
+                    <div className="col-span-2 border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">آدرس دفتر مرکزی سازمان</span>
+                      <div className="flex items-start gap-2 text-slate-600 dark:text-slate-300">
+                        <MapPin className="w-4.5 h-4.5 text-slate-400 shrink-0 mt-0.5" />
+                        <span className="font-bold leading-relaxed">{c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری سحاب'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Representative / Technical Contact Info */}
+                <div className="bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 p-6 rounded-2xl space-y-5">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <User className="w-4.5 h-4.5 text-brand-500" />
+                    <span>مشخصات نماینده تام‌الاختیار و رابط فنی</span>
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs text-slate-750 dark:text-slate-300">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">نام و نام خانوادگی رابط</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{c.managerName || 'مهندس آرش کریمی'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">سمت اداری سازمان</span>
+                      <span className="font-bold text-slate-900 dark:text-white">رئیس دپارتمان امنیت اطلاعات</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">ایمیل رسمی مکاتبات فنی</span>
+                      <span className="font-bold text-slate-900 dark:text-white font-mono block select-all">{c.managerEmail || 'a.karimi@ariasecurity.ir'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">شماره تماس مستقیم</span>
+                      <span className="font-bold text-slate-900 dark:text-white font-mono">{c.managerPhone || '۰۹۱۲۷۷۷۸۸۹۹'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">سطح احراز هویت</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <Shield className="w-4.5 h-4.5 text-emerald-500" />
+                        <span>تایید شده (سطح ۱)</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-start gap-2.5">
+                    <a 
+                      href={`mailto:${c.managerEmail || 'a.karimi@ariasecurity.ir'}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        showWorkspaceToast(`نرم‌افزار ارسال ایمیل برای ${c.managerEmail || 'a.karimi@ariasecurity.ir'} باز شد.`, 'success');
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-black transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <Mail className="w-4 h-4 text-slate-400" />
+                      <span>ارسال ایمیل مستقیم</span>
+                    </a>
+                    <button 
+                      onClick={() => {
+                        showWorkspaceToast(`در حال برقراری تماس سیستمی با نماینده سازمان...`, 'success');
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-black transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <Phone className="w-4 h-4 text-slate-400" />
+                      <span>تماس با شماره مستقیم</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB B: PRODUCTS */}
+            {customerWorkspaceTab === 'products' && (
+              <motion.div
+                key="products"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">لیست محصولات فعال سازمان</h3>
+                  <button 
+                    onClick={() => setShowAddProductModal(true)}
+                    className="bg-brand-500/10 hover:bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-black px-4.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4.5 h-4.5" />
+                    <span>افزودن محصول جدید به سازمان</span>
+                  </button>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800/85 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                          <th className="p-4 pr-6">عنوان محصول</th>
+                          <th className="p-4">نوع اشتراک / لایسنس</th>
+                          <th className="p-4">نسخه فعال</th>
+                          <th className="p-4 text-center">ظرفیت کاربران دسترسی</th>
+                          <th className="p-4">تاریخ پایان اعتبار لایسنس</th>
+                          <th className="p-4">وضعیت لایسنس</th>
+                          <th className="p-4 pl-6 text-left">عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs text-slate-700 dark:text-slate-300">
+                        {customerWorkspaceProducts.map((p) => (
+                          <tr key={p.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-all duration-150">
+                            <td className="p-4 pr-6">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${p.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center font-bold text-white text-[10px] shrink-0 shadow-xs`}>
+                                  {p.logoInitials}
+                                </div>
+                                <div className="space-y-0.5">
+                                  <span className="font-bold text-slate-900 dark:text-white">{p.name}</span>
+                                  <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block">{p.id}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <span className="font-bold text-slate-900 dark:text-white">{p.type}</span>
+                            </td>
+                            <td className="p-4 font-mono font-bold text-slate-600 dark:text-slate-400">
+                              {p.version}
+                            </td>
+                            <td className="p-4 text-center font-mono font-bold">
+                              {p.userLimit} نفر
+                            </td>
+                            <td className="p-4 font-mono font-bold">
+                              {p.expDate}
+                            </td>
+                            <td className="p-4">
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                p.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                              }`}>
+                                {p.status}
+                              </span>
+                            </td>
+                            <td className="p-4 pl-6 text-left">
+                              <button 
+                                onClick={() => {
+                                  const updated = customerWorkspaceProducts.map(wp => 
+                                    wp.id === p.id ? { ...wp, status: wp.status === 'فعال' ? 'غیرفعال' : 'فعال' } : wp
+                                  );
+                                  setCustomerWorkspaceProducts(updated);
+                                  showWorkspaceToast(`وضعیت لایسنس محصول ${p.name} تغییر یافت.`, 'success');
+                                }}
+                                className="text-[10px] text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline font-bold cursor-pointer"
+                              >
+                                {p.status === 'فعال' ? 'تعلیق موقت' : 'فعال‌سازی'}
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB C: USERS */}
+            {customerWorkspaceTab === 'users' && (
+              <motion.div
+                key="users"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">لیست کاربران مجاز و فعال سازمان</h3>
+                  <button 
+                    onClick={() => setShowAddUserModal(true)}
+                    className="bg-brand-500/10 hover:bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-black px-4.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <UserPlus className="w-4.5 h-4.5" />
+                    <span>تعریف کاربر سازمانی جدید</span>
+                  </button>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800/85 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                          <th className="p-4 pr-6">نام کاربر</th>
+                          <th className="p-4">پست الکترونیکی</th>
+                          <th className="p-4">نقش دسترسی</th>
+                          <th className="p-4">آخرین ورود به پنل</th>
+                          <th className="p-4">وضعیت حساب</th>
+                          <th className="p-4 pl-6 text-left">عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs text-slate-700 dark:text-slate-300">
+                        {customerWorkspaceUsers.map((u) => (
+                          <tr key={u.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-all duration-150">
+                            <td className="p-4 pr-6 font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-[10px] font-sans shadow-xs">
+                                {u.name.substring(0, 2)}
+                              </div>
+                              <span>{u.name}</span>
+                            </td>
+                            <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
+                              {u.email}
+                            </td>
+                            <td className="p-4">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                u.role === 'مدیر' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'
+                              }`}>
+                                {u.role}
+                              </span>
+                            </td>
+                            <td className="p-4 text-slate-500 dark:text-slate-400 font-bold">
+                              {u.lastLogin}
+                            </td>
+                            <td className="p-4">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                u.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+                              }`}>
+                                {u.status}
+                              </span>
+                            </td>
+                            <td className="p-4 pl-6 text-left space-x-3 space-x-reverse">
+                              <button 
+                                onClick={() => {
+                                  const updated = customerWorkspaceUsers.map(wu => 
+                                    wu.id === u.id ? { ...wu, status: wu.status === 'فعال' ? 'غیرفعال' : 'فعال' } : wu
+                                  );
+                                  setCustomerWorkspaceUsers(updated);
+                                  showWorkspaceToast(`وضعیت حساب کاربری ${u.name} بروزرسانی شد.`, 'success');
+                                }}
+                                className="text-[10px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold cursor-pointer"
+                              >
+                                {u.status === 'فعال' ? 'غیرفعال‌سازی' : 'فعال‌سازی'}
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  setCustomerWorkspaceUsers(customerWorkspaceUsers.filter(wu => wu.id !== u.id));
+                                  showWorkspaceToast(`حساب کاربری ${u.name} با موفقیت حذف گردید.`, 'success');
+                                }}
+                                className="text-[10px] text-rose-500 hover:text-rose-650 font-bold cursor-pointer"
+                              >
+                                حذف دسترسی
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB D: TICKETS */}
+            {customerWorkspaceTab === 'tickets' && (
+              <motion.div
+                key="tickets"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">تیکت‌های جاری و سابق سازمان</h3>
+                  <button 
+                    onClick={() => {
+                      setNewTicketCustomer(c.name);
+                      if (customerWorkspaceProducts.length > 0) {
+                        setNewTicketProduct(customerWorkspaceProducts[0].name);
+                      }
+                      setShowTicketModal(true);
+                    }}
+                    className="bg-brand-500/10 hover:bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-black px-4.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4.5 h-4.5" />
+                    <span>ثبت فوری تیکت فنی</span>
+                  </button>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800/85 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                          <th className="p-4 pr-6">شناسه / عنوان تیکت فنی</th>
+                          <th className="p-4">محصول مرتبط</th>
+                          <th className="p-4 text-center">اولویت</th>
+                          <th className="p-4">پشتیبان مسئول</th>
+                          <th className="p-4">تاریخ بروزرسانی</th>
+                          <th className="p-4 text-center">وضعیت تیکت</th>
+                          <th className="p-4 pl-6 text-left">عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs text-slate-700 dark:text-slate-300">
+                        {matchesTickets.length > 0 ? (
+                          matchesTickets.map((t) => (
+                            <tr key={t.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-all duration-150">
+                              <td className="p-4 pr-6">
+                                <div className="space-y-0.5">
+                                  <span className="font-bold text-slate-900 dark:text-white block hover:text-brand-500 transition-colors cursor-pointer" onClick={() => {
+                                    setActiveTab('tickets');
+                                    setTicketSearch(t.id);
+                                  }}>
+                                    {t.title}
+                                  </span>
+                                  <span className="text-[9px] font-mono font-bold text-slate-400">{t.id}</span>
+                                </div>
+                              </td>
+                              <td className="p-4 text-slate-600 dark:text-slate-400 font-bold">
+                                {t.product}
+                              </td>
+                              <td className="p-4 text-center">
+                                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                                  t.priority === 'بحرانی' ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' :
+                                  t.priority === 'بالا' ? 'bg-orange-500/15 text-orange-600 dark:text-orange-400' :
+                                  t.priority === 'متوسط' ? 'bg-blue-500/15 text-blue-600' :
+                                  'bg-slate-100 text-slate-500'
+                                }`}>
+                                  {t.priority}
+                                </span>
+                              </td>
+                              <td className="p-4 font-bold text-slate-900 dark:text-white">
+                                {t.assignedTo}
+                              </td>
+                              <td className="p-4 text-slate-500 font-bold font-mono">
+                                {t.date}
+                              </td>
+                              <td className="p-4 text-center">
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                                  t.status === 'باز' ? 'bg-rose-500/10 text-rose-500' :
+                                  t.status === 'در حال بررسی' ? 'bg-amber-500/10 text-amber-500' :
+                                  t.status === 'منتظر پاسخ مشتری' ? 'bg-blue-500/10 text-blue-500' :
+                                  'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                                }`}>
+                                  {t.status}
+                                </span>
+                              </td>
+                              <td className="p-4 pl-6 text-left">
+                                <button 
+                                  onClick={() => {
+                                    setActiveTab('tickets');
+                                    setTicketSearch(t.id);
+                                  }}
+                                  className="text-[10px] text-brand-600 hover:text-brand-700 dark:text-brand-400 font-bold cursor-pointer"
+                                >
+                                  ورود به تیکت
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="p-8 text-center text-slate-400">
+                              هیچ تیکت فعالی در سیستم برای این سازمان ثبت نشده است.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB E: LICENSES */}
+            {customerWorkspaceTab === 'licenses' && (
+              <motion.div
+                key="licenses"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">کلیدهای دسترسی و لایسنس‌های توزیع‌شده</h3>
+                  <button 
+                    onClick={() => showWorkspaceToast('سفارش تمدید لایسنس جدید برای واحد بازرگانی صادر شد.', 'success')}
+                    className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-4.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>تمدید سراسری لایسنس‌ها</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {customerWorkspaceProducts.map((p) => (
+                    <div key={p.id} className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-150 dark:border-slate-800 rounded-2xl p-5 space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${p.logoColor} flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-xs`}>
+                            {p.logoInitials}
+                          </div>
+                          <div className="space-y-0.5">
+                            <h4 className="text-xs font-black text-slate-900 dark:text-white">{p.name}</h4>
+                            <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">منقضی در {p.expDate}</span>
+                          </div>
+                        </div>
+                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
+                          p.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+                        }`}>
+                          {p.status}
+                        </span>
+                      </div>
+
+                      {/* License Key Code block with copy button */}
+                      <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between">
+                        <span className="font-mono text-xs text-slate-600 dark:text-slate-300 select-all tracking-wider font-semibold">
+                          {p.licenseKey}
+                        </span>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(p.licenseKey);
+                            showWorkspaceToast(`کلید لایسنس محصول ${p.name} کپی شد.`, 'success');
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-250 transition-all cursor-pointer"
+                          title="کپی کردن کلید"
+                        >
+                          <Copy className="w-4.5 h-4.5" />
+                        </button>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <span>ظرفیت اختصاصی: {p.userLimit} کاربر همزمان</span>
+                        <button 
+                          onClick={() => {
+                            const updated = customerWorkspaceProducts.map(wp => 
+                              wp.id === p.id ? { ...wp, userLimit: wp.userLimit + 10 } : wp
+                            );
+                            setCustomerWorkspaceProducts(updated);
+                            showWorkspaceToast(`ارتقای تعداد کاربران محصول ${p.name} به ${p.userLimit + 10} نفر تایید شد.`, 'success');
+                          }}
+                          className="text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+                        >
+                          ارتقای ظرفیت (افزودن ۱۰ کاربر)
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB F: ACTIVITIES */}
+            {customerWorkspaceTab === 'activities' && (
+              <motion.div
+                key="activities"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-4"
+              >
+                <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2 border-b border-slate-100 dark:border-slate-800">
+                  تاریخچه رخدادها و وقایع سازمان در پلتفرم سحاب
+                </h3>
+
+                <div className="relative pr-6 border-r-2 border-slate-150 dark:border-slate-800 space-y-6 py-2">
+                  {[
+                    { title: 'ثبت تیکت بحرانی مانیتورینگ گره‌ها', subtitle: 'توسط مهندس آرش کریمی - شعبه پردیس', time: '۳ دقیقه پیش', bg: 'bg-rose-500' },
+                    { title: 'خطای ورود چندعاملی به حساب مدیریتی', subtitle: 'لاگ ورود ناموفق از آی‌پی ۹۴.۱۲.۸۸.۱۹', time: '۱۰ دقیقه پیش', bg: 'bg-amber-500' },
+                    { title: 'ورود موفق به میز کار کاربری', subtitle: 'توسط مهندس حسام نوری', time: '۱ ساعت پیش', bg: 'bg-emerald-500' },
+                    { title: 'بروزرسانی نسخه کلید دسترسی Cloud Security', subtitle: 'بروزرسانی به نسخه نهایی v2.4.1 توسط واحد توسعه', time: 'دیروز', bg: 'bg-indigo-500' },
+                    { title: 'تغییر آدرس پستی سازمان در سیستم', subtitle: 'توسط واحد بازرگانی سحاب', time: '۲ روز پیش', bg: 'bg-slate-400' }
+                  ].map((act, index) => (
+                    <div key={index} className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      {/* Visual dot on timeline */}
+                      <div className={`absolute -right-[31px] top-1.5 w-4 h-4 rounded-full ${act.bg} border-4 border-white dark:border-slate-900 flex items-center justify-center`} />
+                      
+                      <div className="space-y-0.5">
+                        <h4 className="text-xs font-black text-slate-900 dark:text-white">{act.title}</h4>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{act.subtitle}</span>
+                      </div>
+                      <span className="text-[10px] font-mono font-black text-slate-400 shrink-0">{act.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB G: SETTINGS */}
+            {customerWorkspaceTab === 'settings' && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-6"
+              >
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2 border-b border-slate-100 dark:border-slate-800">
+                    پیکربندی اختصاصی و محدودیت‌های سازمان
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">نوع اولویت‌دهی تیکت‌های سازمان (SLA)</label>
+                      <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
+                        <option value="critical">طلایی (حداکثر ۱ ساعت مهلت پاسخگویی)</option>
+                        <option value="high">نقره‌ای (حداکثر ۲ ساعت مهلت پاسخگویی)</option>
+                        <option value="normal">عادی (حداکثر ۸ ساعت مهلت پاسخگویی)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">روش ارتباطی پیش‌فرض اعلان‌ها</label>
+                      <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
+                        <option value="both">پیامک و ایمیل همزمان</option>
+                        <option value="email">فقط ایمیل کارپوشه</option>
+                        <option value="sms">فقط پیامک نمایندگان</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">محدودیت تعداد کل کاربران قابل تعریف</label>
+                      <input 
+                        type="number" 
+                        defaultValue={150} 
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-mono text-left" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">محدودیت دامنه ایمیل مجاز کاربران</label>
+                      <input 
+                        type="text" 
+                        defaultValue="ariasecurity.ir" 
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-mono text-left" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex justify-end">
+                    <button 
+                      onClick={() => showWorkspaceToast('پیکربندی اختصاصی سازمان با موفقیت بروزرسانی شد.', 'success')}
+                      className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-sm"
+                    >
+                      ذخیره پیکربندی سازمان
+                    </button>
+                  </div>
+                </div>
+
+                {/* DANGER ZONE */}
+                <div className="bg-rose-500/5 dark:bg-rose-950/10 border border-rose-500/20 rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 pb-2 border-b border-rose-500/10">
+                    <ShieldAlert className="w-5 h-5 shrink-0" />
+                    <h4 className="text-xs font-black">ناحیه بحرانی و اقدامات امنیتی سازمان (Danger Zone)</h4>
+                  </div>
+
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    اقدامات زیر به صورت مستقیم بر دسترسی کاربران و لایسنس‌های معتبر این سازمان اثرگذار خواهند بود. لطفا قبل از تایید دقت فرمایید.
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <button 
+                      onClick={() => {
+                        const confirmSuspension = window.confirm('آیا مایل به تعلیق سراسری دسترسی و باطل کردن کلیدهای لایسنس این سازمان هستید؟');
+                        if (confirmSuspension) {
+                          const updated = customerWorkspaceProducts.map(wp => ({ ...wp, status: 'غیرفعال' }));
+                          setCustomerWorkspaceProducts(updated);
+                          showWorkspaceToast('تمامی لایسنس‌ها با موفقیت تعلیق و دسترسی سازمان معلق شد.', 'success');
+                        }
+                      }}
+                      className="bg-rose-650 hover:bg-rose-700 text-white text-[10px] font-black px-4.5 py-2 rounded-xl transition-all cursor-pointer"
+                    >
+                      تعلیق موقت کلیدهای دسترسی لایسنس
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const confirmArchive = window.confirm('آیا مایل به بایگانی کردن پرونده این سازمان هستید؟ پرونده آرشیو شده از مانیتورینگ خارج می‌شود.');
+                        if (confirmArchive) {
+                          setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, status: 'غیرفعال' } : cust));
+                          setActiveTab('customers');
+                          showCustomerToast(`پرونده سازمان ${c.name} بایگانی شد.`, 'success');
+                        }
+                      }}
+                      className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-[10px] font-black px-4.5 py-2 rounded-xl transition-all cursor-pointer"
+                    >
+                      بایگانی پرونده سازمان (Archive)
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* ---------------- INTERACTION MODALS DEFINITION ---------------- */}
+
+      {/* MODAL 1: ADD USER */}
+      {showAddUserModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xs font-black text-slate-950 dark:text-white flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-brand-500" />
+                <span>تعریف کاربر جدید برای سازمان</span>
+              </h3>
+              <button 
+                onClick={() => setShowAddUserModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="space-y-4 text-right">
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نام و نام خانوادگی کاربر <span className="text-rose-500">*</span></label>
+                <input 
+                  type="text" 
+                  value={newUserName}
+                  onChange={(e) => setNewUserName(e.target.value)}
+                  placeholder="مثال: مهندس مریم علوی"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">پست الکترونیکی سازمانی <span className="text-rose-500">*</span></label>
+                <input 
+                  type="email" 
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  placeholder="username@ariasecurity.ir"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none text-left font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نقش دسترسی در پرتال</label>
+                <select 
+                  value={newUserRole}
+                  onChange={(e) => setNewUserRole(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer"
+                >
+                  <option value="کاربر">کاربر (User)</option>
+                  <option value="مدیر">مدیر دپارتمان (Manager)</option>
+                  <option value="مشاهده‌گر">فقط مشاهده‌گر (Observer)</option>
+                </select>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                <button 
+                  type="button"
+                  onClick={() => setShowAddUserModal(false)}
+                  className="px-4.5 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 text-xs font-black cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button 
+                  type="submit"
+                  className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-5 py-2.5 rounded-xl transition-all cursor-pointer"
+                >
+                  تعریف و فعال‌سازی کاربر
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* MODAL 2: ALLOCATE PRODUCT */}
+      {showAddProductModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xs font-black text-slate-950 dark:text-white flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-brand-500" />
+                <span>تخصیص محصول جدید به کارپوشه سازمان</span>
+              </h3>
+              <button 
+                onClick={() => setShowAddProductModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddProduct} className="space-y-4 text-right">
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">انتخاب محصول پلتفرم سحاب <span className="text-rose-500">*</span></label>
+                <select 
+                  value={newProductId}
+                  onChange={(e) => setNewProductId(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer"
+                  required
+                >
+                  <option value="">-- انتخاب محصول جدید --</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.version})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">محدودیت تعداد مجاز کاربران لایسنس</label>
+                <input 
+                  type="number" 
+                  value={newProductLimit}
+                  onChange={(e) => setNewProductLimit(parseInt(e.target.value) || 10)}
+                  placeholder="تعداد کاربر"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none text-left font-mono"
+                  required
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                <button 
+                  type="button"
+                  onClick={() => setShowAddProductModal(false)}
+                  className="px-4.5 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 text-xs font-black cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button 
+                  type="submit"
+                  className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-5 py-2.5 rounded-xl transition-all cursor-pointer"
+                >
+                  تخصیص محصول و صدور لایسنس
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* MODAL 3: EDIT ORGANIZATION */}
+      {showEditOrgModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xs font-black text-slate-950 dark:text-white flex items-center gap-2">
+                <Edit className="w-5 h-5 text-brand-500" />
+                <span>ویرایش اطلاعات عمومی و هویتی سازمان</span>
+              </h3>
+              <button 
+                onClick={() => setShowEditOrgModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveOrgDetails} className="space-y-4 text-right">
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نام تجاری سازمان</label>
+                <input 
+                  type="text" 
+                  value={orgCommercialName}
+                  onChange={(e) => setOrgCommercialName(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">شماره تلفن ثابت دفتر مرکزی</label>
+                <input 
+                  type="text" 
+                  value={orgPhone}
+                  onChange={(e) => setOrgPhone(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none text-left font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نشانی وب‌سایت رسمی</label>
+                <input 
+                  type="text" 
+                  value={orgWebsite}
+                  onChange={(e) => setOrgWebsite(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none text-left font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">آدرس پستی شعبه مرکزی</label>
+                <textarea 
+                  rows={3}
+                  value={orgAddress}
+                  onChange={(e) => setOrgAddress(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none resize-none leading-relaxed"
+                  required
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                <button 
+                  type="button"
+                  onClick={() => setShowEditOrgModal(false)}
+                  className="px-4.5 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 text-xs font-black cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button 
+                  type="submit"
+                  className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-5 py-2.5 rounded-xl transition-all cursor-pointer"
+                >
+                  ذخیره اطلاعات جدید
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+    </motion.div>
+  );
+}

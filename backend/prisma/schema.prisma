@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+  CUSTOMER
+}
+
+enum TicketPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TicketStatus {
+  OPEN
+  INVESTIGATING
+  AWAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum CustomerTier {
+  GOLD
+  SILVER
+  BRONZE
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(ADMIN)
+  avatar    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignedTickets Ticket[] @relation("AssignedAgent")
+  customerProfile Customer?
+}
+
+model Customer {
+  id                    String       @id @default(cuid())
+  commercialName        String?
+  industry              String
+  phone                 String?
+  website               String?
+  address               String?
+  tier                  CustomerTier @default(BRONZE)
+  status                CustomerStatus @default(ACTIVE)
+  usersCount            Int          @default(0)
+  activeProductsCount   Int          @default(0)
+  partnershipStartDate  DateTime?
+  lastActivity          DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id])
+
+  tickets     Ticket[]
+  connections ProductCustomerConnection[]
+}
+
+model Product {
+  id           String        @id @default(cuid())
+  name         String
+  category     String
+  description  String?
+  version      String        @default("v1.0.0")
+  status       ProductStatus @default(ACTIVE)
+  clientsCount Int           @default(0)
+  logoColor    String?
+  logoInitials String?
+  createdAt    DateTime      @default(now())
+  lastUpdated  DateTime      @updatedAt
+
+  tickets     Ticket[]
+  connections ProductCustomerConnection[]
+}
+
+model ProductCustomerConnection {
+  id               String   @id @default(cuid())
+  startDate        DateTime
+  endDate          DateTime
+  licenseStatus    String   @default("ACTIVE")
+  userCount        Int      @default(0)
+  activationKey    String
+  notes            String?
+  subscriptionType String
+  createdAt        DateTime @default(now())
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+}
+
+model Ticket {
+  id         String         @id @default(cuid())
+  title      String
+  priority   TicketPriority @default(MEDIUM)
+  status     TicketStatus   @default(OPEN)
+  date       DateTime       @default(now())
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedAgent", fields: [assignedToId], references: [id])
+
+  messages TicketMessage[]
+}
+
+model TicketMessage {
+  id         String   @id @default(cuid())
+  text       String
+  senderName String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  subtitle  String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
