@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useUsers } from '../../hooks/useUsers';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, 
@@ -71,18 +72,26 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   // Interactive loading state (Simulated)
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
-  // Users list state
-  const [users, setUsers] = useState<UserItem[]>([
-    { id: 'USR-101', name: 'امیرحسین رضایی', email: 'rezaei@sahab.ir', phone: '۰۹۱۲۳۴۵۶۷۸۹', company: 'سحاب', team: 'تیم فنی', role: 'کارشناس پشتیبانی', status: 'فعال', lastLogin: '۱۰ دقیقه پیش', createdDate: '۱۴۰۲/۰۱/۱۵', avatarColor: 'bg-blue-600' },
-    { id: 'USR-102', name: 'مهندس آرش کریمی', email: 'a.karimi@ariasecurity.ir', phone: '۰۹۱۲۷۷۷۸۸۹۹', company: 'شرکت توسعه امنیت آریا', team: 'DevOps', role: 'مدیر شرکت', status: 'فعال', lastLogin: '۳ دقیقه پیش', createdDate: '۱۴۰۰/۰۴/۱۵', avatarColor: 'bg-indigo-600' },
-    { id: 'USR-103', name: 'سارا صادقی', email: 's.sadeghi@afarin.shop', phone: '۰۹۳۵۹۹۹۸۸۷۷', company: 'فروشگاه آنلاین آفرین', team: 'تیم فروش', role: 'مدیر پشتیبانی', status: 'فعال', lastLogin: '۳ ساعت پیش', createdDate: '۱۴۰۲/۰۶/۲۵', avatarColor: 'bg-emerald-600' },
-    { id: 'USR-104', name: 'علیرضا مجیدی', email: 'majidi@novintech.ir', phone: '۰۹۱۲۳۴۵۶۷۸۹', company: 'شرکت فناوری نوین', team: 'تیم فنی', role: 'مدیر کل', status: 'فعال', lastLogin: '۲ دقیقه پیش', createdDate: '۱۴۰۱/۰۵/۲۰', avatarColor: 'bg-violet-600' },
-    { id: 'USR-105', name: 'الهام سلیمی', email: 'e.salimi@ariasecurity.ir', phone: '۰۹۱۲۹۹۹۸۸۷۷', company: 'شرکت توسعه امنیت آریا', team: 'بدون تیم', role: 'کاربر', status: 'غیرفعال', lastLogin: 'دیروز', createdDate: '۱۴۰۲/۰۸/۱۰', avatarColor: 'bg-slate-500' },
-    { id: 'USR-106', name: 'پویا راد', email: 'p.rad@sahab.ir', phone: '۰۹۱۸۱۱۱۲۲۳۳', company: 'سحاب', team: 'DevOps', role: 'مشاهده‌گر', status: 'دعوت شده', lastLogin: 'تاکنون وارد نشده', createdDate: '۱۴۰۵/۰۴/۲۰', avatarColor: 'bg-amber-600' },
-    { id: 'USR-107', name: 'مریم اکبری', email: 'akbari@sahab.ir', phone: '۰۹۳۰۵۵۵۴۴۳۳', company: 'سحاب', team: 'تیم فنی', role: 'کارشناس پشتیبانی', status: 'فعال', lastLogin: 'دیروز', createdDate: '۱۴۰۲/۱۲/۰۱', avatarColor: 'bg-pink-600' },
-    { id: 'USR-108', name: 'حسین عباسی', email: 'abbasi@omranmehr.org', phone: '۰۹۱۲۱۱۱۴۴۵۵', company: 'هلدینگ عمران مهر', team: 'بدون تیم', role: 'مدیر شرکت', status: 'غیرفعال', lastLogin: '۲ روز پیش', createdDate: '۱۴۰۳/۰۱/۱۰', avatarColor: 'bg-slate-400' },
-    { id: 'USR-109', name: 'احمد توکلی', email: 'tavakoli@alvandsteel.co', phone: '۰۹۱۱۱۲۲۳۳۴۴', company: 'صنایع فولاد الوند', team: 'تیم فنی', role: 'کاربر', status: 'فعال', lastLogin: '۱ ساعت پیش', createdDate: '۱۴۰۲/۰۲/۱۵', avatarColor: 'bg-cyan-600' }
-  ]);
+  // Users list state — synced from real API
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const { users: apiUsers } = useUsers();
+  useEffect(() => {
+    if (apiUsers.length > 0) {
+      setUsers(apiUsers.map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        phone: '',
+        company: '',
+        team: '',
+        role: u.role === 'ADMIN' ? 'مدیر کل' : u.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
+        status: u.active ? ('فعال' as const) : ('غیرفعال' as const),
+        lastLogin: '',
+        createdDate: u.createdAt?.split('T')[0]?.replace(/-/g, '/') || '',
+        avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600', 'bg-pink-600', 'bg-cyan-600'][Math.floor(Math.random() * 6)],
+      })));
+    }
+  }, [apiUsers]);
 
   // Roles state
   const [roles, setRoles] = useState<RoleItem[]>([

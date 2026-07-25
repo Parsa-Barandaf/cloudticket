@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { gql } from '../api/graphql';
 import { GET_PRODUCTS } from '../api/queries';
+import type { ApiProduct } from '../api/types';
 import type { Product } from '../types';
+import { mapProduct } from '../api/transform';
 
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,8 +14,8 @@ export function useProducts() {
     setLoading(true);
     setError(null);
     try {
-      const data = await gql<{ products: Product[] }>(GET_PRODUCTS);
-      setProducts(data.products);
+      const data = await gql<{ products: ApiProduct[] }>(GET_PRODUCTS);
+      setProducts(data.products.map(mapProduct));
     } catch (e) {
       setError((e as Error).message);
     } finally {

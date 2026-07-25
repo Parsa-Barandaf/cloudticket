@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { gql } from '../api/graphql';
 import { GET_CUSTOMERS } from '../api/queries';
+import type { ApiCustomer } from '../api/types';
 import type { Customer } from '../types';
+import { mapCustomer } from '../api/transform';
 
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -12,8 +14,8 @@ export function useCustomers() {
     setLoading(true);
     setError(null);
     try {
-      const data = await gql<{ customers: Customer[] }>(GET_CUSTOMERS);
-      setCustomers(data.customers);
+      const data = await gql<{ customers: ApiCustomer[] }>(GET_CUSTOMERS);
+      setCustomers(data.customers.map(mapCustomer));
     } catch (e) {
       setError((e as Error).message);
     } finally {

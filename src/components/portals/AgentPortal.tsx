@@ -64,33 +64,10 @@ import {
 } from 'lucide-react';
 import type { Ticket, Product, Customer } from '../../types';
 import { PortalRole } from '../../types';
-
-export interface AgentTicketItem {
-  id: string;
-  title: string;
-  customer: string;
-  customerTier: 'طلایی' | 'نقره‌ای' | 'برنزی';
-  product: string;
-  priority: 'بحرانی' | 'بالا' | 'متوسط' | 'پایین';
-  status: 'جدید' | 'در حال بررسی' | 'منتظر پاسخ مشتری' | 'حل شده' | 'بسته شده';
-  waitingTime: string;
-  slaRemaining: string; // e.g. "01:20:00"
-  slaRisk: boolean;
-  assignedToMe: boolean;
-  pinned: boolean;
-  important: boolean;
-  createdAt: string;
-  messages: Array<{
-    id: string;
-    sender: 'customer' | 'agent' | 'system';
-    senderName: string;
-    avatar?: string;
-    text: string;
-    time: string;
-    isInternalNote?: boolean;
-    attachments?: Array<{ name: string; size: string }>;
-  }>;
-}
+import type { AgentTicketItem } from '../../api/transform-agent';
+import { mergeAgentTicketData } from '../../api/transform-agent';
+import { gql } from '../../api/graphql';
+import { CREATE_TICKET } from '../../api/queries';
 
 interface SupportAgentPortalViewProps {
   userEmail: string;
@@ -135,6 +112,7 @@ export default function SupportAgentPortalView({
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showCallModal, setShowCallModal] = useState(false);
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+  const [newTicketFields, setNewTicketFields] = useState({ title: '', customerId: '', productId: '', priority: 'متوسط' });
   const [viewingTicketModal, setViewingTicketModal] = useState<AgentTicketItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -151,164 +129,16 @@ export default function SupportAgentPortalView({
   const [replyText, setReplyText] = useState('');
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
-  // Initial Agent Queue Data
-  const [agentTickets, setAgentTickets] = useState<AgentTicketItem[]>([
-    {
-      id: 'TKT-1024',
-      title: 'خطای ناهماهنگی در تایید گواهی SSL دامنه اصلی پلتفرم ابری',
-      customer: 'پتروشیمی سپهر پارس',
-      customerTier: 'طلایی',
-      product: 'Cloud Security Platform',
-      priority: 'بحرانی',
-      status: 'در حال بررسی',
-      waitingTime: '۱۲ دقیقه پیش',
-      slaRemaining: '۰۰:۴۵:۱۲',
-      slaRisk: true,
-      assignedToMe: true,
-      pinned: true,
-      important: true,
-      createdAt: '۱۴۰۳/۰۴/۱۸ - ۱۰:۱۵',
-      messages: [
-        {
-          id: 'MSG-1',
-          sender: 'customer',
-          senderName: 'مهندس محمدرضا کریمی (نماینده فنی)',
-          text: 'با سلام و احترام، از صبح امروز هنگام اتصال به کنسول مدیریتی خطای SSL Certificate Mismatch دریافت می‌کنیم. لطفاً سریعاً بررسی فرمایید چرا که سرویس‌های عملیاتی متوقف شده‌اند.',
-          time: '۱۰:۱۵',
-          attachments: [{ name: 'ssl_error_log.txt', size: '2.4 KB' }]
-        },
-        {
-          id: 'MSG-2',
-          sender: 'agent',
-          senderName: 'امیرحسین رضایی (کارشناس ارشد)',
-          text: 'با سلام، درخواست شما دریافت گردید. تیم فنی در حال بازبینی پیکربندی Load Balancer لایه ۲ می‌باشد.',
-          time: '۱۰:۲۰'
-        },
-        {
-          id: 'MSG-3',
-          sender: 'agent',
-          senderName: 'امیرحسین رضایی',
-          text: 'یادداشت داخلی: دامنه اصلی نیاز به Re-issue گواهی Wildcard روی سرورهای Edge دارد.',
-          time: '۱۰:۲۲',
-          isInternalNote: true
-        }
-      ]
-    },
-    {
-      id: 'TKT-1023',
-      title: 'عدم تطابق تعداد کاربران مجاز لایسنس جدید نسخه سازمانی',
-      customer: 'شرکت توسعه امنیت آریا',
-      customerTier: 'طلایی',
-      product: 'Identity Protection Server',
-      priority: 'بالا',
-      status: 'جدید',
-      waitingTime: '۳۵ دقیقه پیش',
-      slaRemaining: '۰۲:۱۵:۰۰',
-      slaRisk: false,
-      assignedToMe: true,
-      pinned: false,
-      important: true,
-      createdAt: '۱۴۰۳/۰۴/۱۸ - ۰۹:۵۰',
-      messages: [
-        {
-          id: 'MSG-10',
-          sender: 'customer',
-          senderName: 'آرش کریمی',
-          text: 'پس از ارتقای لایسنس به ۱۰۰ کاربر، در پنل مدیریت تعداد ۵۰ کاربر نمایش داده می‌شود. لطفا کد فعال‌سازی جدید را بررسی کنید.',
-          time: '۰۹:۵۰'
-        }
-      ]
-    },
-    {
-      id: 'TKT-1022',
-      title: 'درخواست افزایش پهنای باند و منابع محاسباتی نود ابری',
-      customer: 'بانک آینده (فناوری اطلاعات)',
-      customerTier: 'طلایی',
-      product: 'Elastic Compute Node',
-      priority: 'متوسط',
-      status: 'منتظر پاسخ مشتری',
-      waitingTime: '۱ ساعت پیش',
-      slaRemaining: '۰۴:۰۰:۰۰',
-      slaRisk: false,
-      assignedToMe: false,
-      pinned: false,
-      important: false,
-      createdAt: '۱۴۰۳/۰۴/۱۸ - ۰۸:۳۰',
-      messages: [
-        {
-          id: 'MSG-20',
-          sender: 'customer',
-          senderName: 'مهندس حمیدرضا علوی',
-          text: 'جهت اجرای تراکنش‌های پایان ماه نیازمند افزایش منابع RAM به ۶۴ گیگابایت هستیم.',
-          time: '۰۸:۳۰'
-        },
-        {
-          id: 'MSG-21',
-          sender: 'agent',
-          senderName: 'زهرا موسوی',
-          text: 'تغییرات منابع تخصیص یافته آماده اعمال است. لطفاً پنجره زمانی مجاز برای ریستارت نود را تایید بفرمایید.',
-          time: '۰۸:۵۰'
-        }
-      ]
-    },
-    {
-      id: 'TKT-1021',
-      title: 'مشکل در تنظیمات DNS CDN و مسیردهی ترافیک بین‌الملل',
-      customer: 'صنایع فولاد مبارکه',
-      customerTier: 'نقره‌ای',
-      product: 'Global Edge CDN',
-      priority: 'پایین',
-      status: 'جدید',
-      waitingTime: '۲ ساعت پیش',
-      slaRemaining: '۰۶:۳۰:۰۰',
-      slaRisk: false,
-      assignedToMe: true,
-      pinned: false,
-      important: false,
-      createdAt: '۱۴۰۳/۰۴/۱۸ - ۰۷:۴۵',
-      messages: [
-        {
-          id: 'MSG-30',
-          sender: 'customer',
-          senderName: 'مهندس حسینی',
-          text: 'در صورت امکان آی‌پی Edge سرورهای تبریز را ارسال کنید.',
-          time: '۰۷:۴۵'
-        }
-      ]
-    },
-    {
-      id: 'TKT-1020',
-      title: 'پرسش درباره فرمت خروجی فایل‌های لاگ در فریم‌ورک هوش مصنوعی',
-      customer: 'شرکت راهکارهای داده پرداز',
-      customerTier: 'برنزی',
-      product: 'AI Analytics Framework',
-      priority: 'پایین',
-      status: 'حل شده',
-      waitingTime: 'دیروز',
-      slaRemaining: '۰۸:۰۰:۰۰',
-      slaRisk: false,
-      assignedToMe: false,
-      pinned: false,
-      important: false,
-      createdAt: '۱۴۰۳/۰۴/۱۷ - ۱۶:۲۰',
-      messages: [
-        {
-          id: 'MSG-40',
-          sender: 'customer',
-          senderName: 'مریم اکبری',
-          text: 'آیا امکان خروجی گرفتن لاگ‌ها به فرمت JSON Lines وجود دارد؟',
-          time: '۱۶:۲۰'
-        },
-        {
-          id: 'MSG-41',
-          sender: 'agent',
-          senderName: 'علی علوی',
-          text: 'بله، با تنظیم پارامتر `LOG_FORMAT=jsonl` در فایل config.env خروجی استاندارد تولید خواهد شد.',
-          time: '۱۶:۴۵'
-        }
-      ]
+  // Initial Agent Queue Data — synced from backend via props
+  const [agentTickets, setAgentTickets] = useState<AgentTicketItem[]>([]);
+
+  // Sync real ticket data from props to agent ticket state
+  const mockMessagesMap = useMemo(() => ({} as Record<string, AgentTicketItem['messages']>), []);
+  useEffect(() => {
+    if (ticketsList.length > 0) {
+      setAgentTickets(mergeAgentTicketData(ticketsList, customersList, userEmail, mockMessagesMap));
     }
-  ]);
+  }, [ticketsList, customersList, userEmail, mockMessagesMap]);
 
   // Selected Active Ticket
   const [activeTicketId, setActiveTicketId] = useState<string>('TKT-1024');
@@ -2265,10 +2095,24 @@ export default function SupportAgentPortalView({
               </div>
 
               <form
-                onSubmit={e => {
+                onSubmit={async e => {
                   e.preventDefault();
+                  if (!newTicketFields.title || !newTicketFields.customerId) return;
+                  const priorityToApi: Record<string, string> = { 'بحرانی': 'CRITICAL', 'بالا': 'HIGH', 'متوسط': 'MEDIUM', 'پایین': 'LOW' };
+                  try {
+                    await gql(CREATE_TICKET, {
+                      input: {
+                        title: newTicketFields.title,
+                        priority: priorityToApi[newTicketFields.priority] || 'MEDIUM',
+                        customerId: newTicketFields.customerId,
+                      },
+                    });
+                    showToast('تیکت جدید با موفقیت ثبت و به صف کاری اضافه شد.');
+                  } catch {
+                    showToast('خطا در ثبت تیکت. لطفاً دوباره تلاش کنید.', 'error');
+                  }
                   setShowNewTicketModal(false);
-                  showToast('تیکت جدید با موفقیت ثبت و به صف کاری اضافه شد.');
+                  setNewTicketFields({ title: '', customerId: '', productId: '', priority: 'متوسط' });
                 }}
                 className="space-y-3 text-xs"
               >
@@ -2276,9 +2120,15 @@ export default function SupportAgentPortalView({
                   <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                     انتخاب سازمان / مشتری <span className="text-rose-500">*</span>
                   </label>
-                  <select required className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold">
+                  <select
+                    required
+                    value={newTicketFields.customerId}
+                    onChange={e => setNewTicketFields(f => ({ ...f, customerId: e.target.value }))}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold"
+                  >
+                    <option value="">انتخاب مشتری...</option>
                     {customersList.map(c => (
-                      <option key={c.id} value={c.name}>{c.name} ({c.industry})</option>
+                      <option key={c.id} value={c.id}>{c.name} ({c.industry})</option>
                     ))}
                   </select>
                 </div>
@@ -2287,9 +2137,15 @@ export default function SupportAgentPortalView({
                   <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                     محصول یا زیرسرویس مرتبط <span className="text-rose-500">*</span>
                   </label>
-                  <select required className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold">
+                  <select
+                    required
+                    value={newTicketFields.productId}
+                    onChange={e => setNewTicketFields(f => ({ ...f, productId: e.target.value }))}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold"
+                  >
+                    <option value="">انتخاب محصول...</option>
                     {productsList.map(p => (
-                      <option key={p.id} value={p.name}>{p.name}</option>
+                      <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 </div>
@@ -2301,6 +2157,8 @@ export default function SupportAgentPortalView({
                   <input
                     type="text"
                     required
+                    value={newTicketFields.title}
+                    onChange={e => setNewTicketFields(f => ({ ...f, title: e.target.value }))}
                     placeholder="مثال: اختلال در احراز هویت سرویس"
                     className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none"
                   />
@@ -2311,7 +2169,11 @@ export default function SupportAgentPortalView({
                     <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                       اولویت پاسخگویی
                     </label>
-                    <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold">
+                    <select
+                      value={newTicketFields.priority}
+                      onChange={e => setNewTicketFields(f => ({ ...f, priority: e.target.value }))}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold"
+                    >
                       <option value="بحرانی">بحرانی (SLA زیر ۱ ساعت)</option>
                       <option value="بالا">بالا (SLA ۴ ساعت)</option>
                       <option value="متوسط">متوسط</option>

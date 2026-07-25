@@ -46,6 +46,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 import type { Ticket, Customer, Product } from '../../types';
+import { gql } from '../../api/graphql';
+import { UPDATE_TICKET_STATUS } from '../../api/queries';
 
 interface TicketDetailsWorkspaceProps {
   ticket: Ticket;
@@ -249,10 +251,20 @@ export default function TicketDetailsWorkspace({
     }, 300);
   };
 
+  const statusToApi: Record<string, string> = { 'باز': 'OPEN', 'در حال بررسی': 'INVESTIGATING', 'منتظر پاسخ مشتری': 'AWAITING_CUSTOMER', 'بسته شده': 'CLOSED', 'حل شده': 'RESOLVED' };
+
+  const apiUpdateTicketStatus = async (id: string, status: string) => {
+    const apiStatus = statusToApi[status] || 'OPEN';
+    try {
+      await gql(UPDATE_TICKET_STATUS, { input: { id, status: apiStatus } });
+    } catch { /* local state already updated */ }
+  };
+
   // Change single attributes of tickets
   const handleUpdateTicketStatus = (newStatus: Ticket['status']) => {
     setTickets(tickets.map(t => t.id === currentTicket.id ? { ...t, status: newStatus } : t));
     setCurrentTicket(prev => ({ ...prev, status: newStatus }));
+    apiUpdateTicketStatus(currentTicket.id, newStatus);
     showCustomerToast(`وضعیت پرونده با موفقیت به «${newStatus}» تغییر یافت.`, 'success');
     setShowStatusDropdown(false);
   };

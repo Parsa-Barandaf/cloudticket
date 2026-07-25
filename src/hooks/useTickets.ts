@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { gql } from '../api/graphql';
-import { GET_TICKETS, CREATE_TICKET } from '../api/queries';
+import { GET_TICKETS, CREATE_TICKET, UPDATE_TICKET_STATUS } from '../api/queries';
+import type { ApiTicket } from '../api/types';
 import type { Ticket } from '../types';
+import { mapTicket } from '../api/transform';
 
 export function useTickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -12,8 +14,8 @@ export function useTickets() {
     setLoading(true);
     setError(null);
     try {
-      const data = await gql<{ tickets: Ticket[] }>(GET_TICKETS);
-      setTickets(data.tickets);
+      const data = await gql<{ tickets: ApiTicket[] }>(GET_TICKETS);
+      setTickets(data.tickets.map(mapTicket));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -34,7 +36,16 @@ export function useTickets() {
     }
   }, [fetchTickets]);
 
+  const updateTicketStatus = useCallback(async (id: string, status: string) => {
+    try {
+      await gql(UPDATE_TICKET_STATUS, { input: { id, status } });
+      await fetchTickets();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }, [fetchTickets]);
+
   useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
-  return { tickets, loading, error, refetch: fetchTickets, createTicket };
+  return { tickets, loading, error, refetch: fetchTickets, createTicket, updateTicketStatus };
 }

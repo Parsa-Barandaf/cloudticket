@@ -17,6 +17,14 @@ export const REGISTER_MUTATION = `
   }
 `;
 
+export const UPDATE_TICKET_STATUS = `
+  mutation UpdateTicketStatus($input: UpdateTicketStatusInput!) {
+    updateTicketStatus(input: $input) {
+      id title priority status date
+    }
+  }
+`;
+
 // ── Tickets ──
 export const GET_TICKETS = `
   query Tickets {

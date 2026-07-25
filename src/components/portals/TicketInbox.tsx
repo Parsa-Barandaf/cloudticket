@@ -37,6 +37,8 @@ import {
   UserCheck
 } from 'lucide-react';
 import type { Ticket, Product, Customer } from '../../types';
+import { gql } from '../../api/graphql';
+import { UPDATE_TICKET_STATUS } from '../../api/queries';
 import TicketDetailsWorkspace from './TicketDetailsWorkspace';
 
 interface TicketInboxViewProps {
@@ -112,6 +114,15 @@ export default function TicketInboxView({
       { sender: 'customer', name: 'خانم الهام سلیمی', role: 'رابط فناوری نوین', message: 'با سلام، لایسنس تستی که برای سیستم هویت چندعاملی برای ما فعال کرده بودید ارور انقضای کلید موقت می‌دهد، در صورتی که تاریخ معتبر آن تا پایان ماه جاری اعلام شده بود. فایل تنظیمات را پیوست کردم.', time: 'دیروز - ۱۶:۲۰', avatarColor: 'bg-emerald-500' }
     ]
   });
+
+  const statusToApi: Record<string, string> = { 'باز': 'OPEN', 'در حال بررسی': 'INVESTIGATING', 'منتظر پاسخ مشتری': 'AWAITING_CUSTOMER', 'بسته شده': 'CLOSED' };
+
+  const updateStatusViaApi = async (id: string, status: string) => {
+    const apiStatus = statusToApi[status] || 'OPEN';
+    try {
+      await gql(UPDATE_TICKET_STATUS, { input: { id, status: apiStatus } });
+    } catch { /* local state already updated */ }
+  };
 
   // Agents static list for assignment
   const agentsList = ['امیرحسین رضایی', 'علی علوی', 'زهرا موسوی', 'مریم اکبری', 'مهدی قربانی'];
@@ -985,6 +996,7 @@ export default function TicketInboxView({
                                     };
                                     const nextStatus = nextStateMap[t.status] || 'باز';
                                     setTickets(tickets.map(item => item.id === t.id ? { ...item, status: nextStatus } : item));
+                                    updateStatusViaApi(t.id, nextStatus);
                                     showCustomerToast(`وضعیت تیکت ${t.id} به «${nextStatus}» بروزرسانی شد.`, 'success');
                                   }}
                                   className="w-full text-right text-xs font-bold px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 block border-t border-slate-100 dark:border-slate-800"
@@ -1016,6 +1028,7 @@ export default function TicketInboxView({
                                 <button
                                   onClick={() => {
                                     setTickets(tickets.map(item => item.id === t.id ? { ...item, status: 'بسته شده' } : item));
+                                    updateStatusViaApi(t.id, 'بسته شده');
                                     showCustomerToast(`تیکت ${t.id} به صورت رسمی مختومه اعلام شد.`, 'success');
                                   }}
                                   className="w-full text-right text-xs font-black px-4 py-2 hover:bg-rose-500/10 text-rose-600 dark:text-rose-450 block border-t border-slate-100 dark:border-slate-800"

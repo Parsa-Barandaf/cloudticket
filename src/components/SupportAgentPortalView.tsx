@@ -1,2 +1,2 @@
-export type { AgentTicketItem } from './portals/AgentPortal';
+export type { AgentTicketItem } from '../api/transform-agent';
 export { default } from './portals/AgentPortal';

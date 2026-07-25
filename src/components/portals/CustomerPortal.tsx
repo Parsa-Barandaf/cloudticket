@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
@@ -28,13 +28,18 @@ import {
   Calendar,
   ExternalLink
 } from 'lucide-react';
-import type { Ticket, Product } from '../../types';
+import type { Ticket, Product, Customer } from '../../types';
 import { PortalRole } from '../../types';
+import type { CustomerTicketItem, ActiveProductItem } from '../../api/transform-customer';
+import { mapTicketToCustomerItem, mapProductToActiveItem } from '../../api/transform-customer';
+import { gql } from '../../api/graphql';
+import { CREATE_TICKET } from '../../api/queries';
 
 interface CustomerPortalViewProps {
   userEmail: string;
   ticketsList?: Ticket[];
   productsList?: Product[];
+  customersList?: Customer[];
   onLogout: () => void;
   isDark: boolean;
   onToggleTheme: () => void;
@@ -43,6 +48,9 @@ interface CustomerPortalViewProps {
 
 export default function CustomerPortalView({
   userEmail,
+  ticketsList = [],
+  productsList = [],
+  customersList = [],
   onLogout,
   isDark,
   onToggleTheme,
@@ -60,70 +68,41 @@ export default function CustomerPortalView({
   const [ticketMessage, setTicketMessage] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Demo Customer Tickets
-  const [customerTickets, setCustomerTickets] = useState([
-    {
-      id: 'TKT-1024',
-      subject: 'خطای ناهماهنگی در تایید گواهی SSL دامنه اصلی پلتفرم ابری',
-      product: 'Cloud Security Platform',
-      status: 'در حال بررسی',
-      priority: 'بحرانی',
-      date: '۱۴۰۳/۰۴/۱۸',
-      lastUpdate: '۱۰ دقیقه پیش توسط کارشناس پشتیبانی',
-      messagesCount: 3
-    },
-    {
-      id: 'TKT-1023',
-      subject: 'عدم تطابق تعداد کاربران مجاز لایسنس جدید نسخه سازمانی',
-      product: 'Identity Protection Server',
-      status: 'جدید',
-      priority: 'بالا',
-      date: '۱۴۰۳/۰۴/۱۸',
-      lastUpdate: '۳۵ دقیقه پیش',
-      messagesCount: 1
-    },
-    {
-      id: 'TKT-1015',
-      subject: 'درخواست راهنمایی جهت فعال‌سازی قابلیت Single Sign-On (SSO)',
-      product: 'Enterprise IAM Suite',
-      status: 'حل شده',
-      priority: 'متوسط',
-      date: '۱۴۰۳/۰۴/۱۰',
-      lastUpdate: '۴ روز پیش',
-      messagesCount: 5
-    }
-  ]);
+  // Customer tickets and products — synced from real props
+  const [customerTickets, setCustomerTickets] = useState<CustomerTicketItem[]>([]);
+  const activeProducts: ActiveProductItem[] = productsList.map(mapProductToActiveItem);
 
-  // Demo Customer Active Products
-  const activeProducts = [
-    {
-      id: 'PRD-1',
-      name: 'Cloud Security Platform',
-      version: 'v4.2.0 Enterprise',
-      licenseKey: 'SAB-9982-X901-SEC',
-      expiresAt: '۱۴۰۴/۰۵/۲۰ (۳۸۰ روز باقی‌مانده)',
-      status: 'فعال',
-      userQuota: '۲۵۰ / ۵۰۰ کاربر'
-    },
-    {
-      id: 'PRD-2',
-      name: 'Identity Protection Server',
-      version: 'v3.1.0 Premium',
-      licenseKey: 'SAB-4412-I009-IDP',
-      expiresAt: '۱۴۰۳/۱۲/۲۹ (۲۲۰ روز باقی‌مانده)',
-      status: 'فعال',
-      userQuota: '۱۰۰ / ۱۰۰ کاربر'
+  useEffect(() => {
+    if (ticketsList.length > 0) {
+      setCustomerTickets(ticketsList.map(mapTicketToCustomerItem));
     }
-  ];
+  }, [ticketsList]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleCreateTicket = (e: React.FormEvent) => {
+  const priorityToApi: Record<string, string> = { 'بحرانی': 'CRITICAL', 'بالا': 'HIGH', 'متوسط': 'MEDIUM', 'پایین': 'LOW' };
+
+  const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketSubject.trim() || !ticketMessage.trim()) return;
+
+    const matchedCustomer = customersList.find(c => c.email === userEmail);
+    const customerId = matchedCustomer?.id;
+
+    if (customerId) {
+      try {
+        await gql(CREATE_TICKET, {
+          input: {
+            title: ticketSubject,
+            priority: priorityToApi[ticketPriority] || 'MEDIUM',
+            customerId,
+          },
+        });
+      } catch { /* fall through — local state still updated */ }
+    }
 
     const newTkt = {
       id: `TKT-${Math.floor(1000 + Math.random() * 9000)}`,

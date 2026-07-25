@@ -67,6 +67,9 @@ import TicketInboxView from './TicketInbox';
 import UserManagementView from './UserManagement';
 import NotificationCenterView from './NotificationCenter';
 import SupportAgentPortalView from './AgentPortal';
+import { useTickets } from '../../hooks/useTickets';
+import { useProducts } from '../../hooks/useProducts';
+import { useCustomers } from '../../hooks/useCustomers';
 
 // Interfaces for our state elements
 export interface Ticket {
@@ -199,302 +202,15 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   };
 
   // Dynamic States for robust interactivity
-  const [tickets, setTickets] = useState<Ticket[]>([
-    {
-      id: 'TKT-1025',
-      title: 'قطعی متناوب گره‌های مانیتورینگ شعبه پردیس',
-      customer: 'شرکت توسعه امنیت آریا',
-      product: 'Cloud Security Platform',
-      priority: 'بحرانی',
-      status: 'باز',
-      assignedTo: 'امیرحسین رضایی',
-      date: '۳ دقیقه پیش'
-    },
-    {
-      id: 'TKT-1026',
-      title: 'خطای انقضای کلید موقت در سامانه هویت چندعاملی',
-      customer: 'شرکت توسعه امنیت آریا',
-      product: 'Identity Protection Server',
-      priority: 'بالا',
-      status: 'در حال بررسی',
-      assignedTo: 'علی علوی',
-      date: '۱۰ دقیقه پیش'
-    },
-    {
-      id: 'TKT-1024',
-      title: 'عدم دریافت پیامک یکبار مصرف (OTP) در ورود به حساب',
-      customer: 'شرکت فناوری نوین',
-      product: 'پنل کاربری',
-      priority: 'بحرانی',
-      status: 'باز',
-      assignedTo: 'امیرحسین رضایی',
-      date: '۲ دقیقه پیش'
-    },
-    {
-      id: 'TKT-1023',
-      title: 'خطای وب‌هوک در همگام‌سازی فاکتورهای مالی با سامانه مودیان',
-      customer: 'بازرگانی آریا جم',
-      product: 'API وب‌هوک',
-      priority: 'بالا',
-      status: 'در حال بررسی',
-      assignedTo: 'زهرا موسوی',
-      date: '۱۵ دقیقه پیش'
-    },
-    {
-      id: 'TKT-1022',
-      title: 'درخواست فعال‌سازی پروتکل امنیتی چندعاملی سخت‌افزاری',
-      customer: 'صنایع فولاد الوند',
-      product: 'امنیت چندعاملی',
-      priority: 'متوسط',
-      status: 'منتظر پاسخ مشتری',
-      assignedTo: 'علی علوی',
-      date: '۱ ساعت پیش'
-    },
-    {
-      id: 'TKT-1021',
-      title: 'کاهش شدید سرعت پاسخگویی متد استعلام کالا',
-      customer: 'فروشگاه آنلاین آفرین',
-      product: 'API استعلام سریع',
-      priority: 'بالا',
-      status: 'در حال بررسی',
-      assignedTo: 'امیرحسین رضایی',
-      date: '۳ ساعت پیش'
-    },
-    {
-      id: 'TKT-1020',
-      title: 'نیاز به راهنمایی در پیکربندی دامنه اختصاصی سحاب',
-      customer: 'شتاب‌دهنده دانا',
-      product: 'پنل کاربری',
-      priority: 'پایین',
-      status: 'بسته شده',
-      assignedTo: 'مریم اکبری',
-      date: 'دیروز'
-    }
-  ]);
-
-  const [products, setProducts] = useState<Product[]>([
-    { 
-      id: 'PRD-01', 
-      name: 'Cloud Security Platform', 
-      category: 'امنیتی', 
-      clientsCount: 125, 
-      status: 'فعال', 
-      version: 'v2.4.1',
-      description: 'سامانه هوشمند و یکپارچه پایش امنیت، تشخیص نفوذ و مانیتورینگ بلادرنگ زیرساخت‌های ابری سحاب.',
-      lastUpdated: '۱۴۰۲/۱۰/۱۲',
-      logoInitials: 'CS',
-      logoColor: 'from-blue-500 to-indigo-600',
-      createdAt: '۱۴۰۱/۰۵/۲۰'
-    },
-    { 
-      id: 'PRD-02', 
-      name: 'Identity Protection Server', 
-      category: 'امنیتی', 
-      clientsCount: 84, 
-      status: 'فعال', 
-      version: 'v3.1.2',
-      description: 'سیستم پیشرفته مدیریت دسترسی، احراز هویت چندعاملی هوشمند و محافظت از هویت دیجیتال کاربران سازمانی.',
-      lastUpdated: '۱۴۰۲/۱۱/۲۰',
-      logoInitials: 'IP',
-      logoColor: 'from-emerald-500 to-teal-600',
-      createdAt: '۱۴۰۱/۰۷/۱۰'
-    },
-    { 
-      id: 'PRD-03', 
-      name: 'Elastic Compute Node', 
-      category: 'زیرساخت', 
-      clientsCount: 19, 
-      status: 'منقضی شده', 
-      version: 'v5.0.1',
-      description: 'چارچوب توزیع‌شده برای پردازش‌های سنگین ابری و مدیریت خودکار خوشه‌های رایانش الاستیک.',
-      lastUpdated: '۱۴۰۱/۰۴/۱۵',
-      logoInitials: 'EC',
-      logoColor: 'from-rose-500 to-orange-500',
-      createdAt: '۱۴۰۰/۰۳/۰۵'
-    },
-    { 
-      id: 'PRD-04', 
-      name: 'Billing & Invoicing Engine', 
-      category: 'مالی', 
-      clientsCount: 32, 
-      status: 'غیرفعال', 
-      version: 'v1.0.4',
-      description: 'موتور محاسباتی پیشرفته برای صدور فاکتورهای خودکار، مدیریت تراکنش‌های مالی و حسابداری مصرف منابع کاربران.',
-      lastUpdated: '۱۴۰۲/۰۸/۳۰',
-      logoInitials: 'BI',
-      logoColor: 'from-amber-500 to-yellow-500',
-      createdAt: '۱۴۰۲/۰۱/۱۵'
-    },
-    { 
-      id: 'PRD-05', 
-      name: 'Global Edge CDN', 
-      category: 'ارتباطات', 
-      clientsCount: 56, 
-      status: 'فعال', 
-      version: 'v2.0.0',
-      description: 'شبکه توزیع محتوای بین‌المللی و بومی مجهز به فشرده‌سازی هوشمند تصاویر و کش لبه پویا.',
-      lastUpdated: '۱۴۰۲/۱۲/۰۱',
-      logoInitials: 'GC',
-      logoColor: 'from-purple-500 to-pink-500',
-      createdAt: '۱۴۰۲/۰۴/۱۲'
-    },
-    { 
-      id: 'PRD-06', 
-      name: 'AI Analytics Framework', 
-      category: 'وب‌سرویس', 
-      clientsCount: 45, 
-      status: 'فعال', 
-      version: 'v1.5.0',
-      description: 'کتابخانه تحلیل کلان‌داده، پردازش زبان طبیعی و مدل‌سازی رفتار کاربران برای بهینه‌سازی فروش پلتفرم.',
-      lastUpdated: '۱۴۰۲/۱۲/۱۵',
-      logoInitials: 'AI',
-      logoColor: 'from-violet-500 to-fuchsia-500',
-      createdAt: '۱۴۰۲/۰۶/۲۵'
-    }
-  ]);
-
-  const [customers, setCustomers] = useState<Customer[]>([
-    { 
-      id: 'CST-100', 
-      name: 'شرکت توسعه امنیت آریا', 
-      industry: 'امنیت سایبری', 
-      activeTickets: 12, 
-      tier: 'طلایی',
-      commercialName: 'توسعه امنیت آریا',
-      phone: '۰۲۱-۸۸۲۲۳۳۹۹',
-      website: 'www.ariasecurity.ir',
-      address: 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری سحاب',
-      managerName: 'مهندس آرش کریمی',
-      managerEmail: 'a.karimi@ariasecurity.ir',
-      managerPhone: '۰۹۱۲۷۷۷۸۸۹۹',
-      customerType: 'Enterprise',
-      status: 'فعال',
-      usersCount: 23,
-      lastActivity: '۳ دقیقه پیش',
-      activeProductsCount: 5,
-      partnershipStartDate: '۱۴۰۰/۰۴/۱۵'
-    },
-    { 
-      id: 'CST-101', 
-      name: 'شرکت فناوری نوین', 
-      industry: 'فناوری اطلاعات', 
-      activeTickets: 3, 
-      tier: 'طلایی',
-      commercialName: 'فناوری نوین آریا',
-      phone: '۰۲۱-۸۸۹۹۰۰۱۱',
-      website: 'www.novintech.ir',
-      address: 'تهران، میدان ونک، خیابان ملاصدرا، پلاک ۴۲',
-      managerName: 'علیرضا مجیدی',
-      managerEmail: 'majidi@novintech.ir',
-      managerPhone: '۰۹۱۲۳۴۵۶۷۸۹',
-      customerType: 'Enterprise',
-      status: 'فعال',
-      usersCount: 125,
-      lastActivity: '۲ دقیقه پیش',
-      activeProductsCount: 3,
-      partnershipStartDate: '۱۴۰۱/۰۵/۲۰'
-    },
-    { 
-      id: 'CST-102', 
-      name: 'بازرگانی آریا جم', 
-      industry: 'تجارت و صادرات', 
-      activeTickets: 2, 
-      tier: 'نقره‌ای',
-      commercialName: 'آریا جم جهان',
-      phone: '۰۲۱-۴۴۵۵۶۶۷۷',
-      website: 'www.ariajam.com',
-      address: 'تهران، خیابان ولیعصر، نرسیده به مطهری، برج سپهر',
-      managerName: 'مهرداد رضایی',
-      managerEmail: 'rezaei@ariajam.com',
-      managerPhone: '۰۹۱۸۷۶۵۴۳۲۱',
-      customerType: 'Business',
-      status: 'فعال',
-      usersCount: 45,
-      lastActivity: '۱۵ دقیقه پیش',
-      activeProductsCount: 2,
-      partnershipStartDate: '۱۴۰۱/۰۷/۱۰'
-    },
-    { 
-      id: 'CST-103', 
-      name: 'صنایع فولاد الوند', 
-      industry: 'صنعت و تولید', 
-      activeTickets: 1, 
-      tier: 'برنزی',
-      commercialName: 'فولاد الوند باختر',
-      phone: '۰۸۱-۳۲۵۱۶۰۷۰',
-      website: 'www.alvandsteel.co',
-      address: 'همدان، شهرک صنعتی بوعلی، بلوار یاس، پلاک ۷',
-      managerName: 'احمد توکلی',
-      managerEmail: 'tavakoli@alvandsteel.co',
-      managerPhone: '۰۹۱۱۱۲۲۳۳۴۴',
-      customerType: 'Standard',
-      status: 'فعال',
-      usersCount: 20,
-      lastActivity: '۱ ساعت پیش',
-      activeProductsCount: 1,
-      partnershipStartDate: '۱۴۰۲/۰۲/۱۵'
-    },
-    { 
-      id: 'CST-104', 
-      name: 'فروشگاه آنلاین آفرین', 
-      industry: 'تجارت الکترونیک', 
-      activeTickets: 1, 
-      tier: 'طلایی',
-      commercialName: 'مارکت آفرین',
-      phone: '۰۲۱-۲۲۳۳۴۴۵۵',
-      website: 'www.afarin.shop',
-      address: 'تهران، سعادت آباد، خیابان سرو غربی، مجتمع صدف',
-      managerName: 'سارا صادقی',
-      managerEmail: 's.sadeghi@afarin.shop',
-      managerPhone: '۰۹۳۵۹۹۹۸۸۷۷',
-      customerType: 'Enterprise',
-      status: 'فعال',
-      usersCount: 85,
-      lastActivity: '۳ ساعت پیش',
-      activeProductsCount: 2,
-      partnershipStartDate: '۱۴۰۲/۰۶/۲۵'
-    },
-    { 
-      id: 'CST-105', 
-      name: 'هلدینگ عمران مهر', 
-      industry: 'ساخت و ساز', 
-      activeTickets: 0, 
-      tier: 'برنزی',
-      commercialName: 'توسعه عمران مهر پارس',
-      phone: '۰۲۱-۸۸۷۷۶۶۵۵',
-      website: 'www.omranmehr.org',
-      address: 'تهران، پاسداران، بوستان پنجم، ساختمان مهر',
-      managerName: 'حسین عباسی',
-      managerEmail: 'abbasi@omranmehr.org',
-      managerPhone: '۰۹۱۲۱۱۱۴۴۵۵',
-      customerType: 'Standard',
-      status: 'غیرفعال',
-      usersCount: 12,
-      lastActivity: '۲ روز پیش',
-      activeProductsCount: 0,
-      partnershipStartDate: '۱۴۰۳/۰۱/۱۰'
-    },
-    { 
-      id: 'CST-106', 
-      name: 'پتروشیمی سپهر پارس', 
-      industry: 'انرژی', 
-      activeTickets: 0, 
-      tier: 'طلایی',
-      commercialName: 'پترو سپهر پارس',
-      phone: '۰۲۱-۸۸۲۲۳۳۴۴',
-      website: 'www.sepehrpetro.com',
-      address: 'تهران، شهرک غرب، بلوار فرحزادی، ساختمان سپهر',
-      managerName: 'محمدرضا کریمی',
-      managerEmail: 'karimi@sepehrpetro.com',
-      managerPhone: '۰۹۱۲۸۸۸۹۹۰۰',
-      customerType: 'Enterprise',
-      status: 'در انتظار',
-      usersCount: 0,
-      lastActivity: '۵ روز پیش',
-      activeProductsCount: 1,
-      partnershipStartDate: '۱۴۰۳/۰۴/۰۱'
-    }
-  ]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { tickets: apiTickets, loading: ticketsLoading, createTicket: apiCreateTicket, updateTicketStatus: apiUpdateTicketStatus } = useTickets();
+  const { products: apiProducts, loading: productsLoading } = useProducts();
+  const { customers: apiCustomers, loading: customersLoading } = useCustomers();
+  useEffect(() => { if (apiTickets.length) setTickets(apiTickets); }, [apiTickets]);
+  useEffect(() => { if (apiProducts.length) setProducts(apiProducts); }, [apiProducts]);
+  useEffect(() => { if (apiCustomers.length) setCustomers(apiCustomers); }, [apiCustomers]);
 
   const [agents] = useState([
     { id: 'AGN-01', name: 'امیرحسین رضایی', role: 'پشتیبان فنی ارشد', email: 'rezaei@sahab.ir', status: 'فعال', load: '۳ تیکت فعال' },
@@ -678,36 +394,35 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [newCustomerIndustry, setNewCustomerIndustry] = useState('فناوری');
   const [newCustomerTier, setNewCustomerTier] = useState<'طلایی' | 'نقره‌ای' | 'برنزی'>('نقره‌ای');
 
+  const priorityToApi: Record<string, string> = { 'بحرانی': 'CRITICAL', 'بالا': 'HIGH', 'متوسط': 'MEDIUM', 'پایین': 'LOW' };
+
   // Interactive functions
-  const handleCreateTicket = (e: React.FormEvent) => {
+  const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTicketTitle || !newTicketCustomer) return;
 
-    const newTicketId = `TKT-${Math.floor(1025 + Math.random() * 500)}`;
-    const newTkt: Ticket = {
-      id: newTicketId,
-      title: newTicketTitle,
-      customer: newTicketCustomer,
-      product: newTicketProduct,
-      priority: newTicketPriority,
-      status: 'باز',
-      assignedTo: 'بدون تخصیص (هوشمند)',
-      date: 'هم‌اکنون'
-    };
+    const matchedCustomer = customers.find(c => c.name === newTicketCustomer || c.commercialName === newTicketCustomer);
+    const customerId = matchedCustomer?.id;
 
-    setTickets([newTkt, ...tickets]);
-    
-    // Append to activities
+    if (customerId) {
+      await apiCreateTicket({
+        title: newTicketTitle,
+        priority: priorityToApi[newTicketPriority] || 'MEDIUM',
+        customerId,
+      });
+    }
+
+    // Append to activities (local only — no API for activities)
     const newAct: ActivityItem = {
       id: `ACT-${Date.now()}`,
       type: 'ticket',
       title: 'تیکت جدید ایجاد شد',
-      subtitle: `تیکت ${newTicketId} توسط ${newTicketCustomer} با اولویت ${newTicketPriority} ثبت شد.`,
+      subtitle: `تیکت توسط ${newTicketCustomer} با اولویت ${newTicketPriority} ثبت شد.`,
       time: 'هم‌اکنون'
     };
     setActivities([newAct, ...activities]);
 
-    // Append to notifications
+    // Append to notifications (local only)
     const newNtf: NotificationItem = {
       id: `NTF-${Date.now()}`,
       title: 'تیکت بحرانی/جدید ثبت شد',
@@ -723,6 +438,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
     setNewTicketCustomer('');
     setNewTicketPriority('متوسط');
     setShowTicketModal(false);
+    showFeedback('تیکت با موفقیت ثبت شد.', 'success');
   };
 
   const showFeedback = (message: string, type: 'success' | 'error' = 'success') => {
@@ -1177,6 +893,16 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200" dir="rtl" id="sahab-dashboard-wrapper">
       
+      {/* LOADING OVERLAY */}
+      {ticketsLoading && tickets.length === 0 && (
+        <div className="fixed inset-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+            <span className="text-sm text-slate-500">در حال بارگذاری...</span>
+          </div>
+        </div>
+      )}
+
       {/* GLOBAL HEADER BAR */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 px-6 py-4 flex items-center justify-between" id="dashboard-header">
         <div className="flex items-center gap-4">
@@ -4400,14 +4126,17 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">مشتری سازمانی / شرکت تابعه</label>
-                <input
-                  type="text"
+                <select
                   required
                   value={newTicketCustomer}
                   onChange={(e) => setNewTicketCustomer(e.target.value)}
-                  placeholder="مثال: بانک تجارت"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                />
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 cursor-pointer"
+                >
+                  <option value="">انتخاب مشتری...</option>
+                  {customers.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

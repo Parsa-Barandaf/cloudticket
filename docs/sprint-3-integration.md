@@ -22,7 +22,7 @@ All models registered with `@ObjectType()` and `@InputType()` decorators:
 
 ### Seed Script (`backend/prisma/seed.ts`)
 Populates the database with:
-- 7 users (1 admin, 4 agents, 1 customer, plus agent@sahab.ir placeholder)
+- 6 users (1 admin, 4 agents, 1 customer)
 - 1 customer profile linked to the customer user
 - 4 products (Cloud Security Platform, Identity Protection Server, Elastic Compute Node, Global Edge CDN)
 - 5 tickets with varied priorities and statuses

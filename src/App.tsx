@@ -3,34 +3,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sun, Moon, Sparkles } from 'lucide-react';
 import type { AuthScreen, PortalRole, Ticket, Product, Customer } from './types';
 import { useTheme } from './hooks/useTheme';
+import { useTickets } from './hooks/useTickets';
+import { useProducts } from './hooks/useProducts';
+import { useCustomers } from './hooks/useCustomers';
 import ErrorBoundary from './components/ErrorBoundary';
 import AbstractIllustration from './components/AbstractIllustration';
 import LoginForm from './components/LoginForm';
 import DashboardPreview from './components/portals/DashboardPortal';
 import CustomerPortalView from './components/portals/CustomerPortal';
 import SupportAgentPortalView from './components/portals/AgentPortal';
-
-const sampleTickets: Ticket[] = [
-  { id: 'TKT-1025', title: 'قطعی متناوب گره‌های مانیتورینگ شعبه پردیس', customer: 'شرکت توسعه امنیت آریا', product: 'Cloud Security Platform', priority: 'بحرانی', status: 'باز', assignedTo: 'امیرحسین رضایی', date: '۳ دقیقه پیش' },
-  { id: 'TKT-1026', title: 'درخواست بازنگری در سقف ترافیک وب‌هوک‌ها', customer: 'بانک آینده (فناوری اطلاعات)', product: 'Identity Protection Server', priority: 'بالا', status: 'در حال بررسی', assignedTo: 'علی علوی', date: '۲۵ دقیقه پیش' },
-  { id: 'TKT-1024', title: 'خطای عدم همگام‌سازی امضای امنیتی کلاینت', customer: 'بانک ملت (دپارتمان زیرساخت)', product: 'Elastic Compute Node', priority: 'بحرانی', status: 'در حال بررسی', assignedTo: 'امیرحسین رضایی', date: '۱ ساعت پیش' },
-  { id: 'TKT-1023', title: 'سوال در مورد پیکربندی SSL و گواهی TLS گره‌ها', customer: 'صنایع پتروشیمی خلیج فارس', product: 'Cloud Security Platform', priority: 'متوسط', status: 'منتظر پاسخ مشتری', assignedTo: 'زهرا موسوی', date: '۳ ساعت پیش' },
-  { id: 'TKT-1022', title: 'درخواست ارتقای لایسنس به نسخه Enterprise', customer: 'فولاد مبارکه اصفهان', product: 'Global Edge CDN', priority: 'پایین', status: 'باز', assignedTo: 'مریم اکبری', date: 'دیروز' },
-  { id: 'TKT-1021', title: 'کاهش شدید سرعت پاسخگویی متد استعلام کالا', customer: 'فروشگاه اینترنتی دیجی‌کالا', product: 'AI Analytics Framework', priority: 'بالا', status: 'بسته شده', assignedTo: 'مهدی قربانی', date: '۲ روز پیش' }
-];
-
-const sampleProducts: Product[] = [
-  { id: 'PRD-01', name: 'Cloud Security Platform', category: 'امنیت ابری', version: 'v2.4.1', status: 'فعال', clientsCount: 42, lastUpdated: '۱۴۰۳/۰۴/۱۵', createdAt: '۱۴۰۱/۰۱/۱۰' },
-  { id: 'PRD-02', name: 'Identity Protection Server', category: 'مدیریت دسترسی', version: 'v3.1.2', status: 'فعال', clientsCount: 28, lastUpdated: '۱۴۰۳/۰۳/۲۰', createdAt: '۱۴۰۱/۰۵/۱۵' },
-  { id: 'PRD-03', name: 'Elastic Compute Node', category: 'زیرساخت پردازشی', version: 'v5.0.1', status: 'فعال', clientsCount: 19, lastUpdated: '۱۴۰۳/۰۴/۰۱', createdAt: '۱۴۰۲/۰۲/۰۱' },
-  { id: 'PRD-05', name: 'Global Edge CDN', category: 'شبکه توزیع محتوا', version: 'v2.0.0', status: 'فعال', clientsCount: 35, lastUpdated: '۱۴۰۳/۰۴/۱۰', createdAt: '۱۴۰۲/۰۸/۱۲' }
-];
-
-const sampleCustomers: Customer[] = [
-  { id: 'CST-501', name: 'شرکت توسعه امنیت آریا', industry: 'امنیت سایبری', tier: 'طلایی', activeTickets: 3, managerName: 'مهندس آرش کریمی', managerEmail: 'a.karimi@ariasecurity.ir', phone: '۰۲۱-۸۸۲۲۳۳۹۹', status: 'فعال' },
-  { id: 'CST-502', name: 'بانک آینده (فناوری اطلاعات)', industry: 'بانکداری', tier: 'طلایی', activeTickets: 1, managerName: 'دکتر محمودی', managerEmail: 'it@ba24.ir', phone: '۰۲۱-۲۷۶۶۰00', status: 'فعال' },
-  { id: 'CST-503', name: 'فناوری اطلاعات بانک ملت', industry: 'بانکداری', tier: 'نقره‌ای', activeTickets: 2, managerName: 'مهندس حسینی', managerEmail: 'infra@bankmellat.ir', phone: '۰۲۱-۸۲۹۶۱', status: 'فعال' }
-];
 
 function AppContent() {
   const [screen, setScreen] = useState<AuthScreen>(() => {
@@ -45,6 +26,9 @@ function AppContent() {
   const [portalRole, setPortalRole] = useState<PortalRole>(() => {
     return (localStorage.getItem('sahab_portal_role') as PortalRole) || 'admin';
   });
+  const { tickets: realTickets } = useTickets();
+  const { products: realProducts } = useProducts();
+  const { customers: realCustomers } = useCustomers();
 
   const handleLoginSuccess = (email: string, role?: PortalRole) => {
     const mail = email || 'admin@sahab.ir';
@@ -75,8 +59,9 @@ function AppContent() {
         <div className={isDark ? 'dark' : ''}>
           <CustomerPortalView
             userEmail={userEmail}
-            ticketsList={sampleTickets}
-            productsList={sampleProducts}
+            ticketsList={realTickets}
+            productsList={realProducts}
+            customersList={realCustomers}
             onLogout={handleLogout}
             isDark={isDark}
             onToggleTheme={toggleTheme}
@@ -91,9 +76,9 @@ function AppContent() {
         <div className={isDark ? 'dark' : ''}>
           <SupportAgentPortalView
             userEmail={userEmail}
-            ticketsList={sampleTickets}
-            productsList={sampleProducts}
-            customersList={sampleCustomers}
+            ticketsList={realTickets}
+            productsList={realProducts}
+            customersList={realCustomers}
             onLogout={handleLogout}
             isDark={isDark}
             onToggleTheme={toggleTheme}
