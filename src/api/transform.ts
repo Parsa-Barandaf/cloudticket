@@ -78,12 +78,12 @@ export function mapCustomer(c: ApiCustomer): Customer {
 export function mapConnection(c: ApiConnection): ProductCustomerConnection {
   return {
     id: c.id,
-    productId: c.customerId,
+    productId: c.productId,
     customerId: c.customerId,
     customerName: c.customer?.commercialName || '',
     managerName: c.customer?.user?.name || '',
-    startDate: c.startDate,
-    endDate: c.endDate,
+    startDate: formatDate(c.startDate),
+    endDate: formatDate(c.endDate),
     licenseStatus: c.licenseStatus === 'ACTIVE' ? 'فعال' : c.licenseStatus === 'EXPIRED' ? 'منقضی شده' : 'در انتظار تایید',
     userCount: c.userCount,
     activationKey: c.activationKey,

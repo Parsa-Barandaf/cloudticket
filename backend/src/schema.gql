@@ -30,6 +30,18 @@ type AuthPayload {
   user: User!
 }
 
+input CreateConnectionInput {
+  activationKey: String!
+  customerId: String!
+  endDate: String!
+  licenseStatus: String
+  notes: String
+  productId: String!
+  startDate: String!
+  subscriptionType: String!
+  userCount: Float!
+}
+
 input CreateCustomerInput {
   address: String
   commercialName: String
@@ -96,14 +108,17 @@ scalar DateTime
 
 type Mutation {
   approveAccessRequest(input: ApproveAccessRequestInput!): AccessRequest!
+  createConnection(input: CreateConnectionInput!): ProductCustomerConnection!
   createCustomer(input: CreateCustomerInput!): Customer!
   createProduct(input: CreateProductInput!): Product!
   createTicket(input: CreateTicketInput!): Ticket!
+  deleteConnection(id: String!): Boolean!
   deleteProduct(id: String!): Boolean!
   login(email: String!, password: String!): AuthPayload!
   register(email: String!, name: String!, password: String!): AuthPayload!
   rejectAccessRequest(input: RejectAccessRequestInput!): AccessRequest!
   requestAccess(input: RequestAccessInput!): AccessRequest!
+  updateConnection(input: UpdateConnectionInput!): ProductCustomerConnection!
   updateCustomer(input: UpdateCustomerInput!): Customer!
   updateProduct(input: UpdateProductInput!): Product!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
@@ -132,6 +147,8 @@ type ProductCustomerConnection {
   id: String!
   licenseStatus: String!
   notes: String
+  product: Product!
+  productId: String!
   startDate: DateTime!
   subscriptionType: String!
   userCount: Float!
@@ -146,6 +163,7 @@ enum ProductStatus {
 type Query {
   accessRequests: [AccessRequest!]!
   customer(id: String!): Customer
+  customerConnections(customerId: String!): [ProductCustomerConnection!]!
   customers: [Customer!]!
   pendingAccessRequests: [AccessRequest!]!
   product(id: String!): Product
@@ -203,6 +221,17 @@ enum TicketStatus {
   INVESTIGATING
   OPEN
   RESOLVED
+}
+
+input UpdateConnectionInput {
+  activationKey: String
+  endDate: String
+  id: String!
+  licenseStatus: String
+  notes: String
+  startDate: String
+  subscriptionType: String
+  userCount: Float
 }
 
 input UpdateCustomerInput {

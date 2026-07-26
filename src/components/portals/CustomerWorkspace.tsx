@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Building, 
@@ -25,12 +25,16 @@ import {
   Copy, 
   Shield, 
   ShieldAlert,
-  X
+  X,
+  Trash2,
+  CheckSquare,
+  Square
 } from 'lucide-react';
-import type { Customer, Product, Ticket } from '../../types';
+import type { Customer, Product, Ticket, ProductCustomerConnection } from '../../types';
 import { gql } from '../../api/graphql';
-import { UPDATE_CUSTOMER } from '../../api/queries';
-import type { ApiCustomer } from '../../api/types';
+import { UPDATE_CUSTOMER, CREATE_CONNECTION, DELETE_CONNECTION, UPDATE_CONNECTION, GET_CUSTOMER_CONNECTIONS } from '../../api/queries';
+import type { ApiCustomer, ApiConnection } from '../../api/types';
+import { mapConnection } from '../../api/transform';
 
 interface CustomerWorkspaceViewProps {
   selectedCustomerWorkspace: Customer | null;
@@ -74,13 +78,52 @@ export default function CustomerWorkspaceView({
     { id: 'USR-203', name: 'خانم الهام سلیمی', email: 'e.salimi@ariasecurity.ir', role: 'مشاهده‌گر', lastLogin: 'دیروز', status: 'غیرفعال' }
   ]);
 
-  const [customerWorkspaceProducts, setCustomerWorkspaceProducts] = useState<any[]>([
-    { id: 'PRD-01', name: 'Cloud Security Platform', logoInitials: 'CS', logoColor: 'from-blue-500 to-indigo-600', version: 'v2.4.1', status: 'فعال', expDate: '۱۴۰۵/۰۴/۱۵', type: 'Enterprise', userLimit: 50, licenseKey: 'SEC-PLAT-88392-CMP' },
-    { id: 'PRD-02', name: 'Identity Protection Server', logoInitials: 'IP', logoColor: 'from-emerald-500 to-teal-600', version: 'v3.1.2', status: 'فعال', expDate: '۱۴۰۴/۱۲/۲۰', type: 'Enterprise', userLimit: 100, licenseKey: 'ID-PROT-10029-CMP' },
-    { id: 'PRD-03', name: 'Elastic Compute Node', logoInitials: 'EC', logoColor: 'from-rose-500 to-orange-500', version: 'v5.0.1', status: 'فعال', expDate: '۱۴۰۴/۱۰/۰1', type: 'Business', userLimit: 15, licenseKey: 'EL-COMP-49301-CMP' },
-    { id: 'PRD-05', name: 'Global Edge CDN', logoInitials: 'GC', logoColor: 'from-purple-500 to-pink-500', version: 'v2.0.0', status: 'فعال', expDate: '۱۴۰۵/۰۱/۱۰', type: 'Business', userLimit: 20, licenseKey: 'EDGE-CDN-00392-CMP' },
-    { id: 'PRD-06', name: 'AI Analytics Framework', logoInitials: 'AI', logoColor: 'from-violet-500 to-fuchsia-500', version: 'v1.5.0', status: 'غیرفعال', expDate: '۱۴۰۳/۰۴/۰۱', type: 'Standard', userLimit: 10, licenseKey: 'AI-ANLT-22910-CMP' }
-  ]);
+  // Customer connections (active products from API)
+  const [connections, setConnections] = useState<any[]>([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [selectedConnectionIds, setSelectedConnectionIds] = useState<string[]>([]);
+
+  const fetchConnections = useCallback(async () => {
+    if (!c?.id) return;
+    setConnectionsLoading(true);
+    try {
+      const data = await gql<{ customerConnections: ApiConnection[] }>(GET_CUSTOMER_CONNECTIONS, { customerId: c.id });
+      setConnections(data.customerConnections.map(mapConnection));
+    } catch { /* ignore */ }
+    setConnectionsLoading(false);
+  }, [c?.id]);
+
+  useEffect(() => { fetchConnections(); }, [fetchConnections]);
+
+  const handleToggleSelectAllConnections = () => {
+    if (selectedConnectionIds.length === connections.length) {
+      setSelectedConnectionIds([]);
+    } else {
+      setSelectedConnectionIds(connections.map((conn: any) => conn.id));
+    }
+  };
+
+  const handleToggleSelectConnection = (id: string) => {
+    if (selectedConnectionIds.includes(id)) {
+      setSelectedConnectionIds(selectedConnectionIds.filter(x => x !== id));
+    } else {
+      setSelectedConnectionIds([...selectedConnectionIds, id]);
+    }
+  };
+
+  const handleRemoveConnections = async () => {
+    if (selectedConnectionIds.length === 0) return;
+    try {
+      for (const id of selectedConnectionIds) {
+        await gql<{ deleteConnection: boolean }>(DELETE_CONNECTION, { id });
+      }
+      setSelectedConnectionIds([]);
+      showWorkspaceToast(`${selectedConnectionIds.length} محصول با موفقیت از سازمان حذف شد.`);
+      fetchConnections();
+    } catch (err) {
+      showWorkspaceToast('خطا در حذف محصول: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
+  };
 
   // Modals visibility state
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -136,7 +179,7 @@ export default function CustomerWorkspaceView({
     showWorkspaceToast(`کاربر جدید «${newUserName}» با موفقیت تعریف شد.`, 'success');
   };
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProductId) {
       showWorkspaceToast('لطفا یک محصول را انتخاب کنید.', 'error');
@@ -145,30 +188,39 @@ export default function CustomerWorkspaceView({
     const selectedProd = products.find(p => p.id === newProductId);
     if (!selectedProd) return;
 
-    // Check if product is already added
-    if (customerWorkspaceProducts.some(p => p.name === selectedProd.name)) {
+    // Check if product is already connected
+    if (connections.some((conn: any) => conn.productId === selectedProd.id)) {
       showWorkspaceToast('این محصول در حال حاضر در کارپوشه سازمان فعال است.', 'error');
       return;
     }
 
-    const newProdItem = {
-      id: selectedProd.id,
-      name: selectedProd.name,
-      logoInitials: selectedProd.logoInitials || 'AP',
-      logoColor: selectedProd.logoColor || 'from-blue-500 to-indigo-600',
-      version: selectedProd.version,
-      status: 'فعال',
-      expDate: '۱۴۰۶/۰۱/۰۱',
-      type: 'Enterprise',
-      userLimit: newProductLimit,
-      licenseKey: `${selectedProd.logoInitials}-PLAT-${Math.floor(10000 + Math.random() * 90000)}-CMP`
-    };
+    try {
+      const now = new Date();
+      const endDate = new Date(now);
+      endDate.setFullYear(endDate.getFullYear() + 1);
 
-    setCustomerWorkspaceProducts([...customerWorkspaceProducts, newProdItem]);
-    // Increment active products count globally
-    setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, activeProductsCount: (cust.activeProductsCount || 0) + 1 } : cust));
-    setShowAddProductModal(false);
-    showWorkspaceToast(`محصول «${selectedProd.name}» با موفقیت به سازمان تخصیص یافت.`, 'success');
+      await gql<{ createConnection: ApiConnection }>(CREATE_CONNECTION, {
+        input: {
+          productId: selectedProd.id,
+          customerId: c.id,
+          startDate: now.toISOString(),
+          endDate: endDate.toISOString(),
+          activationKey: `${selectedProd.logoInitials || 'PLAT'}-${Math.floor(10000 + Math.random() * 90000)}-CMP`,
+          subscriptionType: 'Enterprise',
+          userCount: newProductLimit,
+          licenseStatus: 'ACTIVE',
+        },
+      });
+
+      // Increment active products count
+      setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, activeProductsCount: (cust.activeProductsCount || 0) + 1 } : cust));
+      setShowAddProductModal(false);
+      setNewProductId('');
+      showWorkspaceToast(`محصول «${selectedProd.name}» با موفقیت به سازمان تخصیص یافت.`);
+      fetchConnections();
+    } catch (err) {
+      showWorkspaceToast('خطا در تخصیص محصول: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
   const handleSaveOrgDetails = async (e: React.FormEvent) => {
@@ -254,8 +306,8 @@ export default function CustomerWorkspaceView({
             <button 
               onClick={() => {
                 setNewTicketCustomer(c.name);
-                if (customerWorkspaceProducts.length > 0) {
-                  setNewTicketProduct(customerWorkspaceProducts[0].name);
+                if (connections.length > 0) {
+                  setNewTicketProduct(connections[0].productName || '');
                 }
                 setShowTicketModal(true);
               }}
@@ -302,7 +354,7 @@ export default function CustomerWorkspaceView({
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
           <div className="space-y-1">
             <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">محصولات فعال سازمان</span>
-            <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{c.activeProductsCount || customerWorkspaceProducts.length}</h4>
+            <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{c.activeProductsCount || connections.length}</h4>
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">لایسنس‌های معتبر ابری</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -357,7 +409,7 @@ export default function CustomerWorkspaceView({
           <div className="flex gap-1 py-3 whitespace-nowrap">
             {[
               { id: 'overview', label: 'خلاصه وضعیت', icon: ClipboardList },
-              { id: 'products', label: 'محصولات فعال', icon: Layers, count: customerWorkspaceProducts.length },
+              { id: 'products', label: 'محصولات فعال', icon: Layers, count: connections.length },
               { id: 'users', label: 'کاربران سیستم', icon: Users2, count: customerWorkspaceUsers.length },
               { id: 'tickets', label: 'تیکت‌های پشتیبانی', icon: Inbox, count: matchesTickets.length },
               { id: 'licenses', label: 'مدیریت لایسنس‌ها', icon: Shield },
@@ -530,11 +582,57 @@ export default function CustomerWorkspaceView({
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800/85 overflow-hidden">
+                  {/* Floating bulk action bar */}
+                  <AnimatePresence>
+                    {selectedConnectionIds.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-800 flex items-center justify-between gap-6 w-full max-w-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="w-5.5 h-5.5 rounded-lg bg-brand-500 flex items-center justify-center text-xs font-black">
+                            {selectedConnectionIds.length}
+                          </span>
+                          <span className="text-xs font-black">محصول انتخاب شده است</span>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 text-xs font-bold">
+                          <button
+                            onClick={() => {
+                              setSelectedConnectionIds([]);
+                              showWorkspaceToast('محصولات انتخاب شده از حالت انتخاب خارج شدند.');
+                            }}
+                            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-xl transition-all cursor-pointer"
+                          >
+                            لغو انتخاب
+                          </button>
+                          <button
+                            onClick={handleRemoveConnections}
+                            className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span>حذف از سازمان</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-right border-collapse">
                       <thead>
                         <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
-                          <th className="p-4 pr-6">عنوان محصول</th>
+                          <th className="p-4 pr-6 w-10">
+                            <input
+                              type="checkbox"
+                              checked={selectedConnectionIds.length === connections.length && connections.length > 0}
+                              onChange={handleToggleSelectAllConnections}
+                              className="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                            />
+                          </th>
+                          <th className="p-4">عنوان محصول</th>
                           <th className="p-4">نوع اشتراک / لایسنس</th>
                           <th className="p-4">نسخه فعال</th>
                           <th className="p-4 text-center">ظرفیت کاربران دسترسی</th>
@@ -544,54 +642,78 @@ export default function CustomerWorkspaceView({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs text-slate-700 dark:text-slate-300">
-                        {customerWorkspaceProducts.map((p) => (
-                          <tr key={p.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-all duration-150">
-                            <td className="p-4 pr-6">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${p.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center font-bold text-white text-[10px] shrink-0 shadow-xs`}>
-                                  {p.logoInitials}
-                                </div>
-                                <div className="space-y-0.5">
-                                  <span className="font-bold text-slate-900 dark:text-white">{p.name}</span>
-                                  <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block">{p.id}</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <span className="font-bold text-slate-900 dark:text-white">{p.type}</span>
-                            </td>
-                            <td className="p-4 font-mono font-bold text-slate-600 dark:text-slate-400">
-                              {p.version}
-                            </td>
-                            <td className="p-4 text-center font-mono font-bold">
-                              {p.userLimit} نفر
-                            </td>
-                            <td className="p-4 font-mono font-bold">
-                              {p.expDate}
-                            </td>
-                            <td className="p-4">
-                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                                p.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
-                              }`}>
-                                {p.status}
-                              </span>
-                            </td>
-                            <td className="p-4 pl-6 text-left">
-                              <button 
-                                onClick={() => {
-                                  const updated = customerWorkspaceProducts.map(wp => 
-                                    wp.id === p.id ? { ...wp, status: wp.status === 'فعال' ? 'غیرفعال' : 'فعال' } : wp
-                                  );
-                                  setCustomerWorkspaceProducts(updated);
-                                  showWorkspaceToast(`وضعیت لایسنس محصول ${p.name} تغییر یافت.`, 'success');
-                                }}
-                                className="text-[10px] text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline font-bold cursor-pointer"
-                              >
-                                {p.status === 'فعال' ? 'تعلیق موقت' : 'فعال‌سازی'}
-                              </button>
+                        {connections.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} className="p-8 text-center text-slate-400">
+                              {connectionsLoading ? 'در حال بارگذاری...' : 'هیچ محصولی به این سازمان تخصیص داده نشده است.'}
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          connections.map((conn: any) => {
+                            const isSelected = selectedConnectionIds.includes(conn.id);
+                            return (
+                              <tr key={conn.id} className={`hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-all duration-150 ${isSelected ? 'bg-brand-500/5 dark:bg-brand-500/10' : ''}`}>
+                                <td className="p-4 pr-6">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleToggleSelectConnection(conn.id)}
+                                    className="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                                  />
+                                </td>
+                                <td className="p-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${conn.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center font-bold text-white text-[10px] shrink-0 shadow-xs`}>
+                                      {conn.logoInitials || conn.productName?.substring(0, 2)}
+                                    </div>
+                                    <div className="space-y-0.5">
+                                      <span className="font-bold text-slate-900 dark:text-white">{conn.productName || conn.customerName}</span>
+                                      <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block">{conn.productId}</span>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="p-4">
+                                  <span className="font-bold text-slate-900 dark:text-white">{conn.subscriptionType}</span>
+                                </td>
+                                <td className="p-4 font-mono font-bold text-slate-600 dark:text-slate-400">
+                                  {conn.version || '—'}
+                                </td>
+                                <td className="p-4 text-center font-mono font-bold">
+                                  {conn.userCount} نفر
+                                </td>
+                                <td className="p-4 font-mono font-bold">
+                                  {conn.endDate || '—'}
+                                </td>
+                                <td className="p-4">
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                    conn.licenseStatus === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : conn.licenseStatus === 'منقضی شده' ? 'bg-rose-500/10 text-rose-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                                  }`}>
+                                    {conn.licenseStatus || '—'}
+                                  </span>
+                                </td>
+                                <td className="p-4 pl-6 text-left">
+                                  <button 
+                                    onClick={async () => {
+                                      try {
+                                        const nextStatus = conn.licenseStatus === 'فعال' ? 'INACTIVE' : 'ACTIVE';
+                                        await gql<{ updateConnection: ApiConnection }>(UPDATE_CONNECTION, {
+                                          input: { id: conn.id, licenseStatus: nextStatus },
+                                        });
+                                        showWorkspaceToast(`وضعیت لایسنس به‌روزرسانی شد.`);
+                                        fetchConnections();
+                                      } catch (err) {
+                                        showWorkspaceToast('خطا در تغییر وضعیت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                                      }
+                                    }}
+                                    className="text-[10px] text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline font-bold cursor-pointer"
+                                  >
+                                    {conn.licenseStatus === 'فعال' ? 'تعلیق موقت' : 'فعال‌سازی'}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -707,8 +829,8 @@ export default function CustomerWorkspaceView({
                   <button 
                     onClick={() => {
                       setNewTicketCustomer(c.name);
-                      if (customerWorkspaceProducts.length > 0) {
-                        setNewTicketProduct(customerWorkspaceProducts[0].name);
+                      if (connections.length > 0) {
+                        setNewTicketProduct(connections[0].productName || '');
                       }
                       setShowTicketModal(true);
                     }}
@@ -825,34 +947,34 @@ export default function CustomerWorkspaceView({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {customerWorkspaceProducts.map((p) => (
-                    <div key={p.id} className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-150 dark:border-slate-800 rounded-2xl p-5 space-y-4">
+                  {connections.map((conn: any) => (
+                    <div key={conn.id} className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-150 dark:border-slate-800 rounded-2xl p-5 space-y-4">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${p.logoColor} flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-xs`}>
-                            {p.logoInitials}
+                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${conn.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-xs`}>
+                            {conn.logoInitials || 'PR'}
                           </div>
                           <div className="space-y-0.5">
-                            <h4 className="text-xs font-black text-slate-900 dark:text-white">{p.name}</h4>
-                            <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">منقضی در {p.expDate}</span>
+                            <h4 className="text-xs font-black text-slate-900 dark:text-white">{conn.productName || conn.customerName}</h4>
+                            <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">منقضی در {conn.endDate || '—'}</span>
                           </div>
                         </div>
                         <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
-                          p.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+                          conn.licenseStatus === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
                         }`}>
-                          {p.status}
+                          {conn.licenseStatus}
                         </span>
                       </div>
 
                       {/* License Key Code block with copy button */}
                       <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between">
                         <span className="font-mono text-xs text-slate-600 dark:text-slate-300 select-all tracking-wider font-semibold">
-                          {p.licenseKey}
+                          {conn.activationKey}
                         </span>
                         <button 
                           onClick={() => {
-                            navigator.clipboard.writeText(p.licenseKey);
-                            showWorkspaceToast(`کلید لایسنس محصول ${p.name} کپی شد.`, 'success');
+                            navigator.clipboard.writeText(conn.activationKey);
+                            showWorkspaceToast(`کلید لایسنس کپی شد.`);
                           }}
                           className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-250 transition-all cursor-pointer"
                           title="کپی کردن کلید"
@@ -862,14 +984,18 @@ export default function CustomerWorkspaceView({
                       </div>
 
                       <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-3">
-                        <span>ظرفیت اختصاصی: {p.userLimit} کاربر همزمان</span>
+                        <span>ظرفیت اختصاصی: {conn.userCount} کاربر همزمان</span>
                         <button 
-                          onClick={() => {
-                            const updated = customerWorkspaceProducts.map(wp => 
-                              wp.id === p.id ? { ...wp, userLimit: wp.userLimit + 10 } : wp
-                            );
-                            setCustomerWorkspaceProducts(updated);
-                            showWorkspaceToast(`ارتقای تعداد کاربران محصول ${p.name} به ${p.userLimit + 10} نفر تایید شد.`, 'success');
+                          onClick={async () => {
+                            try {
+                              await gql<{ updateConnection: ApiConnection }>(UPDATE_CONNECTION, {
+                                input: { id: conn.id, userCount: conn.userCount + 10 },
+                              });
+                              showWorkspaceToast(`ارتقای تعداد کاربران به ${conn.userCount + 10} نفر تایید شد.`);
+                              fetchConnections();
+                            } catch (err) {
+                              showWorkspaceToast('خطا در ارتقا: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                            }
                           }}
                           className="text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                         >
@@ -993,12 +1119,20 @@ export default function CustomerWorkspaceView({
 
                   <div className="flex flex-wrap items-center gap-3 pt-2">
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         const confirmSuspension = window.confirm('آیا مایل به تعلیق سراسری دسترسی و باطل کردن کلیدهای لایسنس این سازمان هستید؟');
                         if (confirmSuspension) {
-                          const updated = customerWorkspaceProducts.map(wp => ({ ...wp, status: 'غیرفعال' }));
-                          setCustomerWorkspaceProducts(updated);
-                          showWorkspaceToast('تمامی لایسنس‌ها با موفقیت تعلیق و دسترسی سازمان معلق شد.', 'success');
+                          try {
+                            for (const conn of connections) {
+                              await gql<{ updateConnection: ApiConnection }>(UPDATE_CONNECTION, {
+                                input: { id: conn.id, licenseStatus: 'INACTIVE' },
+                              });
+                            }
+                            showWorkspaceToast('تمامی لایسنس‌ها با موفقیت تعلیق و دسترسی سازمان معلق شد.');
+                            fetchConnections();
+                          } catch (err) {
+                            showWorkspaceToast('خطا در تعلیق لایسنس‌ها: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                          }
                         }
                       }}
                       className="bg-rose-650 hover:bg-rose-700 text-white text-[10px] font-black px-4.5 py-2 rounded-xl transition-all cursor-pointer"

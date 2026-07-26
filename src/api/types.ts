@@ -53,8 +53,10 @@ export interface ApiProduct {
 
 export interface ApiConnection {
   id: string;
+  productId: string;
   customerId: string;
   customer: ApiCustomer;
+  product: ApiProduct;
   startDate: string;
   endDate: string;
   licenseStatus: string;

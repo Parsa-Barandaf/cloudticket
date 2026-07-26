@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Customer } from './customer.model';
+import { Product } from './product.model';
 
 @ObjectType()
 export class ProductCustomerConnection {
@@ -32,4 +33,10 @@ export class ProductCustomerConnection {
 
   @Field(() => Customer)
   customer: Customer;
+
+  @Field()
+  productId: string;
+
+  @Field(() => Product)
+  product: Product;
 }

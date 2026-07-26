@@ -64,7 +64,7 @@ export const CREATE_PRODUCT = `
     createProduct(input: $input) {
       id name category description version status clientsCount
       logoColor logoInitials createdAt lastUpdated
-      connections { id customer { id commercialName } licenseStatus startDate endDate }
+      connections { id productId customerId customer { id commercialName } product { id name } licenseStatus startDate endDate }
     }
   }
 `;
@@ -74,7 +74,7 @@ export const UPDATE_PRODUCT = `
     updateProduct(input: $input) {
       id name category description version status clientsCount
       logoColor logoInitials createdAt lastUpdated
-      connections { id customer { id commercialName } licenseStatus startDate endDate }
+      connections { id productId customerId customer { id commercialName } product { id name } licenseStatus startDate endDate }
     }
   }
 `;
@@ -91,9 +91,49 @@ export const GET_PRODUCTS = `
       id name category description version status clientsCount
       logoColor logoInitials createdAt lastUpdated
       connections {
-        id customer { id commercialName }
+        id productId customerId customer { id commercialName } product { id name }
         licenseStatus startDate endDate
       }
+    }
+  }
+`;
+
+// ── Connections ──
+export const CREATE_CONNECTION = `
+  mutation CreateConnection($input: CreateConnectionInput!) {
+    createConnection(input: $input) {
+      id productId customerId startDate endDate licenseStatus
+      userCount activationKey notes subscriptionType
+      customer { id commercialName }
+      product { id name version logoColor logoInitials }
+    }
+  }
+`;
+
+export const DELETE_CONNECTION = `
+  mutation DeleteConnection($id: String!) {
+    deleteConnection(id: $id)
+  }
+`;
+
+export const UPDATE_CONNECTION = `
+  mutation UpdateConnection($input: UpdateConnectionInput!) {
+    updateConnection(input: $input) {
+      id productId customerId startDate endDate licenseStatus
+      userCount activationKey notes subscriptionType
+      customer { id commercialName }
+      product { id name version logoColor logoInitials }
+    }
+  }
+`;
+
+export const GET_CUSTOMER_CONNECTIONS = `
+  query CustomerConnections($customerId: String!) {
+    customerConnections(customerId: $customerId) {
+      id productId customerId startDate endDate licenseStatus
+      userCount activationKey notes subscriptionType
+      customer { id commercialName }
+      product { id name version logoColor logoInitials category }
     }
   }
 `;
@@ -107,7 +147,7 @@ export const CREATE_CUSTOMER = `
       userId
       user { id email name }
       tickets { id title priority status }
-      connections { id customer { id commercialName } licenseStatus startDate endDate }
+      connections { id productId customerId product { id name } customer { id commercialName } licenseStatus startDate endDate }
     }
   }
 `;
@@ -119,6 +159,13 @@ export const GET_CUSTOMERS = `
       tier status usersCount activeProductsCount
       user { id email name }
       tickets { id title priority status }
+      connections {
+        id productId customerId
+        product { id name version logoColor logoInitials }
+        customer { id commercialName }
+        startDate endDate licenseStatus
+        userCount activationKey subscriptionType notes
+      }
     }
   }
 `;
@@ -131,7 +178,7 @@ export const UPDATE_CUSTOMER = `
       userId
       user { id email name }
       tickets { id title priority status }
-      connections { id customer { id commercialName } licenseStatus startDate endDate }
+      connections { id productId customerId product { id name } customer { id commercialName } licenseStatus startDate endDate }
     }
   }
 `;
