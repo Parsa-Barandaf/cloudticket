@@ -4,6 +4,7 @@ import { useDepartments } from '../../hooks/useDepartments';
 import { useCustomRoles } from '../../hooks/useCustomRoles';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useProducts } from '../../hooks/useProducts';
+import { formatDate } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, 
@@ -99,7 +100,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
         role: u.role === 'ADMIN' ? 'مدیر کل' : u.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
         status: u.active ? ('فعال' as const) : ('غیرفعال' as const),
         lastLogin: '',
-        createdDate: u.createdAt?.split('T')[0]?.replace(/-/g, '/') || '',
+        createdDate: formatDate(u.createdAt) || '',
         avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600', 'bg-pink-600', 'bg-cyan-600'][Math.floor(Math.random() * 6)],
         departmentId: u.departmentId,
         customRoleId: u.customRoleId,
@@ -700,7 +701,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                     placeholder="جستجو بر اساس نام، ایمیل یا شرکت..."
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
-                    className="w-full text-xs font-bold pl-3 pr-9 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-350"
+                    className="w-full text-xs font-bold pl-3 pr-9 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300"
                   />
                 </div>
 
@@ -709,7 +710,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                   <select
                     value={filterRole}
                     onChange={(e) => setFilterRole(e.target.value)}
-                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-350 cursor-pointer"
+                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option value="همه">نقش: همه نقش‌ها</option>
                     <option value="مدیر کل">مدیر کل</option>
@@ -725,7 +726,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                   <select
                     value={filterTeam}
                     onChange={(e) => setFilterTeam(e.target.value)}
-                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-350 cursor-pointer"
+                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option value="همه">تیم: همه تیم‌ها</option>
                     <option value="تیم فنی">تیم فنی</option>
@@ -740,7 +741,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-350 cursor-pointer"
+                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option value="همه">وضعیت: همه موارد</option>
                     <option value="فعال">وضعیت: فعال</option>
@@ -754,7 +755,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                   <select
                     value={filterLastLogin}
                     onChange={(e) => setFilterLastLogin(e.target.value)}
-                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-350 cursor-pointer"
+                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option value="همه">آخرین ورود: همه زمان‌ها</option>
                     <option value="امروز">امروز / هم‌اکنون</option>
@@ -854,7 +855,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
                               user.team === 'بدون تیم' 
                                 ? 'text-slate-400 bg-slate-50 dark:bg-slate-950/40' 
-                                : 'text-slate-600 bg-slate-100 dark:text-slate-350 dark:bg-slate-800'
+                                : 'text-slate-600 bg-slate-100 dark:text-slate-300 dark:bg-slate-800'
                             }`}>
                               {user.team}
                             </span>
@@ -1130,7 +1131,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                       placeholder="جستجوی دسترسی یا طبقه‌بندی..."
                       value={matrixSearchQuery}
                       onChange={e => setMatrixSearchQuery(e.target.value)}
-                      className="w-full text-[11px] font-bold pl-3 pr-8 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/20 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-350"
+                      className="w-full text-[11px] font-bold pl-3 pr-8 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/20 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300"
                     />
                   </div>
 
@@ -1346,7 +1347,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                     <h3 className="text-xs font-black text-slate-900 dark:text-white">
                       {userDrawerMode === 'create' ? 'افزودن کاربر جدید به سامانه' : 'ویرایش جزئیات کاربری'}
                     </h3>
-                    <p className="text-[10px] text-slate-400 mt-0.5">تعیین سطوح دسترسی و پست‌های سازمانی سحاب</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">تعیین سطوح دسترسی و پست‌های سازمانی سحاب</p>
                   </div>
                 </div>
               </div>
@@ -1364,7 +1365,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
 
                     {/* Full Name */}
                     <div className="space-y-1">
-                      <label className="text-[10px] text-slate-400 font-extrabold block">نام و نام خانوادگی <b className="text-rose-500">*</b></label>
+                      <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نام و نام خانوادگی <b className="text-rose-500">*</b></label>
                       <input
                         type="text"
                         value={formDataName}
@@ -1373,7 +1374,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                           if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
                         }}
                         placeholder="مانند: محمد علوی"
-                        className={`w-full text-xs font-bold px-3.5 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 ${
+                        className={`w-full text-xs font-bold px-3.5 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 ${
                           formErrors.name ? 'border-rose-400 dark:border-rose-900/60' : 'border-slate-200 dark:border-slate-800'
                         }`}
                       />
@@ -1382,7 +1383,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
 
                     {/* Email */}
                     <div className="space-y-1">
-                      <label className="text-[10px] text-slate-400 font-extrabold block">نشانی ایمیل (نام کاربری ورود) <b className="text-rose-500">*</b></label>
+                      <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نشانی ایمیل (نام کاربری ورود) <b className="text-rose-500">*</b></label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                         <input
@@ -1393,7 +1394,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                             if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
                           }}
                           placeholder="username@domain.com"
-                          className={`w-full text-xs font-mono font-bold pl-10 pr-3.5 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-left text-slate-700 dark:text-slate-350 ${
+                          className={`w-full text-xs font-mono font-bold pl-10 pr-3.5 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-left text-slate-700 dark:text-slate-300 ${
                             formErrors.email ? 'border-rose-400 dark:border-rose-900/60' : 'border-slate-200 dark:border-slate-800'
                           }`}
                         />
@@ -1403,7 +1404,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
 
                     {/* Phone */}
                     <div className="space-y-1">
-                      <label className="text-[10px] text-slate-400 font-extrabold block">شماره تلفن همراه <b className="text-rose-500">*</b></label>
+                      <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">شماره تلفن همراه <b className="text-rose-500">*</b></label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                         <input
@@ -1414,7 +1415,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                             if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' });
                           }}
                           placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-                          className={`w-full text-xs font-mono font-bold pl-10 pr-3.5 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-left text-slate-700 dark:text-slate-350 ${
+                          className={`w-full text-xs font-mono font-bold pl-10 pr-3.5 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-left text-slate-700 dark:text-slate-300 ${
                             formErrors.phone ? 'border-rose-400 dark:border-rose-900/60' : 'border-slate-200 dark:border-slate-800'
                           }`}
                         />
@@ -1424,13 +1425,13 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                     {/* Password (only for create) */}
                     {userDrawerMode === 'create' && (
                       <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 font-extrabold block">رمز عبور اولیه</label>
+                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">رمز عبور اولیه</label>
                         <input
                           type="password"
                           value={formDataPassword}
                           onChange={(e) => setFormDataPassword(e.target.value)}
                           placeholder="پیش‌فرض: Temp@123456"
-                          className="w-full text-xs font-bold px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350"
+                          className="w-full text-xs font-bold px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300"
                         />
                       </div>
                     )}
@@ -1446,11 +1447,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                     <div className="grid grid-cols-2 gap-4">
                       {/* Company Selection */}
                       <div className="space-y-1 col-span-2">
-                        <label className="text-[10px] text-slate-400 font-extrabold block">شرکت / سازمان وابسته</label>
+                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">شرکت / سازمان وابسته</label>
                         <select
                           value={formDataCompany}
                           onChange={(e) => setFormDataCompany(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 cursor-pointer"
+                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                         >
                           <option value="سحاب">سحاب (ادمین مرکزی)</option>
                           <option value="شرکت توسعه امنیت آریا">شرکت توسعه امنیت آریا</option>
@@ -1463,11 +1464,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
 
                       {/* Department selection (from API) */}
                       <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 font-extrabold block">دپارتمان / تیم کاری</label>
+                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">دپارتمان / تیم کاری</label>
                         <select
                           value={formDataDepartmentId}
                           onChange={(e) => setFormDataDepartmentId(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 cursor-pointer"
+                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                         >
                           <option value="">بدون دپارتمان</option>
                           {departments.map(d => (
@@ -1478,11 +1479,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
 
                       {/* Custom role selection (from API) */}
                       <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 font-extrabold block">نقش دسترسی (RBAC)</label>
+                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش دسترسی (RBAC)</label>
                         <select
                           value={formDataCustomRoleId}
                           onChange={(e) => setFormDataCustomRoleId(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 cursor-pointer"
+                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                         >
                           <option value="">بدون نقش</option>
                           {apiRoles.map(r => (
@@ -1907,11 +1908,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
 
               {showConfirmModal.type === 'deleteRole' && showConfirmModal.extra?.userCount ? (
                 <div className="space-y-1">
-                  <label className="text-[10px] text-slate-400 font-extrabold block">نقش جایگزین برای کاربران</label>
+                  <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش جایگزین برای کاربران</label>
                   <select
                     value={reassignRoleId}
                     onChange={e => setReassignRoleId(e.target.value)}
-                    className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 cursor-pointer"
+                    className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option value="">بدون نقش (پاک شدن دسترسی)</option>
                     {apiRoles.filter(r => r.id !== showConfirmModal.extra?.roleId).map(r => (
@@ -1924,7 +1925,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
                 <button
                   onClick={() => { setShowConfirmModal({ show: false, type: 'delete', userId: null }); setReassignRoleId(''); }}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350 text-xs font-black rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-black rounded-xl cursor-pointer"
                 >
                   انصراف
                 </button>
