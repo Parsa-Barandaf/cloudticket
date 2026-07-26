@@ -25,6 +25,7 @@ export function mapTicket(t: ApiTicket): Ticket {
   return {
     id: t.id,
     title: t.title,
+    customerId: t.customerId,
     customer: t.customer?.commercialName || t.customer?.user?.name || '',
     product: t.product?.name || '',
     priority: priorityMap[t.priority] || 'متوسط',

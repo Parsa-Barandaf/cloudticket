@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import { CreateCustomerInput } from '../common/dto/customer.input';
+import { CreateCustomerInput, UpdateCustomerInput } from '../common/dto/customer.input';
 
 @Injectable()
 export class CustomersService {
@@ -37,6 +37,25 @@ export class CustomersService {
         tier: input.tier ?? 'BRONZE',
         status: input.status ?? 'ACTIVE',
         userId: input.userId,
+      },
+      include: { user: true, tickets: true, connections: { include: { product: true } } },
+    });
+  }
+
+  async update(input: UpdateCustomerInput) {
+    const existing = await this.prisma.customer.findUnique({ where: { id: input.id } });
+    if (!existing) throw new BadRequestException('Customer not found');
+
+    return this.prisma.customer.update({
+      where: { id: input.id },
+      data: {
+        ...(input.commercialName !== undefined && { commercialName: input.commercialName }),
+        ...(input.industry !== undefined && { industry: input.industry }),
+        ...(input.phone !== undefined && { phone: input.phone }),
+        ...(input.website !== undefined && { website: input.website }),
+        ...(input.address !== undefined && { address: input.address }),
+        ...(input.tier !== undefined && { tier: input.tier }),
+        ...(input.status !== undefined && { status: input.status }),
       },
       include: { user: true, tickets: true, connections: { include: { product: true } } },
     });

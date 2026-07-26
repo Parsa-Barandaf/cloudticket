@@ -164,3 +164,21 @@ model Notification {
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model AccessRequest {
+  id          String              @id @default(cuid())
+  name        String
+  companyName String
+  email       String
+  phone       String
+  industry    String?
+  status      AccessRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}

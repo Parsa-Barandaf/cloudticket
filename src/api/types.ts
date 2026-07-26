@@ -4,6 +4,7 @@ export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'EXPIRED';
 export type CustomerTier = 'GOLD' | 'SILVER' | 'BRONZE';
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
 export type UserRole = 'ADMIN' | 'AGENT' | 'CUSTOMER';
+export type AccessRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface ApiUser {
   id: string;
@@ -63,12 +64,35 @@ export interface ApiConnection {
   subscriptionType: string;
 }
 
+export interface UpdateCustomerInput {
+  id: string;
+  commercialName?: string;
+  industry?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  tier?: CustomerTier;
+  status?: CustomerStatus;
+}
+
 export interface ApiTicketMessage {
   id: string;
   text: string;
   senderName: string;
   isInternal: boolean;
   createdAt: string;
+}
+
+export interface ApiAccessRequest {
+  id: string;
+  name: string;
+  companyName: string;
+  email: string;
+  phone: string;
+  industry?: string;
+  status: AccessRequestStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ApiTicket {

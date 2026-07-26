@@ -2,6 +2,29 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AccessRequest {
+  companyName: String!
+  createdAt: DateTime!
+  email: String!
+  id: String!
+  industry: String
+  name: String!
+  phone: String!
+  status: AccessRequestStatus!
+  updatedAt: DateTime!
+}
+
+enum AccessRequestStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+input ApproveAccessRequestInput {
+  id: String!
+  industry: String
+}
+
 type AuthPayload {
   accessToken: String!
   user: User!
@@ -70,11 +93,15 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Mutation {
+  approveAccessRequest(input: ApproveAccessRequestInput!): AccessRequest!
   createCustomer(input: CreateCustomerInput!): Customer!
   createProduct(input: CreateProductInput!): Product!
   createTicket(input: CreateTicketInput!): Ticket!
   login(email: String!, password: String!): AuthPayload!
   register(email: String!, name: String!, password: String!): AuthPayload!
+  rejectAccessRequest(input: RejectAccessRequestInput!): AccessRequest!
+  requestAccess(input: RequestAccessInput!): AccessRequest!
+  updateCustomer(input: UpdateCustomerInput!): Customer!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
 }
 
@@ -113,13 +140,27 @@ enum ProductStatus {
 }
 
 type Query {
+  accessRequests: [AccessRequest!]!
   customer(id: String!): Customer
   customers: [Customer!]!
+  pendingAccessRequests: [AccessRequest!]!
   product(id: String!): Product
   products: [Product!]!
   ticket(id: String!): Ticket
   tickets: [Ticket!]!
   users: [User!]!
+}
+
+input RejectAccessRequestInput {
+  id: String!
+}
+
+input RequestAccessInput {
+  companyName: String!
+  email: String!
+  industry: String
+  name: String!
+  phone: String!
 }
 
 type Ticket {
@@ -158,6 +199,17 @@ enum TicketStatus {
   INVESTIGATING
   OPEN
   RESOLVED
+}
+
+input UpdateCustomerInput {
+  address: String
+  commercialName: String
+  id: String!
+  industry: String
+  phone: String
+  status: CustomerStatus
+  tier: CustomerTier
+  website: String
 }
 
 input UpdateTicketStatusInput {

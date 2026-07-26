@@ -28,6 +28,9 @@ import {
   X
 } from 'lucide-react';
 import type { Customer, Product, Ticket } from '../../types';
+import { gql } from '../../api/graphql';
+import { UPDATE_CUSTOMER } from '../../api/queries';
+import type { ApiCustomer } from '../../api/types';
 
 interface CustomerWorkspaceViewProps {
   selectedCustomerWorkspace: Customer | null;
@@ -62,7 +65,7 @@ export default function CustomerWorkspaceView({
   const [customerWorkspaceTab, setCustomerWorkspaceTab] = useState<'overview' | 'products' | 'users' | 'tickets' | 'licenses' | 'activities' | 'settings'>('overview');
 
   // Load selected customer or fallback to standard enterprise customer
-  const c = selectedCustomerWorkspace || customers.find(x => x.id === 'CST-100') || customers[0];
+  const c = selectedCustomerWorkspace || customers[0];
 
   // Internal interactive data lists for this workspace
   const [customerWorkspaceUsers, setCustomerWorkspaceUsers] = useState<any[]>([
@@ -99,8 +102,8 @@ export default function CustomerWorkspaceView({
   const [orgWebsite, setOrgWebsite] = useState(c.website || 'www.ariasecurity.ir');
   const [orgAddress, setOrgAddress] = useState(c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری سحاب');
 
-  // Filter tickets matching active customer name
-  const matchesTickets = tickets.filter(t => t.customer === c.name);
+  // Filter tickets matching active customer
+  const matchesTickets = tickets.filter(t => t.customerId === c.id);
 
   // Workspace feedback messages
   const [workspaceFeedback, setWorkspaceFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -168,17 +171,31 @@ export default function CustomerWorkspaceView({
     showWorkspaceToast(`محصول «${selectedProd.name}» با موفقیت به سازمان تخصیص یافت.`, 'success');
   };
 
-  const handleSaveOrgDetails = (e: React.FormEvent) => {
+  const handleSaveOrgDetails = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCustomers(customers.map(cust => cust.id === c.id ? {
-      ...cust,
-      commercialName: orgCommercialName,
-      phone: orgPhone,
-      website: orgWebsite,
-      address: orgAddress
-    } : cust));
-    setShowEditOrgModal(false);
-    showWorkspaceToast('اطلاعات هویتی و ثبتی سازمان با موفقیت بروزرسانی شد.', 'success');
+    try {
+      const data = await gql<{ updateCustomer: ApiCustomer }>(UPDATE_CUSTOMER, {
+        input: {
+          id: c.id,
+          commercialName: orgCommercialName,
+          phone: orgPhone,
+          website: orgWebsite,
+          address: orgAddress,
+        },
+      });
+      const apiCust = data.updateCustomer;
+      setCustomers(customers.map(cust => cust.id === c.id ? {
+        ...cust,
+        commercialName: apiCust.commercialName,
+        phone: apiCust.phone,
+        website: apiCust.website,
+        address: apiCust.address,
+      } : cust));
+      setShowEditOrgModal(false);
+      showWorkspaceToast('اطلاعات هویتی و ثبتی سازمان با موفقیت بروزرسانی شد.', 'success');
+    } catch (err) {
+      showWorkspaceToast('خطا در بروزرسانی اطلاعات: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
   return (
@@ -257,10 +274,18 @@ export default function CustomerWorkspaceView({
               <span>ویرایش اطلاعات</span>
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const newStatus = c.status === 'فعال' ? 'غیرفعال' : 'فعال';
-                setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, status: newStatus } : cust));
-                showCustomerToast(`وضعیت سازمان با موفقیت به «${newStatus}» تغییر یافت.`, 'success');
+                const apiStatus = newStatus === 'فعال' ? 'ACTIVE' : 'INACTIVE';
+                try {
+                  await gql<{ updateCustomer: ApiCustomer }>(UPDATE_CUSTOMER, {
+                    input: { id: c.id, status: apiStatus },
+                  });
+                  setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, status: newStatus } : cust));
+                  showCustomerToast(`وضعیت سازمان با موفقیت به «${newStatus}» تغییر یافت.`, 'success');
+                } catch (err) {
+                  showCustomerToast('خطا در تغییر وضعیت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                }
               }}
               className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-bold px-4.5 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
             >

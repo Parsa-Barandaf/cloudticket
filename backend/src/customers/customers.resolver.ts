@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CustomersService } from './customers.service';
 import { Customer } from '../common/models/customer.model';
-import { CreateCustomerInput } from '../common/dto/customer.input';
+import { CreateCustomerInput, UpdateCustomerInput } from '../common/dto/customer.input';
 
 @Resolver(() => Customer)
 export class CustomersResolver {
@@ -20,5 +20,10 @@ export class CustomersResolver {
   @Mutation(() => Customer)
   async createCustomer(@Args('input') input: CreateCustomerInput) {
     return this.customersService.create(input);
+  }
+
+  @Mutation(() => Customer)
+  async updateCustomer(@Args('input') input: UpdateCustomerInput) {
+    return this.customersService.update(input);
   }
 }

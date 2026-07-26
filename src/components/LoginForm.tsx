@@ -19,6 +19,9 @@ import {
   Headphones,
   Users
 } from 'lucide-react';
+import { gql } from '../api/graphql';
+import { REQUEST_ACCESS } from '../api/queries';
+import type { ApiAccessRequest } from '../api/types';
 
 interface LoginFormProps {
   onSuccess: (email: string, role: PortalRole) => void;
@@ -125,21 +128,32 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
     }, 1500);
   };
 
-  const handleRequestAccessSubmit = (e: React.FormEvent) => {
+  const handleRequestAccessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateRequestAccess()) return;
 
     setIsLoading(true);
+    setErrors({});
 
-    setTimeout(() => {
+    try {
+      await gql<{ requestAccess: ApiAccessRequest }>(REQUEST_ACCESS, {
+        input: { name, companyName, email, phone },
+      });
       setIsLoading(false);
       setSuccessMessage('درخواست دسترسی شما با موفقیت ثبت شد. همکاران ما پس از بررسی مدارک سازمان با شما تماس خواهند گرفت.');
-      // Reset fields
       setName('');
       setCompanyName('');
       setEmail('');
       setPhone('');
-    }, 1800);
+    } catch (err) {
+      setIsLoading(false);
+      const message = (err as Error).message || 'خطا در ثبت درخواست';
+      if (message.includes('already exists')) {
+        setErrors({ email: 'یک درخواست در انتظار برای این ایمیل وجود دارد' });
+      } else {
+        setErrors({ email: message });
+      }
+    }
   };
 
   // Render Login Form

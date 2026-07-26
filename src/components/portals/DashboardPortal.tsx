@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   LayoutDashboard,
@@ -72,13 +72,14 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
 import { gql } from '../../api/graphql';
-import { CREATE_CUSTOMER } from '../../api/queries';
-import type { ApiCustomer } from '../../api/types';
+import { CREATE_CUSTOMER, UPDATE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST } from '../../api/queries';
+import type { ApiCustomer, ApiAccessRequest } from '../../api/types';
 
 // Interfaces for our state elements
 export interface Ticket {
   id: string;
   title: string;
+  customerId: string;
   customer: string;
   product: string;
   priority: 'بحرانی' | 'بالا' | 'متوسط' | 'پایین';
@@ -172,7 +173,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
   // Active Tab state
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'users' | 'reports' | 'notifications' | 'settings' | 'customer-details' | 'agent-portal'
+    'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'access-requests' | 'users' | 'reports' | 'notifications' | 'settings' | 'customer-details' | 'agent-portal'
   >('dashboard');
 
   const [selectedCustomerWorkspace, setSelectedCustomerWorkspace] = useState<Customer | null>(null);
@@ -211,11 +212,24 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { tickets: apiTickets, loading: ticketsLoading, createTicket: apiCreateTicket, updateTicketStatus: apiUpdateTicketStatus } = useTickets();
   const { products: apiProducts, loading: productsLoading } = useProducts();
-  const { customers: apiCustomers, loading: customersLoading } = useCustomers();
+  const { customers: apiCustomers, loading: customersLoading, refetch: refetchCustomers } = useCustomers();
   const { users: apiUsers } = useUsers();
   useEffect(() => { if (apiTickets.length) setTickets(apiTickets); }, [apiTickets]);
   useEffect(() => { if (apiProducts.length) setProducts(apiProducts); }, [apiProducts]);
   useEffect(() => { if (apiCustomers.length) setCustomers(apiCustomers); }, [apiCustomers]);
+
+  // Access requests state
+  const [pendingRequests, setPendingRequests] = useState<ApiAccessRequest[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const fetchPendingRequests = useCallback(async () => {
+    setRequestsLoading(true);
+    try {
+      const data = await gql<{ pendingAccessRequests: ApiAccessRequest[] }>(GET_PENDING_ACCESS_REQUESTS);
+      setPendingRequests(data.pendingAccessRequests);
+    } catch { /* ignore */ }
+    setRequestsLoading(false);
+  }, []);
+  useEffect(() => { fetchPendingRequests(); }, [fetchPendingRequests]);
 
   const [agents] = useState([
     { id: 'AGN-01', name: 'امیرحسین رضایی', role: 'پشتیبان فنی ارشد', email: 'rezaei@example.com', status: 'فعال', load: '۳ تیکت فعال' },
@@ -737,29 +751,54 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
         setIsCustomerLoading(false);
         return;
       }
-      const updated = customers.map(c => {
-        if (c.id === selectedCustomerForEdit.id) {
-          return {
-            ...c,
-            name: companyName,
-            commercialName: companyCommercialName,
+      try {
+        const persianStatusToApi: Record<string, string> = {
+          'فعال': 'ACTIVE',
+          'غیرفعال': 'INACTIVE',
+          'در انتظار': 'PENDING',
+        };
+        const persianTierToApi: Record<string, string> = {
+          'طلایی': 'GOLD',
+          'نقره‌ای': 'SILVER',
+          'برنزی': 'BRONZE',
+        };
+        await gql<{ updateCustomer: ApiCustomer }>(UPDATE_CUSTOMER, {
+          input: {
+            id: selectedCustomerForEdit.id,
+            commercialName: companyCommercialName || companyName,
             industry: companyIndustry,
-            phone: companyPhone,
-            website: companyWebsite,
-            address: companyAddress,
-            managerName: contactName,
-            managerEmail: contactEmail,
-            managerPhone: contactPhone,
-            customerType: businessType,
-            status: businessStatus,
-            tier: businessType === 'Enterprise' ? 'طلایی' : businessType === 'Business' ? 'نقره‌ای' : 'برنزی' as any,
-          };
-        }
-        return c;
-      });
-
-      setCustomers(updated);
-      showCustomerToast(`اطلاعات مشتری "${companyName}" با موفقیت بروزرسانی شد.`);
+            phone: companyPhone || null,
+            website: companyWebsite || null,
+            address: companyAddress || null,
+            tier: persianTierToApi[businessType === 'Enterprise' ? 'طلایی' : businessType === 'Business' ? 'نقره‌ای' : 'برنزی'],
+            status: persianStatusToApi[businessStatus] || 'ACTIVE',
+          },
+        });
+        const updated = customers.map(c => {
+          if (c.id === selectedCustomerForEdit.id) {
+            return {
+              ...c,
+              name: companyName,
+              commercialName: companyCommercialName,
+              industry: companyIndustry,
+              phone: companyPhone,
+              website: companyWebsite,
+              address: companyAddress,
+              managerName: contactName,
+              managerEmail: contactEmail,
+              managerPhone: contactPhone,
+              customerType: businessType,
+              status: businessStatus,
+              tier: businessType === 'Enterprise' ? 'طلایی' : businessType === 'Business' ? 'نقره‌ای' : 'برنزی' as any,
+            };
+          }
+          return c;
+        });
+        setCustomers(updated);
+        showCustomerToast(`اطلاعات مشتری "${companyName}" با موفقیت بروزرسانی شد.`);
+      } catch (err) {
+        showCustomerToast('خطا در بروزرسانی مشتری: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+      }
     }
 
     setIsCustomerLoading(false);
@@ -813,19 +852,27 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
     setActiveRowActionId(null);
   };
 
-  const confirmDeactivateCustomer = () => {
+  const confirmDeactivateCustomer = async () => {
     if (!customerToDeactivate) return;
-    
+
     const updatedStatus = customerToDeactivate.status === 'فعال' ? 'غیرفعال' : 'فعال';
-    setCustomers(customers.map(c => 
-      c.id === customerToDeactivate.id ? { ...c, status: updatedStatus } : c
-    ));
-    
-    showCustomerToast(
-      `وضعیت مشتری "${customerToDeactivate.name}" به "${updatedStatus === 'فعال' ? 'فعال' : 'غیرفعال'}" تغییر یافت.`,
-      updatedStatus === 'فعال' ? 'success' : 'error'
-    );
-    
+    const apiStatus = updatedStatus === 'فعال' ? 'ACTIVE' : 'INACTIVE';
+
+    try {
+      await gql<{ updateCustomer: ApiCustomer }>(UPDATE_CUSTOMER, {
+        input: { id: customerToDeactivate.id, status: apiStatus },
+      });
+      setCustomers(customers.map(c =>
+        c.id === customerToDeactivate.id ? { ...c, status: updatedStatus } : c
+      ));
+      showCustomerToast(
+        `وضعیت مشتری "${customerToDeactivate.name}" به "${updatedStatus === 'فعال' ? 'فعال' : 'غیرفعال'}" تغییر یافت.`,
+        updatedStatus === 'فعال' ? 'success' : 'error'
+      );
+    } catch (err) {
+      showCustomerToast('خطا در تغییر وضعیت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
+
     setShowDeactivateConfirm(false);
     setCustomerToDeactivate(null);
   };
@@ -833,6 +880,31 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const handleCreateCustomer = (e: React.FormEvent) => {
     e.preventDefault();
     handleSaveCustomer(e);
+  };
+
+  const handleApproveRequest = async (req: ApiAccessRequest) => {
+    try {
+      await gql<{ approveAccessRequest: ApiAccessRequest }>(APPROVE_ACCESS_REQUEST, {
+        input: { id: req.id, industry: req.industry || 'سایر' },
+      });
+      setPendingRequests(pendingRequests.filter(r => r.id !== req.id));
+      showCustomerToast(`درخواست "${req.companyName}" تأیید و حساب کاربری ایجاد شد.`, 'success');
+      refetchCustomers();
+    } catch (err) {
+      showCustomerToast('خطا در تأیید درخواست: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
+  };
+
+  const handleRejectRequest = async (req: ApiAccessRequest) => {
+    try {
+      await gql<{ rejectAccessRequest: ApiAccessRequest }>(REJECT_ACCESS_REQUEST, {
+        input: { id: req.id },
+      });
+      setPendingRequests(pendingRequests.filter(r => r.id !== req.id));
+      showCustomerToast(`درخواست "${req.companyName}" رد شد.`, 'error');
+    } catch (err) {
+      showCustomerToast('خطا در رد درخواست: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
   const updateTicketStatus = (id: string, nextStatus: Ticket['status']) => {
@@ -898,15 +970,13 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
       let matchesProduct = true;
       if (customerProductFilter !== 'همه') {
-        // Mock checks for active product mappings
-        if (customerProductFilter === 'Cloud Security' && c.id !== 'CST-101' && c.id !== 'CST-106' && c.id !== 'CST-102') matchesProduct = false;
-        if (customerProductFilter === 'Identity Protection' && c.id !== 'CST-101' && c.id !== 'CST-104') matchesProduct = false;
-        if (customerProductFilter === 'Elastic Compute' && c.id !== 'CST-103' && c.id !== 'CST-102') matchesProduct = false;
+        matchesProduct = (c.activeProductsCount ?? 0) > 0;
       }
 
       let matchesDate = true;
       if (customerDateFilter !== 'همه') {
-        const year = c.partnershipStartDate ? c.partnershipStartDate.split('/')[0] : '';
+        const raw = c.partnershipStartDate || '';
+        const year = raw.includes('/') ? raw.split('/')[0] : raw.substring(0, 4);
         if (customerDateFilter === '۱۴۰۱' && year !== '۱۴۰۱') matchesDate = false;
         if (customerDateFilter === '۱۴۰۲' && year !== '۱۴۰۲') matchesDate = false;
         if (customerDateFilter === '۱۴۰۳' && year !== '۱۴۰۳') matchesDate = false;
@@ -955,6 +1025,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                 {activeTab === 'tickets' && 'تیکت‌ها'}
                 {activeTab === 'customers' && 'مشتریان'}
                 {activeTab === 'customer-details' && `مشتریان / کارپوشه ${selectedCustomerWorkspace?.name || 'توسعه امنیت آریا'}`}
+                {activeTab === 'access-requests' && 'درخواست‌های دسترسی'}
                 {activeTab === 'users' && 'کاربران'}
                 {activeTab === 'reports' && 'گزارش‌ها'}
                 {activeTab === 'notifications' && 'اعلان‌ها'}
@@ -969,6 +1040,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               {activeTab === 'tickets' && 'مدیریت و صندوق تیکت‌ها'}
               {activeTab === 'customers' && 'مدیریت مشتریان سازمانی'}
               {activeTab === 'customer-details' && `میز کار مشتری: ${selectedCustomerWorkspace?.name || 'شرکت توسعه امنیت آریا'}`}
+              {activeTab === 'access-requests' && 'درخواست‌های دسترسی به سامانه'}
               {activeTab === 'users' && 'تیم پشتیبانی و کاربران'}
               {activeTab === 'reports' && 'گزارش‌ها و تحلیل عملکرد'}
               {activeTab === 'notifications' && 'مرکز اعلان‌های سیستم'}
@@ -1220,6 +1292,24 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               {!sidebarCollapsed && (
                 <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
                   {customers.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => { setActiveTab('access-requests'); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center transition-all duration-200 ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'} rounded-xl text-xs font-semibold ${
+                activeTab === 'access-requests' 
+                  ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border-r-4 border-brand-500' 
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+              title={sidebarCollapsed ? "درخواست‌ها" : undefined}
+            >
+              <ClipboardList className="w-4.5 h-4.5 shrink-0" />
+              {!sidebarCollapsed && <span className="whitespace-nowrap">درخواست‌ها</span>}
+              {!sidebarCollapsed && pendingRequests.length > 0 && (
+                <span className="mr-auto text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono font-extrabold">
+                  {pendingRequests.length}
                 </span>
               )}
             </button>
@@ -4091,7 +4181,82 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               </motion.div>
             )}
 
-            {/* TAB 9: CUSTOMER DETAILS / WORKSPACE */}
+            {/* TAB 9: ACCESS REQUESTS */}
+            {activeTab === 'access-requests' && (
+              <motion.div
+                key="access-requests-tab"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="space-y-6"
+              >
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                      درخواست‌های دسترسی در انتظار تأیید
+                    </h3>
+                    <button
+                      onClick={fetchPendingRequests}
+                      className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      بروزرسانی
+                    </button>
+                  </div>
+
+                  {requestsLoading ? (
+                    <div className="text-center py-8 text-xs text-slate-400">در حال بارگذاری...</div>
+                  ) : pendingRequests.length === 0 ? (
+                    <div className="text-center py-12 text-slate-400">
+                      <ClipboardList className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                      <p className="text-xs font-bold">هیچ درخواست دسترسی جدیدی وجود ندارد</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-right border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                            <th className="p-3 pr-0">نام درخواست‌کننده</th>
+                            <th className="p-3">شرکت / سازمان</th>
+                            <th className="p-3">ایمیل</th>
+                            <th className="p-3">تلفن</th>
+                            <th className="p-3">تاریخ درخواست</th>
+                            <th className="p-3 pl-0 text-left">عملیات</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs text-slate-700 dark:text-slate-300">
+                          {pendingRequests.map((req) => (
+                            <tr key={req.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10">
+                              <td className="p-3 pr-0 font-bold text-slate-900 dark:text-white">{req.name}</td>
+                              <td className="p-3">{req.companyName}</td>
+                              <td className="p-3 font-mono text-slate-500">{req.email}</td>
+                              <td className="p-3 font-mono">{req.phone}</td>
+                              <td className="p-3 text-slate-500 text-[10px]">{new Date(req.createdAt).toLocaleDateString('fa-IR')}</td>
+                              <td className="p-3 pl-0 text-left space-x-2 space-x-reverse">
+                                <button
+                                  onClick={() => handleApproveRequest(req)}
+                                  className="text-[10px] bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                                >
+                                  تأیید و فعال‌سازی
+                                </button>
+                                <button
+                                  onClick={() => handleRejectRequest(req)}
+                                  className="text-[10px] bg-rose-500/10 hover:bg-rose-500/15 text-rose-600 dark:text-rose-400 font-black px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                                >
+                                  رد درخواست
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB 10: CUSTOMER DETAILS / WORKSPACE */}
             {activeTab === 'customer-details' && (
               <CustomerWorkspaceView
                 selectedCustomerWorkspace={selectedCustomerWorkspace}
