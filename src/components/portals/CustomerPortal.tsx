@@ -153,7 +153,7 @@ export default function CustomerPortalView({
               </div>
               {!sidebarCollapsed && (
                 <div className="truncate">
-                  <h1 className="text-xs font-black text-slate-900 dark:text-white truncate">سامانه ابری سحاب</h1>
+                  <h1 className="text-xs font-black text-slate-900 dark:text-white truncate">سامانه ابری مدیریت مشتریان</h1>
                   <span className="text-[10px] text-brand-600 dark:text-brand-400 font-extrabold bg-brand-500/10 px-1.5 py-0.5 rounded border border-brand-500/20 block mt-0.5 w-fit">
                     پرتال مشتریان سازمانی
                   </span>

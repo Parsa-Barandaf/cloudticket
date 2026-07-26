@@ -118,7 +118,7 @@ function AppContent() {
                 <Sparkles className="w-4.5 h-4.5" />
               </div>
               <div className="text-right">
-                <span className="text-xs font-black text-slate-950 dark:text-white tracking-wide block">سامانه ابری سحاب</span>
+                <span className="text-xs font-black text-slate-950 dark:text-white tracking-wide block">سامانه ابری مدیریت مشتریان</span>
                 <span className="text-[9px] text-slate-400 dark:text-slate-500">پلتفرم مدیریت هوشمند پشتیبانی</span>
               </div>
             </div>

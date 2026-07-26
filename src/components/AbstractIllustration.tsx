@@ -22,7 +22,7 @@ export default function AbstractIllustration({ isDark }: { isDark: boolean }) {
           </div>
         </div>
         <div className="text-right">
-          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">هسته پردازش ابری سحاب</div>
+          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">هسته پردازش ابری</div>
           <div className="text-[10px] text-slate-400 dark:text-slate-500">موتور تخصیص هوشمند تیکت‌ها</div>
         </div>
       </div>
@@ -181,7 +181,7 @@ export default function AbstractIllustration({ isDark }: { isDark: boolean }) {
               <div className="w-6 h-6 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center">
                 <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
               </div>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">تخصیص هوشمند سحاب</span>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">تخصیص هوشمند تیکت</span>
             </div>
             <div className="text-[10px] text-slate-500 dark:text-slate-400 mb-2">تیکت #۵۱۲۴ ارجاع شد به:</div>
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-slate-100 dark:border-slate-700/30">
@@ -203,7 +203,7 @@ export default function AbstractIllustration({ isDark }: { isDark: boolean }) {
       {/* Decorative Bottom Slogan */}
       <div className="relative z-10 text-right mt-auto">
         <div className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2 justify-end">
-          <span className="text-brand-500">پلتفرم مدیریت خدمات مشتریان سحاب</span>
+          <span className="text-brand-500">پلتفرم مدیریت مشتریان</span>
           <Shield className="w-5 h-5 text-brand-500" />
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mr-auto">

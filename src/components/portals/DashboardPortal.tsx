@@ -1131,7 +1131,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
             </div>
             {!sidebarCollapsed && (
               <div className="text-right">
-                <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری سحاب</span>
+                <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری مدیریت مشتریان</span>
                 <span className="text-[10px] text-slate-400 dark:text-slate-500">پشتیبانی و امور مشتریان</span>
               </div>
             )}
@@ -4048,7 +4048,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">نام پلتفرم پشتیبانی (برندینگ)</label>
                       <input 
                         type="text" 
-                        defaultValue="سامانه ابری سحاب" 
+                        defaultValue="سامانه ابری مدیریت مشتریان" 
                         className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none" 
                       />
                     </div>

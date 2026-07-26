@@ -573,7 +573,7 @@ export default function SupportAgentPortalView({
               </div>
               {!sidebarCollapsed && (
                 <div className="text-right">
-                  <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری سحاب</span>
+                  <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری مدیریت مشتریان</span>
                   <span className="text-[10px] text-brand-600 dark:text-brand-400 font-bold block">پرتال پشتیبانی</span>
                 </div>
               )}
