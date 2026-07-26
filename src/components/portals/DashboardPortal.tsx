@@ -72,8 +72,8 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
 import { gql } from '../../api/graphql';
-import { CREATE_CUSTOMER, UPDATE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST } from '../../api/queries';
-import type { ApiCustomer, ApiAccessRequest } from '../../api/types';
+import { CREATE_CUSTOMER, UPDATE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT } from '../../api/queries';
+import type { ApiCustomer, ApiAccessRequest, ApiProduct } from '../../api/types';
 
 // Interfaces for our state elements
 export interface Ticket {
@@ -211,7 +211,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { tickets: apiTickets, loading: ticketsLoading, createTicket: apiCreateTicket, updateTicketStatus: apiUpdateTicketStatus } = useTickets();
-  const { products: apiProducts, loading: productsLoading } = useProducts();
+  const { products: apiProducts, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { customers: apiCustomers, loading: customersLoading, refetch: refetchCustomers } = useCustomers();
   const { users: apiUsers } = useUsers();
   useEffect(() => { if (apiTickets.length) setTickets(apiTickets); }, [apiTickets]);
@@ -531,59 +531,59 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
     }
 
     if (drawerMode === 'create') {
-      // Create new
-      const initials = drawerName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-      const newPrd: Product = {
-        id: `PRD-0${products.length + 1}`,
-        name: drawerName,
-        category: drawerCategory,
-        clientsCount: 0,
-        status: drawerStatus,
-        version: drawerVersion,
-        description: drawerDescription,
-        logoInitials: initials || 'PR',
-        logoColor: drawerLogoColor,
-        lastUpdated: '۱۴۰۲/۱۰/۱۲',
-        createdAt: '۱۴۰۲/۱۰/۱۲'
-      };
+      const statusApiMap: Record<string, string> = { 'فعال': 'ACTIVE', 'غیرفعال': 'INACTIVE', 'منقضی شده': 'EXPIRED' };
 
-      setProducts([newPrd, ...products]);
-      showFeedback(`محصول "${drawerName}" با موفقیت ایجاد شد.`);
-
-      // Add activity
-      setActivities([
-        {
-          id: `ACT-${Date.now()}`,
-          type: 'product',
-          title: 'محصول جدید اضافه شد',
-          subtitle: `زیرسرویس ${drawerName} به ساختار کاتالوگ سحاب اضافه گردید.`,
-          time: 'هم‌اکنون'
+      gql<{ createProduct: ApiProduct }>(CREATE_PRODUCT, {
+        input: {
+          name: drawerName,
+          category: drawerCategory,
+          description: drawerDescription || null,
+          version: drawerVersion,
+          logoColor: drawerLogoColor,
+          logoInitials: drawerName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'PR',
         },
-        ...activities
-      ]);
+      })
+        .then(() => {
+          showFeedback(`محصول "${drawerName}" با موفقیت ایجاد شد.`);
+          refetchProducts();
+          setActivities([
+            {
+              id: `ACT-${Date.now()}`,
+              type: 'product',
+              title: 'محصول جدید اضافه شد',
+              subtitle: `زیرسرویس ${drawerName} به ساختار کاتالوگ سحاب اضافه گردید.`,
+              time: 'هم‌اکنون'
+            },
+            ...activities
+          ]);
+        })
+        .catch((err) => {
+          showFeedback('خطا در ایجاد محصول: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+        });
     } else {
       // Edit
       if (!selectedProduct) return;
-      const initials = drawerName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-      const updatedProducts = products.map(p => {
-        if (p.id === selectedProduct.id) {
-          return {
-            ...p,
-            name: drawerName,
-            category: drawerCategory,
-            status: drawerStatus,
-            version: drawerVersion,
-            description: drawerDescription,
-            logoColor: drawerLogoColor,
-            logoInitials: initials || p.logoInitials,
-            lastUpdated: '۱۴۰۲/۱۰/۱۲'
-          };
-        }
-        return p;
-      });
+      const statusApiMap: Record<string, string> = { 'فعال': 'ACTIVE', 'غیرفعال': 'INACTIVE', 'منقضی شده': 'EXPIRED' };
 
-      setProducts(updatedProducts);
-      showFeedback(`محصول "${drawerName}" با موفقیت بروزرسانی شد.`);
+      gql<{ updateProduct: ApiProduct }>(UPDATE_PRODUCT, {
+        input: {
+          id: selectedProduct.id,
+          name: drawerName,
+          category: drawerCategory,
+          description: drawerDescription || null,
+          version: drawerVersion,
+          status: statusApiMap[drawerStatus],
+          logoColor: drawerLogoColor,
+          logoInitials: drawerName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'PR',
+        },
+      })
+        .then(() => {
+          showFeedback(`محصول "${drawerName}" با موفقیت بروزرسانی شد.`);
+          refetchProducts();
+        })
+        .catch((err) => {
+          showFeedback('خطا در بروزرسانی محصول: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+        });
     }
 
     setShowProductDrawer(false);
@@ -669,6 +669,17 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault();
     handleSaveDrawerProduct(e);
+  };
+
+  const handleDeleteProduct = async (prd: Product) => {
+    try {
+      await gql<{ deleteProduct: boolean }>(DELETE_PRODUCT, { id: prd.id });
+      showFeedback(`محصول "${prd.name}" با موفقیت حذف شد.`);
+      refetchProducts();
+      setActiveRowActionId(null);
+    } catch (err) {
+      showFeedback('خطا در حذف محصول: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
   // CRM Customer Action Handlers
@@ -2081,6 +2092,17 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                             >
                                               <CheckCircle className="w-3.5 h-3.5 shrink-0" />
                                               <span>{p.status === 'فعال' ? 'غیرفعال کردن' : 'فعال کردن'}</span>
+                                            </button>
+
+                                            <div className="h-[1px] bg-slate-100 dark:bg-slate-800 my-1" />
+
+                                            <button
+                                              type="button"
+                                              onClick={() => handleDeleteProduct(p)}
+                                              className="w-full px-3.5 py-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer transition-colors text-right"
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                              <span>حذف محصول</span>
                                             </button>
                                           </motion.div>
                                         </>

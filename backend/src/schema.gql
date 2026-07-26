@@ -44,6 +44,8 @@ input CreateCustomerInput {
 input CreateProductInput {
   category: String!
   description: String
+  logoColor: String
+  logoInitials: String
   name: String!
   version: String
 }
@@ -97,11 +99,13 @@ type Mutation {
   createCustomer(input: CreateCustomerInput!): Customer!
   createProduct(input: CreateProductInput!): Product!
   createTicket(input: CreateTicketInput!): Ticket!
+  deleteProduct(id: String!): Boolean!
   login(email: String!, password: String!): AuthPayload!
   register(email: String!, name: String!, password: String!): AuthPayload!
   rejectAccessRequest(input: RejectAccessRequestInput!): AccessRequest!
   requestAccess(input: RequestAccessInput!): AccessRequest!
   updateCustomer(input: UpdateCustomerInput!): Customer!
+  updateProduct(input: UpdateProductInput!): Product!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
 }
 
@@ -210,6 +214,17 @@ input UpdateCustomerInput {
   status: CustomerStatus
   tier: CustomerTier
   website: String
+}
+
+input UpdateProductInput {
+  category: String
+  description: String
+  id: String!
+  logoColor: String
+  logoInitials: String
+  name: String
+  status: ProductStatus
+  version: String
 }
 
 input UpdateTicketStatusInput {

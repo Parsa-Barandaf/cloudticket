@@ -1,5 +1,6 @@
 import type { ApiTicket, ApiProduct, ApiCustomer, ApiConnection, ApiUser } from './types';
 import type { Ticket, Product, Customer, ProductCustomerConnection } from '../types';
+import { formatDate } from '../lib/utils';
 
 const priorityMap: Record<string, 'بحرانی' | 'بالا' | 'متوسط' | 'پایین'> = {
   CRITICAL: 'بحرانی', HIGH: 'بالا', MEDIUM: 'متوسط', LOW: 'پایین',
@@ -44,10 +45,10 @@ export function mapProduct(p: ApiProduct): Product {
     status: productStatusMap[p.status] || 'فعال',
     version: p.version,
     description: p.description,
-    lastUpdated: p.lastUpdated,
+    lastUpdated: formatDate(p.lastUpdated),
     logoColor: p.logoColor,
     logoInitials: p.logoInitials,
-    createdAt: p.createdAt,
+    createdAt: formatDate(p.createdAt),
   };
 }
 

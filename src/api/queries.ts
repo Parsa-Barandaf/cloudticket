@@ -59,6 +59,32 @@ export const CREATE_TICKET = `
 `;
 
 // ── Products ──
+export const CREATE_PRODUCT = `
+  mutation CreateProduct($input: CreateProductInput!) {
+    createProduct(input: $input) {
+      id name category description version status clientsCount
+      logoColor logoInitials createdAt lastUpdated
+      connections { id customer { id commercialName } licenseStatus startDate endDate }
+    }
+  }
+`;
+
+export const UPDATE_PRODUCT = `
+  mutation UpdateProduct($input: UpdateProductInput!) {
+    updateProduct(input: $input) {
+      id name category description version status clientsCount
+      logoColor logoInitials createdAt lastUpdated
+      connections { id customer { id commercialName } licenseStatus startDate endDate }
+    }
+  }
+`;
+
+export const DELETE_PRODUCT = `
+  mutation DeleteProduct($id: String!) {
+    deleteProduct(id: $id)
+  }
+`;
+
 export const GET_PRODUCTS = `
   query Products {
     products {
