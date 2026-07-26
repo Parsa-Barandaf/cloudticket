@@ -28,6 +28,18 @@ export class User {
   @Field()
   active: boolean;
 
+  @Field({ nullable: true })
+  phone?: string;
+
+  @Field({ nullable: true })
+  company?: string;
+
+  @Field({ nullable: true })
+  departmentId?: string;
+
+  @Field({ nullable: true })
+  customRoleId?: string;
+
   @Field()
   createdAt: Date;
 

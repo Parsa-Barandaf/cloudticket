@@ -46,6 +46,28 @@ enum CustomerStatus {
   PENDING
 }
 
+model Department {
+  id               String   @id @default(cuid())
+  name             String
+  lead             String
+  assignedProducts String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  users User[]
+}
+
+model CustomRole {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  permissions Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -54,8 +76,16 @@ model User {
   role      UserRole @default(ADMIN)
   avatar    String?
   active    Boolean  @default(true)
+  phone     String?
+  company   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  customRoleId String?
+  customRole   CustomRole? @relation(fields: [customRoleId], references: [id])
 
   assignedTickets Ticket[] @relation("AssignedAgent")
   customerProfile Customer?

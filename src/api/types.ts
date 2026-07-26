@@ -13,6 +13,28 @@ export interface ApiUser {
   role: UserRole;
   active: boolean;
   avatar?: string;
+  phone?: string;
+  company?: string;
+  departmentId?: string;
+  customRoleId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiDepartment {
+  id: string;
+  name: string;
+  lead: string;
+  assignedProducts: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiCustomRole {
+  id: string;
+  name: string;
+  description?: string;
+  permissions: string;
   createdAt: string;
   updatedAt: string;
 }

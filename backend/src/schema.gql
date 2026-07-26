@@ -42,6 +42,12 @@ input CreateConnectionInput {
   userCount: Float!
 }
 
+input CreateCustomRoleInput {
+  description: String
+  name: String!
+  permissions: String! = "{}"
+}
+
 input CreateCustomerInput {
   address: String
   commercialName: String
@@ -51,6 +57,12 @@ input CreateCustomerInput {
   tier: CustomerTier
   userId: String!
   website: String
+}
+
+input CreateDepartmentInput {
+  assignedProducts: [String!]! = []
+  lead: String!
+  name: String!
 }
 
 input CreateProductInput {
@@ -68,6 +80,26 @@ input CreateTicketInput {
   priority: TicketPriority!
   productId: String
   title: String!
+}
+
+input CreateUserInput {
+  active: Boolean! = true
+  company: String
+  customRoleId: String
+  departmentId: String
+  email: String!
+  name: String!
+  password: String!
+  phone: String
+}
+
+type CustomRole {
+  createdAt: DateTime!
+  description: String
+  id: String!
+  name: String!
+  permissions: String!
+  updatedAt: DateTime!
 }
 
 type Customer {
@@ -106,22 +138,45 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input DeleteCustomRoleInput {
+  id: String!
+  reassignRoleId: String
+}
+
+type Department {
+  assignedProducts: [String!]!
+  createdAt: DateTime!
+  id: String!
+  lead: String!
+  name: String!
+  updatedAt: DateTime!
+}
+
 type Mutation {
   approveAccessRequest(input: ApproveAccessRequestInput!): AccessRequest!
   createConnection(input: CreateConnectionInput!): ProductCustomerConnection!
+  createCustomRole(input: CreateCustomRoleInput!): CustomRole!
   createCustomer(input: CreateCustomerInput!): Customer!
+  createDepartment(input: CreateDepartmentInput!): Department!
   createProduct(input: CreateProductInput!): Product!
   createTicket(input: CreateTicketInput!): Ticket!
+  createUser(input: CreateUserInput!): User!
   deleteConnection(id: String!): Boolean!
+  deleteCustomRole(input: DeleteCustomRoleInput!): Boolean!
+  deleteDepartment(id: String!): Boolean!
   deleteProduct(id: String!): Boolean!
+  deleteUser(id: String!): Boolean!
   login(email: String!, password: String!): AuthPayload!
   register(email: String!, name: String!, password: String!): AuthPayload!
   rejectAccessRequest(input: RejectAccessRequestInput!): AccessRequest!
   requestAccess(input: RequestAccessInput!): AccessRequest!
   updateConnection(input: UpdateConnectionInput!): ProductCustomerConnection!
+  updateCustomRole(input: UpdateCustomRoleInput!): CustomRole!
   updateCustomer(input: UpdateCustomerInput!): Customer!
+  updateDepartment(input: UpdateDepartmentInput!): Department!
   updateProduct(input: UpdateProductInput!): Product!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
+  updateUser(input: UpdateUserInput!): User!
 }
 
 type Product {
@@ -162,14 +217,19 @@ enum ProductStatus {
 
 type Query {
   accessRequests: [AccessRequest!]!
+  customRole(id: String!): CustomRole
+  customRoles: [CustomRole!]!
   customer(id: String!): Customer
   customerConnections(customerId: String!): [ProductCustomerConnection!]!
   customers: [Customer!]!
+  department(id: String!): Department
+  departments: [Department!]!
   pendingAccessRequests: [AccessRequest!]!
   product(id: String!): Product
   products: [Product!]!
   ticket(id: String!): Ticket
   tickets: [Ticket!]!
+  user(id: String!): User
   users: [User!]!
 }
 
@@ -234,6 +294,13 @@ input UpdateConnectionInput {
   userCount: Float
 }
 
+input UpdateCustomRoleInput {
+  description: String
+  id: String!
+  name: String
+  permissions: String
+}
+
 input UpdateCustomerInput {
   address: String
   commercialName: String
@@ -243,6 +310,13 @@ input UpdateCustomerInput {
   status: CustomerStatus
   tier: CustomerTier
   website: String
+}
+
+input UpdateDepartmentInput {
+  assignedProducts: [String!]
+  id: String!
+  lead: String
+  name: String
 }
 
 input UpdateProductInput {
@@ -261,13 +335,28 @@ input UpdateTicketStatusInput {
   status: String!
 }
 
+input UpdateUserInput {
+  active: Boolean
+  company: String
+  customRoleId: String
+  departmentId: String
+  email: String
+  id: String!
+  name: String
+  phone: String
+}
+
 type User {
   active: Boolean!
   avatar: String
+  company: String
   createdAt: DateTime!
+  customRoleId: String
+  departmentId: String
   email: String!
   id: String!
   name: String!
+  phone: String
   role: UserRole!
   updatedAt: DateTime!
 }

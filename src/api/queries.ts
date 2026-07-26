@@ -219,6 +219,86 @@ export const REJECT_ACCESS_REQUEST = `
 // ── Users ──
 export const GET_USERS = `
   query Users {
-    users { id email name role active }
+    users { id email name role active phone company departmentId customRoleId createdAt updatedAt }
+  }
+`;
+
+export const CREATE_USER = `
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+      id email name role active phone company departmentId customRoleId createdAt updatedAt
+    }
+  }
+`;
+
+export const UPDATE_USER = `
+  mutation UpdateUser($input: UpdateUserInput!) {
+    updateUser(input: $input) {
+      id email name role active phone company departmentId customRoleId createdAt updatedAt
+    }
+  }
+`;
+
+export const DELETE_USER = `
+  mutation DeleteUser($id: String!) {
+    deleteUser(id: $id)
+  }
+`;
+
+// ── Departments ──
+export const GET_DEPARTMENTS = `
+  query Departments {
+    departments { id name lead assignedProducts createdAt updatedAt }
+  }
+`;
+
+export const CREATE_DEPARTMENT = `
+  mutation CreateDepartment($input: CreateDepartmentInput!) {
+    createDepartment(input: $input) {
+      id name lead assignedProducts createdAt updatedAt
+    }
+  }
+`;
+
+export const UPDATE_DEPARTMENT = `
+  mutation UpdateDepartment($input: UpdateDepartmentInput!) {
+    updateDepartment(input: $input) {
+      id name lead assignedProducts createdAt updatedAt
+    }
+  }
+`;
+
+export const DELETE_DEPARTMENT = `
+  mutation DeleteDepartment($id: String!) {
+    deleteDepartment(id: $id)
+  }
+`;
+
+// ── Custom Roles ──
+export const GET_CUSTOM_ROLES = `
+  query CustomRoles {
+    customRoles { id name description permissions createdAt updatedAt }
+  }
+`;
+
+export const CREATE_CUSTOM_ROLE = `
+  mutation CreateCustomRole($input: CreateCustomRoleInput!) {
+    createCustomRole(input: $input) {
+      id name description permissions createdAt updatedAt
+    }
+  }
+`;
+
+export const UPDATE_CUSTOM_ROLE = `
+  mutation UpdateCustomRole($input: UpdateCustomRoleInput!) {
+    updateCustomRole(input: $input) {
+      id name description permissions createdAt updatedAt
+    }
+  }
+`;
+
+export const DELETE_CUSTOM_ROLE = `
+  mutation DeleteCustomRole($input: DeleteCustomRoleInput!) {
+    deleteCustomRole(input: $input)
   }
 `;

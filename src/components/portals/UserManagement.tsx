@@ -1,5 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useUsers } from '../../hooks/useUsers';
+import { useDepartments } from '../../hooks/useDepartments';
+import { useCustomRoles } from '../../hooks/useCustomRoles';
+import { useCustomers } from '../../hooks/useCustomers';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, 
@@ -47,6 +50,8 @@ interface UserItem {
   lastLogin: string;
   createdDate: string;
   avatarColor: string;
+  departmentId?: string;
+  customRoleId?: string;
 }
 
 interface RoleItem {
@@ -69,51 +74,71 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   // Page level tabs
   const [activeSubTab, setActiveSubTab] = useState<'users' | 'roles' | 'teams'>('users');
   
+  // API hooks
+  const { users: apiUsers, createUser, updateUser, deleteUser, refetch: refetchUsers } = useUsers();
+  const { departments, createDepartment, updateDepartment, deleteDepartment } = useDepartments();
+  const { roles: apiRoles, createRole, updateRole, deleteRole } = useCustomRoles();
+  const { customers: apiCustomers } = useCustomers();
+  
   // Interactive loading state (Simulated)
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
   // Users list state — synced from real API
   const [users, setUsers] = useState<UserItem[]>([]);
-  const { users: apiUsers } = useUsers();
   useEffect(() => {
     if (apiUsers.length > 0) {
       setUsers(apiUsers.map(u => ({
         id: u.id,
         name: u.name,
         email: u.email,
-        phone: '',
-        company: '',
-        team: '',
+        phone: u.phone || '',
+        company: u.company || '',
+        team: departments.find(d => d.id === u.departmentId)?.name || '',
         role: u.role === 'ADMIN' ? 'مدیر کل' : u.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
         status: u.active ? ('فعال' as const) : ('غیرفعال' as const),
         lastLogin: '',
         createdDate: u.createdAt?.split('T')[0]?.replace(/-/g, '/') || '',
         avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600', 'bg-pink-600', 'bg-cyan-600'][Math.floor(Math.random() * 6)],
+        departmentId: u.departmentId,
+        customRoleId: u.customRoleId,
       })));
     }
-  }, [apiUsers]);
-
-  // Roles state
-  const [roles, setRoles] = useState<RoleItem[]>([
-    { id: 'ROL-1', name: 'مدیر کل', userCount: 4, description: 'دسترسی کامل و بی قید و شرط به تمامی بخش‌های مدیریتی، پیکربندی‌ها، لاگ‌ها و لایسنس‌های کل سازمان‌ها.', permissions: { 'Dashboard': ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'], 'Products': ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'], 'Customers': ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'], 'Tickets': ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'], 'Users': ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'], 'Reports': ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'], 'Settings': ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'] } },
-    { id: 'ROL-2', name: 'مدیر شرکت', userCount: 22, description: 'مدیریت کاربران تابعه، دریافت و تمدید لایسنس‌ها، صدور تیکت و مشاهده کدهای پیکربندی مختص شرکت خود.', permissions: { 'Dashboard': ['View', 'Export'], 'Products': ['View'], 'Customers': ['View', 'Edit'], 'Tickets': ['View', 'Create', 'Edit'], 'Users': ['View', 'Create', 'Edit'], 'Reports': ['View'], 'Settings': ['View'] } },
-    { id: 'ROL-3', name: 'مدیر پشتیبانی', userCount: 6, description: 'نظارت کامل بر فرآیند پاسخ‌دهی به تیکت‌ها، تعریف تیم‌های کاری، مدیریت شیفت‌ها و ارزیابی SLA سیستم.', permissions: { 'Dashboard': ['View'], 'Products': ['View'], 'Customers': ['View'], 'Tickets': ['View', 'Create', 'Edit', 'Assign', 'Export'], 'Users': ['View', 'Assign'], 'Reports': ['View', 'Export'], 'Settings': ['View'] } },
-    { id: 'ROL-4', name: 'کارشناس پشتیبانی', userCount: 38, description: 'دریافت، بررسی و ارسال پاسخ رسمی برای پرونده‌های پشتیبانی و ممیزی هوشمند کدهای پیوست.', permissions: { 'Dashboard': ['View'], 'Products': ['View'], 'Customers': ['View'], 'Tickets': ['View', 'Edit', 'Assign'], 'Users': ['View'], 'Reports': ['View'] } },
-    { id: 'ROL-5', name: 'کاربر', userCount: 70, description: 'ارسال تیکت‌های جدید، دانلود پکیج‌های بروزرسانی محصولات ثبت شده شرکت و تبادل پیام با پشتیبانی سحاب.', permissions: { 'Dashboard': ['View'], 'Products': ['View'], 'Tickets': ['View', 'Create', 'Edit'], 'Settings': ['View'] } },
-    { id: 'ROL-6', name: 'مشاهده‌گر', userCount: 8, description: 'صرفاً مشاهده گزارش‌های SLA و مانیتورینگ عملکرد گره‌ها به صورت فقط خواندنی بدون امکان هرگونه تغییر.', permissions: { 'Dashboard': ['View'], 'Products': ['View'], 'Customers': ['View'], 'Reports': ['View'] } }
-  ]);
-
-  // Teams state
-  const [teams, setTeams] = useState<TeamItem[]>([
-    { id: 'TEM-1', name: 'تیم فنی', membersCount: 5, lead: 'علی علوی', assignedProducts: ['Cloud Security Platform', 'Global Edge CDN'] },
-    { id: 'TEM-2', name: 'تیم فروش', membersCount: 4, lead: 'سارا صادقی', assignedProducts: ['Identity Protection Server'] },
-    { id: 'TEM-3', name: 'تیم مالی', membersCount: 3, lead: 'حمید احمدی', assignedProducts: ['Billing & Invoicing Engine'] },
-    { id: 'TEM-4', name: 'DevOps', membersCount: 6, lead: 'مهران راد', assignedProducts: ['Elastic Compute Node', 'AI Analytics Framework'] }
-  ]);
+  }, [apiUsers, departments]);
 
   // Active role selected for Matrix editing
-  const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<string>('ROL-4'); // Defaults to 'کارشناس پشتیبانی'
+  const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<string>('');
   const [matrixSearchQuery, setMatrixSearchQuery] = useState<string>('');
+
+  // Map API roles to local RoleItem format (with parsed permissions)
+  const roles = useMemo(() => {
+    return apiRoles.map(r => ({
+      id: r.id,
+      name: r.name,
+      userCount: apiUsers.filter(u => u.customRoleId === r.id).length,
+      description: r.description || '',
+      permissions: (() => {
+        try { return JSON.parse(r.permissions); } catch { return {}; }
+      })(),
+    }));
+  }, [apiRoles, apiUsers]);
+
+  // Auto-select first role when roles load
+  useEffect(() => {
+    if (!selectedRoleForMatrix && apiRoles.length > 0) {
+      setSelectedRoleForMatrix(apiRoles[0].id);
+    }
+  }, [apiRoles, selectedRoleForMatrix]);
+
+  // Teams derived from departments API
+  const teams = useMemo(() => {
+    return departments.map(d => ({
+      id: d.id,
+      name: d.name,
+      membersCount: apiUsers.filter(u => u.departmentId === d.id).length,
+      lead: d.lead,
+      assignedProducts: d.assignedProducts,
+    }));
+  }, [departments, apiUsers]);
 
   // Search & Filter state for Users
   const [userSearch, setUserSearch] = useState('');
@@ -130,9 +155,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   // User Drawer input form fields
   const [formDataName, setFormDataName] = useState('');
   const [formDataEmail, setFormDataEmail] = useState('');
+  const [formDataPassword, setFormDataPassword] = useState('');
   const [formDataPhone, setFormDataPhone] = useState('');
   const [formDataCompany, setFormDataCompany] = useState('شرکت توسعه امنیت آریا');
-  const [formDataTeam, setFormDataTeam] = useState('تیم فنی');
+  const [formDataDepartmentId, setFormDataDepartmentId] = useState('');
+  const [formDataCustomRoleId, setFormDataCustomRoleId] = useState('');
   const [formDataRole, setFormDataRole] = useState('کارشناس پشتیبانی');
   const [formDataAccessLevel, setFormDataAccessLevel] = useState('متوسط');
   const [formDataSendInvite, setFormDataSendInvite] = useState(true);
@@ -148,16 +175,18 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   const [profileModalTab, setProfileModalTab] = useState<'info' | 'permissions' | 'activities'>('info');
 
   // Confirmation dialog state
-  const [showConfirmModal, setShowConfirmModal] = useState<{ show: boolean; type: 'delete' | 'deactivate' | 'reset-pass'; userId: string | null }>({
-    show: false,
-    type: 'delete',
-    userId: null
-  });
+  const [showConfirmModal, setShowConfirmModal] = useState<{
+    show: boolean;
+    type: 'delete' | 'deactivate' | 'reset-pass' | 'deleteDepartment' | 'deleteRole';
+    userId: string | null;
+    extra?: { departmentName?: string; roleName?: string; roleId?: string; userCount?: number };
+  }>({ show: false, type: 'delete', userId: null });
 
   // Team modal state (Quick add/edit)
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [teamModalMode, setTeamModalMode] = useState<'create' | 'edit'>('create');
   const [selectedTeamForEdit, setSelectedTeamForEdit] = useState<TeamItem | null>(null);
+  const [editingDepartmentId, setEditingDepartmentId] = useState<string>('');
   const [teamName, setTeamName] = useState('');
   const [teamLead, setTeamLead] = useState('');
   const [teamProducts, setTeamProducts] = useState<string[]>(['Cloud Security Platform']);
@@ -217,9 +246,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
     setSelectedUserForEdit(null);
     setFormDataName('');
     setFormDataEmail('');
+    setFormDataPassword('');
     setFormDataPhone('');
     setFormDataCompany('سحاب');
-    setFormDataTeam('تیم فنی');
+    setFormDataDepartmentId('');
+    setFormDataCustomRoleId('');
     setFormDataRole('کارشناس پشتیبانی');
     setFormDataAccessLevel('متوسط');
     setFormDataSendInvite(true);
@@ -233,9 +264,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
     setSelectedUserForEdit(user);
     setFormDataName(user.name);
     setFormDataEmail(user.email);
+    setFormDataPassword('');
     setFormDataPhone(user.phone);
     setFormDataCompany(user.company);
-    setFormDataTeam(user.team);
+    setFormDataDepartmentId(user.departmentId || '');
+    setFormDataCustomRoleId(user.customRoleId || '');
     setFormDataRole(user.role);
     setFormDataAccessLevel('متوسط');
     setFormDataSendInvite(false);
@@ -244,7 +277,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
     setShowUserDrawer(true);
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors: { [key: string]: string } = {};
     
@@ -258,40 +291,65 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
       return;
     }
 
-    if (userDrawerMode === 'create') {
-      const newId = `USR-${Math.floor(110 + Math.random() * 900)}`;
-      const newUser: UserItem = {
-        id: newId,
-        name: formDataName,
-        email: formDataEmail,
-        phone: formDataPhone,
-        company: formDataCompany,
-        team: formDataTeam,
-        role: formDataRole,
-        status: formDataImmediateActive ? 'فعال' : 'دعوت شده',
-        lastLogin: 'تاکنون وارد نشده',
-        createdDate: '۱۴۰۵/۰۴/۳۰',
-        avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-violet-600', 'bg-rose-600', 'bg-indigo-600'][Math.floor(Math.random() * 6)]
-      };
-
-      setUsers([newUser, ...users]);
-      showCustomerToast(`کاربر جدید «${formDataName}» با موفقیت افزوده و ثبت گردید.`, 'success');
-    } else {
-      if (!selectedUserForEdit) return;
-      setUsers(users.map(u => u.id === selectedUserForEdit.id ? {
-        ...u,
-        name: formDataName,
-        email: formDataEmail,
-        phone: formDataPhone,
-        company: formDataCompany,
-        team: formDataTeam,
-        role: formDataRole,
-        status: formDataImmediateActive ? 'فعال' : 'غیرفعال'
-      } : u));
-      showCustomerToast(`اطلاعات کاربری «${formDataName}» با موفقیت بروزرسانی شد.`, 'success');
+    try {
+      if (userDrawerMode === 'create') {
+        const newUser = await createUser({
+          email: formDataEmail,
+          password: formDataPassword || 'Temp@123456',
+          name: formDataName,
+          phone: formDataPhone,
+          company: formDataCompany,
+          departmentId: formDataDepartmentId || undefined,
+          customRoleId: formDataCustomRoleId || undefined,
+          active: formDataImmediateActive,
+        });
+        const newUserItem: UserItem = {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone || '',
+          company: newUser.company || '',
+          team: departments.find(d => d.id === newUser.departmentId)?.name || '',
+          role: newUser.role === 'ADMIN' ? 'مدیر کل' : newUser.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
+          status: formDataImmediateActive ? 'فعال' : 'دعوت شده',
+          lastLogin: '',
+          createdDate: newUser.createdAt?.split('T')[0]?.replace(/-/g, '/') || '',
+          avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-violet-600', 'bg-rose-600', 'bg-indigo-600'][Math.floor(Math.random() * 6)],
+          departmentId: newUser.departmentId,
+          customRoleId: newUser.customRoleId,
+        };
+        setUsers(prev => [newUserItem, ...prev]);
+        showCustomerToast(`کاربر جدید «${formDataName}» با موفقیت افزوده و ثبت گردید.`, 'success');
+      } else {
+        if (!selectedUserForEdit) return;
+        const updated = await updateUser({
+          id: selectedUserForEdit.id,
+          name: formDataName,
+          email: formDataEmail,
+          phone: formDataPhone,
+          company: formDataCompany,
+          active: formDataImmediateActive,
+          departmentId: formDataDepartmentId || undefined,
+          customRoleId: formDataCustomRoleId || undefined,
+        });
+        setUsers(prev => prev.map(u => u.id === selectedUserForEdit.id ? {
+          ...u,
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone || '',
+          company: updated.company || '',
+          team: departments.find(d => d.id === updated.departmentId)?.name || '',
+          role: updated.role === 'ADMIN' ? 'مدیر کل' : updated.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
+          status: formDataImmediateActive ? 'فعال' : 'غیرفعال',
+          departmentId: updated.departmentId,
+          customRoleId: updated.customRoleId,
+        } : u));
+        showCustomerToast(`اطلاعات کاربری «${formDataName}» با موفقیت بروزرسانی شد.`, 'success');
+      }
+      setShowUserDrawer(false);
+    } catch (e) {
+      showCustomerToast(`خطا در ذخیره کاربر: ${(e as Error).message}`, 'error');
     }
-
-    setShowUserDrawer(false);
   };
 
   // Matrix Permission toggler
@@ -299,149 +357,124 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
     return roles.find(r => r.id === selectedRoleForMatrix);
   }, [roles, selectedRoleForMatrix]);
 
-  const handleTogglePermission = (category: string, type: string) => {
+  const handleTogglePermission = async (category: string, type: string) => {
     if (!currentRoleMatrix) return;
-    
-    const updatedRoles = roles.map(r => {
-      if (r.id === selectedRoleForMatrix) {
-        const currentPerms = r.permissions[category] || [];
-        const nextPerms = currentPerms.includes(type)
-          ? currentPerms.filter(p => p !== type)
-          : [...currentPerms, type];
-        
-        return {
-          ...r,
-          permissions: {
-            ...r.permissions,
-            [category]: nextPerms
-          }
-        };
-      }
-      return r;
-    });
-
-    setRoles(updatedRoles);
+    const currentPerms: string[] = currentRoleMatrix.permissions[category] || [];
+    const nextPerms = currentPerms.includes(type)
+      ? currentPerms.filter(p => p !== type)
+      : [...currentPerms, type];
+    const newPermissions = { ...currentRoleMatrix.permissions, [category]: nextPerms };
+    try {
+      await updateRole({ id: selectedRoleForMatrix, permissions: JSON.stringify(newPermissions) });
+    } catch (e) {
+      showCustomerToast(`خطا در ذخیره دسترسی: ${(e as Error).message}`, 'error');
+    }
   };
 
-  const handleSelectAllCategoryPermissions = (category: string) => {
+  const handleSelectAllCategoryPermissions = async (category: string) => {
     if (!currentRoleMatrix) return;
     const allTypes = ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'];
     const currentPerms = currentRoleMatrix.permissions[category] || [];
     const isAllSelected = currentPerms.length === allTypes.length;
-
-    const updatedRoles = roles.map(r => {
-      if (r.id === selectedRoleForMatrix) {
-        return {
-          ...r,
-          permissions: {
-            ...r.permissions,
-            [category]: isAllSelected ? [] : allTypes
-          }
-        };
-      }
-      return r;
-    });
-
-    setRoles(updatedRoles);
-    showCustomerToast(
-      isAllSelected 
-        ? `تمام دسترسی‌های بخش ${category} لغو گردید.` 
-        : `تمام دسترسی‌های بخش ${category} اعطا شد.`, 
-      'success'
-    );
+    const newPermissions = {
+      ...currentRoleMatrix.permissions,
+      [category]: isAllSelected ? [] : allTypes,
+    };
+    try {
+      await updateRole({ id: selectedRoleForMatrix, permissions: JSON.stringify(newPermissions) });
+      showCustomerToast(
+        isAllSelected ? `تمام دسترسی‌های بخش ${category} لغو گردید.` : `تمام دسترسی‌های بخش ${category} اعطا شد.`,
+        'success'
+      );
+    } catch (e) {
+      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
+    }
   };
 
-  const handleSelectAllMatrix = () => {
+  const handleSelectAllMatrix = async () => {
     if (!currentRoleMatrix) return;
     const allTypes = ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'];
     const categories = ['Dashboard', 'Products', 'Customers', 'Tickets', 'Users', 'Reports', 'Settings'];
-    
-    const updatedRoles = roles.map(r => {
-      if (r.id === selectedRoleForMatrix) {
-        const newPerms: { [key: string]: string[] } = {};
-        categories.forEach(cat => {
-          newPerms[cat] = allTypes;
-        });
-        return { ...r, permissions: newPerms };
-      }
-      return r;
-    });
-
-    setRoles(updatedRoles);
-    showCustomerToast('تمامی دسترسی‌های ماتریس برای این نقش فعال شد.', 'success');
+    const newPerms: { [key: string]: string[] } = {};
+    categories.forEach(cat => { newPerms[cat] = allTypes; });
+    try {
+      await updateRole({ id: selectedRoleForMatrix, permissions: JSON.stringify(newPerms) });
+      showCustomerToast('تمامی دسترسی‌های ماتریس برای این نقش فعال شد.', 'success');
+    } catch (e) {
+      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
+    }
   };
 
-  const handleClearAllMatrix = () => {
+  const handleClearAllMatrix = async () => {
     if (!currentRoleMatrix) return;
-    const updatedRoles = roles.map(r => {
-      if (r.id === selectedRoleForMatrix) {
-        return { ...r, permissions: {} };
-      }
-      return r;
-    });
-
-    setRoles(updatedRoles);
-    showCustomerToast('کلیه دسترسی‌های ماتریس برای این نقش پاکسازی شد.', 'success');
+    try {
+      await updateRole({ id: selectedRoleForMatrix, permissions: '{}' });
+      showCustomerToast('کلیه دسترسی‌های ماتریس برای این نقش پاکسازی شد.', 'success');
+    } catch (e) {
+      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
+    }
   };
 
-  const handleDuplicateRole = (role: RoleItem) => {
-    const newId = `ROL-${roles.length + 1}`;
-    const duplicated: RoleItem = {
-      ...role,
-      id: newId,
-      name: `${role.name} (کپی)`,
-      userCount: 0
-    };
-    setRoles([...roles, duplicated]);
-    showCustomerToast(`نقش «${role.name}» با موفقیت تکثیر شد.`, 'success');
+  const handleDuplicateRole = async (role: RoleItem) => {
+    try {
+      const newRole = await createRole({
+        name: `${role.name} (کپی)`,
+        description: role.description,
+        permissions: JSON.stringify(role.permissions),
+      });
+      showCustomerToast(`نقش «${role.name}» با موفقیت تکثیر شد.`, 'success');
+    } catch (e) {
+      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
+    }
   };
 
   const handleDeleteRole = (roleId: string) => {
     const role = roles.find(r => r.id === roleId);
     if (!role) return;
     if (role.userCount > 0) {
-      showCustomerToast(`امکان حذف نقش «${role.name}» وجود ندارد زیرا کاربر فعال با این نقش در سیستم ثبت شده است.`, 'error');
-      return;
+      setShowConfirmModal({
+        show: true,
+        type: 'deleteRole',
+        userId: null,
+        extra: { roleName: role.name, roleId: role.id, userCount: role.userCount },
+      });
+    } else {
+      setShowConfirmModal({
+        show: true,
+        type: 'deleteRole',
+        userId: null,
+        extra: { roleName: role.name, roleId: role.id, userCount: 0 },
+      });
     }
-    setRoles(roles.filter(r => r.id !== roleId));
-    showCustomerToast(`نقش «${role.name}» با موفقیت حذف گردید.`, 'success');
   };
 
   // Team handling
-  const handleSaveTeam = (e: React.FormEvent) => {
+  const handleSaveTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teamName.trim() || !teamLead.trim()) {
       showCustomerToast('لطفاً فیلدهای الزامی تیم را تکمیل فرمایید.', 'error');
       return;
     }
 
-    if (teamModalMode === 'create') {
-      const newTeam: TeamItem = {
-        id: `TEM-${teams.length + 1}`,
-        name: teamName,
-        membersCount: 1,
-        lead: teamLead,
-        assignedProducts: teamProducts
-      };
-      setTeams([...teams, newTeam]);
-      showCustomerToast(`تیم پشتیبانی جدید «${teamName}» با موفقیت تشکیل شد.`, 'success');
-    } else {
-      if (!selectedTeamForEdit) return;
-      setTeams(teams.map(t => t.id === selectedTeamForEdit.id ? {
-        ...t,
-        name: teamName,
-        lead: teamLead,
-        assignedProducts: teamProducts
-      } : t));
-      showCustomerToast(`تنظیمات تیم پشتیبانی «${teamName}» با موفقیت بروزرسانی شد.`, 'success');
+    try {
+      if (teamModalMode === 'create') {
+        await createDepartment({ name: teamName, lead: teamLead, assignedProducts: teamProducts });
+        showCustomerToast(`تیم پشتیبانی جدید «${teamName}» با موفقیت تشکیل شد.`, 'success');
+      } else {
+        if (!editingDepartmentId) return;
+        await updateDepartment({ id: editingDepartmentId, name: teamName, lead: teamLead, assignedProducts: teamProducts });
+        showCustomerToast(`تنظیمات تیم پشتیبانی «${teamName}» با موفقیت بروزرسانی شد.`, 'success');
+      }
+      setShowTeamModal(false);
+    } catch (e) {
+      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
     }
-
-    setShowTeamModal(false);
   };
 
   const openCreateTeamModal = () => {
     setTeamModalMode('create');
     setSelectedTeamForEdit(null);
+    setEditingDepartmentId('');
     setTeamName('');
     setTeamLead('');
     setTeamProducts(['Cloud Security Platform']);
@@ -451,6 +484,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   const openEditTeamModal = (team: TeamItem) => {
     setTeamModalMode('edit');
     setSelectedTeamForEdit(team);
+    setEditingDepartmentId(team.id);
     setTeamName(team.name);
     setTeamLead(team.lead);
     setTeamProducts(team.assignedProducts);
@@ -460,35 +494,57 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   const handleDeleteTeam = (teamId: string) => {
     const t = teams.find(team => team.id === teamId);
     if (!t) return;
-    setTeams(teams.filter(team => team.id !== teamId));
-    showCustomerToast(`تیم پشتیبانی «${t.name}» منحل و حذف گردید.`, 'success');
+    setShowConfirmModal({
+      show: true,
+      type: 'deleteDepartment',
+      userId: null,
+      extra: { departmentName: t.name, userCount: t.membersCount, roleId: teamId },
+    });
   };
 
   // Dialog actions execution
-  const executeConfirmAction = () => {
+  const [reassignRoleId, setReassignRoleId] = useState<string>('');
+
+  const executeConfirmAction = async () => {
     const { type, userId } = showConfirmModal;
-    if (!userId) return;
 
-    const userObj = users.find(u => u.id === userId);
-    if (!userObj) return;
-
-    if (type === 'delete') {
-      setUsers(users.filter(u => u.id !== userId));
-      showCustomerToast(`حساب کاربری «${userObj.name}» به صورت دائمی حذف شد.`, 'error');
-    } else if (type === 'deactivate') {
-      const isCurrentlyActive = userObj.status === 'فعال';
-      setUsers(users.map(u => u.id === userId ? { ...u, status: isCurrentlyActive ? 'غیرفعال' : 'فعال' } : u));
-      showCustomerToast(
-        isCurrentlyActive 
-          ? `حساب کاربری «${userObj.name}» غیرفعال گردید و دسترسی آن موقتاً سلب شد.` 
-          : `حساب کاربری «${userObj.name}» مجدداً فعال گردید.`, 
-        isCurrentlyActive ? 'error' : 'success'
-      );
-    } else if (type === 'reset-pass') {
-      showCustomerToast(`لینک بازنشانی گذرواژه امن به آدرس ایمیل (${userObj.email}) با موفقیت ارسال گردید.`, 'success');
+    try {
+      if (type === 'deleteDepartment') {
+        const deptId = showConfirmModal.extra?.roleId;
+        if (deptId) await deleteDepartment(deptId);
+        showCustomerToast(`دپارتمان «${showConfirmModal.extra?.departmentName}» با موفقیت حذف شد. کاربران به دپارتمان پیش‌فرض منتقل شدند.`, 'success');
+      } else if (type === 'deleteRole') {
+        const roleId = showConfirmModal.extra?.roleId;
+        if (roleId) await deleteRole(roleId, reassignRoleId || undefined);
+        showCustomerToast(`نقش «${showConfirmModal.extra?.roleName}» با موفقیت حذف گردید.`, 'success');
+      } else if (type === 'delete') {
+        if (!userId) return;
+        await deleteUser(userId);
+        setUsers(prev => prev.filter(u => u.id !== userId));
+        showCustomerToast(`حساب کاربری با موفقیت حذف شد.`, 'error');
+      } else if (type === 'deactivate') {
+        if (!userId) return;
+        const userObj = users.find(u => u.id === userId);
+        if (!userObj) return;
+        const isCurrentlyActive = userObj.status === 'فعال';
+        await updateUser({ id: userId, active: !isCurrentlyActive });
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: isCurrentlyActive ? 'غیرفعال' : 'فعال' } : u));
+        showCustomerToast(
+          isCurrentlyActive ? `حساب کاربری «${userObj.name}» غیرفعال گردید.` : `حساب کاربری «${userObj.name}» مجدداً فعال گردید.`,
+          isCurrentlyActive ? 'error' : 'success'
+        );
+      } else if (type === 'reset-pass') {
+        if (!userId) return;
+        const userObj = users.find(u => u.id === userId);
+        if (!userObj) return;
+        showCustomerToast(`لینک بازنشانی گذرواژه امن به آدرس ایمیل (${userObj.email}) با موفقیت ارسال گردید.`, 'success');
+      }
+    } catch (e) {
+      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
     }
 
     setShowConfirmModal({ show: false, type: 'delete', userId: null });
+    setReassignRoleId('');
   };
 
   return (
@@ -944,19 +1000,16 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                       <span>نقش‌های سیستمی</span>
                     </h3>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const newName = prompt('نام نقش سفارشی جدید خود را وارد کنید:');
                         if (newName) {
-                          const newId = `ROL-${roles.length + 1}`;
-                          setRoles([...roles, {
-                            id: newId,
-                            name: newName,
-                            userCount: 0,
-                            description: `نقش سفارشی تعریف شده جهت سطوح دسترسی اختصاصی کاربران پلتفرم سحاب.`,
-                            permissions: {}
-                          }]);
-                          setSelectedRoleForMatrix(newId);
-                          showCustomerToast(`نقش سفارشی «${newName}» با موفقیت ایجاد گردید.`, 'success');
+                          try {
+                            const newRole = await createRole({ name: newName, description: 'نقش سفارشی تعریف شده جهت سطوح دسترسی اختصاصی کاربران پلتفرم سحاب.', permissions: '{}' });
+                            setSelectedRoleForMatrix(newRole.id);
+                            showCustomerToast(`نقش سفارشی «${newName}» با موفقیت ایجاد گردید.`, 'success');
+                          } catch (e) {
+                            showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
+                          }
                         }
                       }}
                       className="text-[10px] bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-black px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
@@ -1003,11 +1056,15 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   const dsc = prompt('توضیحات جدید نقش را وارد کنید:', role.description);
                                   if (dsc) {
-                                    setRoles(roles.map(r => r.id === role.id ? { ...r, description: dsc } : r));
-                                    showCustomerToast('توضیحات نقش بروزرسانی شد.', 'success');
+                                    try {
+                                      await updateRole({ id: role.id, description: dsc });
+                                      showCustomerToast('توضیحات نقش بروزرسانی شد.', 'success');
+                                    } catch (e) {
+                                      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
+                                    }
                                   }
                                 }}
                                 className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors"
@@ -1362,6 +1419,19 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                       </div>
                       {formErrors.phone && <span className="text-[9px] text-rose-500 font-bold block">{formErrors.phone}</span>}
                     </div>
+                    {/* Password (only for create) */}
+                    {userDrawerMode === 'create' && (
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 font-extrabold block">رمز عبور اولیه</label>
+                        <input
+                          type="password"
+                          value={formDataPassword}
+                          onChange={(e) => setFormDataPassword(e.target.value)}
+                          placeholder="پیش‌فرض: Temp@123456"
+                          className="w-full text-xs font-bold px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Section: Organization Roles */}
@@ -1389,36 +1459,33 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                         </select>
                       </div>
 
-                      {/* Team selection */}
+                      {/* Department selection (from API) */}
                       <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 font-extrabold block">تیم کاری</label>
+                        <label className="text-[10px] text-slate-400 font-extrabold block">دپارتمان / تیم کاری</label>
                         <select
-                          value={formDataTeam}
-                          onChange={(e) => setFormDataTeam(e.target.value)}
+                          value={formDataDepartmentId}
+                          onChange={(e) => setFormDataDepartmentId(e.target.value)}
                           className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 cursor-pointer"
                         >
-                          <option value="تیم فنی">تیم فنی</option>
-                          <option value="DevOps">DevOps</option>
-                          <option value="تیم فروش">تیم فروش</option>
-                          <option value="تیم مالی">تیم مالی</option>
-                          <option value="بدون تیم">بدون تیم</option>
+                          <option value="">بدون دپارتمان</option>
+                          {departments.map(d => (
+                            <option key={d.id} value={d.id}>{d.name}</option>
+                          ))}
                         </select>
                       </div>
 
-                      {/* Role selection */}
+                      {/* Custom role selection (from API) */}
                       <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 font-extrabold block">نقش سیستمی (RBAC)</label>
+                        <label className="text-[10px] text-slate-400 font-extrabold block">نقش دسترسی (RBAC)</label>
                         <select
-                          value={formDataRole}
-                          onChange={(e) => setFormDataRole(e.target.value)}
+                          value={formDataCustomRoleId}
+                          onChange={(e) => setFormDataCustomRoleId(e.target.value)}
                           className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 cursor-pointer"
                         >
-                          <option value="مدیر کل">مدیر کل</option>
-                          <option value="مدیر شرکت">مدیر شرکت</option>
-                          <option value="مدیر پشتیبانی">مدیر پشتیبانی</option>
-                          <option value="کارشناس پشتیبانی">کارشناس پشتیبانی</option>
-                          <option value="کاربر">کاربر</option>
-                          <option value="مشاهده‌گر">مشاهده‌گر</option>
+                          <option value="">بدون نقش</option>
+                          {apiRoles.map(r => (
+                            <option key={r.id} value={r.id}>{r.name}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -1814,26 +1881,52 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative z-10 p-5 text-right font-sans space-y-4"
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  showConfirmModal.type === 'delete' ? 'bg-rose-500/10 text-rose-500' :
+                  showConfirmModal.type === 'deleteDepartment' || showConfirmModal.type === 'deleteRole' ? 'bg-amber-500/10 text-amber-500' :
+                  'bg-brand-500/10 text-brand-500'
+                }`}>
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-xs font-black text-slate-900 dark:text-white">
                     {showConfirmModal.type === 'delete' ? 'آیا از حذف دائمی این کاربر اطمینان دارید؟' :
+                     showConfirmModal.type === 'deleteDepartment' ? `حذف دپارتمان «${showConfirmModal.extra?.departmentName}»` :
+                     showConfirmModal.type === 'deleteRole' ? `حذف نقش «${showConfirmModal.extra?.roleName}»` :
                      showConfirmModal.type === 'deactivate' ? 'تغییر وضعیت فعال‌سازی حساب کاربری' :
                      'ارسال لینک بازنشانی گذرواژه امن'}
                   </h3>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed font-bold">
                     {showConfirmModal.type === 'delete' ? 'این عملیات غیر قابل بازگشت بوده و کلیه اطلاعات کاربری و دسترسی‌های وی از پایگاه داده سحاب حذف خواهد شد.' :
+                     showConfirmModal.type === 'deleteDepartment' ? `این دپارتمان ${showConfirmModal.extra?.userCount || 0} کاربر دارد. پس از حذف، کاربران به دپارتمان پیش‌فرض منتقل می‌شوند.` :
+                     showConfirmModal.type === 'deleteRole' ? `این نقش ${showConfirmModal.extra?.userCount || 0} کاربر دارد. ${
+                       showConfirmModal.extra?.userCount ? 'لطفاً یک نقش جایگزین برای این کاربران انتخاب کنید.' : 'آیا از حذف این نقش اطمینان دارید؟'
+                     }` :
                      showConfirmModal.type === 'deactivate' ? 'با تایید این درخواست، دسترسی موقت کاربر به پنل لغو یا مجدداً برقرار خواهد گردید.' :
                      'با تایید این عملیات، یک ایمیل معتبر حاوی لینک تغییر کلمه عبور برای کاربر صادر می‌گردد.'}
                   </p>
                 </div>
               </div>
 
+              {showConfirmModal.type === 'deleteRole' && showConfirmModal.extra?.userCount ? (
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-400 font-extrabold block">نقش جایگزین برای کاربران</label>
+                  <select
+                    value={reassignRoleId}
+                    onChange={e => setReassignRoleId(e.target.value)}
+                    className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350 cursor-pointer"
+                  >
+                    <option value="">بدون نقش (پاک شدن دسترسی)</option>
+                    {apiRoles.filter(r => r.id !== showConfirmModal.extra?.roleId).map(r => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
                 <button
-                  onClick={() => setShowConfirmModal({ show: false, type: 'delete', userId: null })}
+                  onClick={() => { setShowConfirmModal({ show: false, type: 'delete', userId: null }); setReassignRoleId(''); }}
                   className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350 text-xs font-black rounded-xl cursor-pointer"
                 >
                   انصراف
