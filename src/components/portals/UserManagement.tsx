@@ -3,6 +3,7 @@ import { useUsers } from '../../hooks/useUsers';
 import { useDepartments } from '../../hooks/useDepartments';
 import { useCustomRoles } from '../../hooks/useCustomRoles';
 import { useCustomers } from '../../hooks/useCustomers';
+import { useProducts } from '../../hooks/useProducts';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, 
@@ -79,6 +80,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   const { departments, createDepartment, updateDepartment, deleteDepartment } = useDepartments();
   const { roles: apiRoles, createRole, updateRole, deleteRole } = useCustomRoles();
   const { customers: apiCustomers } = useCustomers();
+  const { products } = useProducts();
   
   // Interactive loading state (Simulated)
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -1784,56 +1786,51 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
               <form onSubmit={handleSaveTeam} className="p-5 space-y-4">
                 {/* Team Name */}
                 <div className="space-y-1">
-                  <label className="text-[10px] text-slate-400 font-extrabold block">نام دپارتمان / تیم کاری <b className="text-rose-500">*</b></label>
+                  <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نام دپارتمان / تیم کاری <b className="text-rose-500">*</b></label>
                   <input
                     type="text"
                     value={teamName}
                     onChange={e => setTeamName(e.target.value)}
                     placeholder="مثال: تیم مانیتورینگ گره‌های ابری"
-                    className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350"
+                    className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300"
                   />
                 </div>
 
                 {/* Team Lead */}
                 <div className="space-y-1">
-                  <label className="text-[10px] text-slate-400 font-extrabold block">سرپرست ارشد دپارتمان <b className="text-rose-500">*</b></label>
+                  <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">سرپرست ارشد دپارتمان <b className="text-rose-500">*</b></label>
                   <input
                     type="text"
                     value={teamLead}
                     onChange={e => setTeamLead(e.target.value)}
                     placeholder="مثال: مهندس علی علوی"
-                    className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-350"
+                    className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300"
                   />
                 </div>
 
-                {/* Assigned Products (Multiple choices simple mockup) */}
+                {/* Assigned Products (from real API) */}
                 <div className="space-y-2 pt-1">
-                  <label className="text-[10px] text-slate-400 font-extrabold block">محصولات تحت پوشش دپارتمان</label>
-                  <div className="space-y-2 max-h-[150px] overflow-y-auto border border-slate-150 dark:border-slate-800/80 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40">
-                    {[
-                      'Cloud Security Platform',
-                      'Identity Protection Server',
-                      'Elastic Compute Node',
-                      'Billing & Invoicing Engine',
-                      'Global Edge CDN',
-                      'AI Analytics Framework'
-                    ].map((prod) => {
-                      const hasProd = teamProducts.includes(prod);
+                  <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">محصولات تحت پوشش دپارتمان</label>
+                  <div className="space-y-2 max-h-[150px] overflow-y-auto border border-slate-200 dark:border-slate-700/80 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40">
+                    {products.length === 0 ? (
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">هیچ محصولی یافت نشد</span>
+                    ) : products.map((prod) => {
+                      const hasProd = teamProducts.includes(prod.name);
                       return (
-                        <label key={prod} className="flex items-center gap-2 cursor-pointer text-[10px] font-black text-slate-600 dark:text-slate-400">
+                        <label key={prod.id} className="flex items-center gap-2 cursor-pointer text-[10px] font-black text-slate-700 dark:text-slate-300">
                           <input
                             type="checkbox"
                             checked={hasProd}
                             onChange={() => {
                               setTeamProducts(
                                 hasProd
-                                  ? teamProducts.filter(p => p !== prod)
-                                  : [...teamProducts, prod]
+                                  ? teamProducts.filter(p => p !== prod.name)
+                                  : [...teamProducts, prod.name]
                               );
                             }}
                             className="accent-brand-600"
                           />
-                          <span>{prod}</span>
+                          <span>{prod.name}</span>
                         </label>
                       );
                     })}
