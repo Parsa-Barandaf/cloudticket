@@ -88,8 +88,11 @@ export default function CustomerWorkspaceView({
     setConnectionsLoading(true);
     try {
       const data = await gql<{ customerConnections: ApiConnection[] }>(GET_CUSTOMER_CONNECTIONS, { customerId: c.id });
-      setConnections(data.customerConnections.map(mapConnection));
-    } catch { /* ignore */ }
+      const list = data?.customerConnections;
+      setConnections(Array.isArray(list) ? list.map(mapConnection) : []);
+    } catch (err) {
+      showWorkspaceToast('خطا در دریافت محصولات: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
     setConnectionsLoading(false);
   }, [c?.id]);
 

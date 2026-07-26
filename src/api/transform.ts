@@ -89,5 +89,9 @@ export function mapConnection(c: ApiConnection): ProductCustomerConnection {
     activationKey: c.activationKey,
     notes: c.notes,
     subscriptionType: c.subscriptionType,
+    productName: c.product?.name || c.productId,
+    version: c.product?.version,
+    logoColor: c.product?.logoColor,
+    logoInitials: c.product?.logoInitials || c.product?.name?.substring(0, 2).toUpperCase(),
   };
 }

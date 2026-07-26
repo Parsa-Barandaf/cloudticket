@@ -91,6 +91,10 @@ export interface ProductCustomerConnection {
   activationKey: string;
   notes?: string;
   subscriptionType: string;
+  productName?: string;
+  version?: string;
+  logoColor?: string;
+  logoInitials?: string;
 }
 
 declare global {
