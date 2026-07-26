@@ -742,7 +742,7 @@ export default function TicketDetailsWorkspace({
                         <div className="bg-slate-950 text-emerald-400 font-mono text-[10.5px] p-3 rounded-xl mb-3 text-left direction-ltr overflow-x-auto border border-slate-800/80">
                           <code>
                             # Diagnostic Firewall test on local client<br />
-                            $ nmap -p 8443 secure-db.sahab-systems.ir<br />
+                            $ nmap -p 8443 secure-db.example.com<br />
                             PORT     STATE    SERVICE<br />
                             8443/tcp FILTERED https-alt
                           </code>

@@ -1,6 +1,6 @@
 # Deployment
 
-> How to build, run, and deploy the Sahab CRM platform.
+> How to build, run, and deploy the پلتفرم مدیریت مشتریان.
 
 ## Prerequisites
 
@@ -68,7 +68,7 @@ Set via `.env` file at project root or injected at runtime.
 | Variable | Default | Required | Description |
 |----------|---------|----------|-------------|
 | `DATABASE_URL` | — | ✅ | PostgreSQL connection string |
-| `JWT_SECRET` | `sahab-jwt-secret` | No | Secret key for JWT signing |
+| `JWT_SECRET` | `cmp-jwt-secret` | No | Secret key for JWT signing |
 | `JWT_EXPIRATION` | `7d` | No | JWT token expiry duration |
 | `PORT` | `4000` | No | Backend server port |
 
@@ -78,7 +78,7 @@ Set via `backend/.env` file.
 
 | Service | Env Variables | Default |
 |---------|--------------|---------|
-| PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | `sahab_crm`, `sahab`, `sahab_secret` |
+| PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | `cmp_crm`, `cmp`, `cmp_secret` |
 
 ## Production Build
 

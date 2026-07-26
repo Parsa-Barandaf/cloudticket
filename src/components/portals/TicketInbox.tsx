@@ -278,7 +278,7 @@ export default function TicketInboxView({
       const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', `Sahab_Tickets_Report_${Date.now()}.csv`);
+      link.setAttribute('download', `CMP_Tickets_Report_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

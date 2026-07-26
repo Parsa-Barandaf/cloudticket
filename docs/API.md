@@ -182,7 +182,35 @@ query Customer($id: String!) {
 }
 ```
 
-**No `createCustomer` mutation exists yet.**
+### `createCustomer` (Mutation)
+
+```graphql
+mutation CreateCustomer($input: CreateCustomerInput!) {
+  createCustomer(input: $input) {
+    id commercialName industry phone website address tier status
+    usersCount activeProductsCount partnershipStartDate lastActivity
+    userId
+    user { id email name }
+    tickets { id title priority status }
+    connections { id customer { id commercialName } licenseStatus startDate endDate }
+  }
+}
+```
+
+**Input**: `CreateCustomerInput`
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `industry` | `String!` | ✅ | Customer's industry |
+| `commercialName` | `String` | ❌ | Company name |
+| `phone` | `String` | ❌ | Contact phone |
+| `website` | `String` | ❌ | Company website |
+| `address` | `String` | ❌ | Physical address |
+| `tier` | `CustomerTier` | ❌ | Defaults to `BRONZE` |
+| `status` | `CustomerStatus` | ❌ | Defaults to `ACTIVE` |
+| `userId` | `String!` | ✅ | FK to existing User |
+
+**Returns**: Full `Customer` object with user, tickets, and connections.
 
 ## Users
 
@@ -227,7 +255,6 @@ The following queries or mutations are defined as DTOs or models but have NO res
 
 | Feature | DTO/Model Exists? | Resolver? | Service? |
 |---------|-------------------|-----------|----------|
-| `createCustomer` | ✅ (`customer.input.ts`) | ❌ | ❌ |
 | `createTicketMessage` | ❌ (no input) | ❌ | ❌ |
 | `updateTicket` (general) | ❌ | ❌ | ❌ |
 
@@ -238,7 +265,7 @@ Files in `src/api/`:
 | File | Purpose |
 |------|---------|
 | `graphql.ts` | Generic GQL fetch with JWT Bearer injection |
-| `queries.ts` | All query/mutation strings (login, register, tickets, products, customers, users) |
+| `queries.ts` | All query/mutation strings (5 queries, 5 mutations: added `CREATE_CUSTOMER`) |
 | `types.ts` | TypeScript interfaces matching GraphQL responses |
 | `transform.ts` | Maps API types → frontend types (Persian enums, field renaming) |
 | `transform-agent.ts` | Agent-specific transforms + SLA calculations |

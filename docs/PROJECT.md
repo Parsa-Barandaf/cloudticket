@@ -1,16 +1,16 @@
-# سامانه مدیریت پشتیبانی ابری (Sahab CRM)
+# پلتفرم مدیریت مشتریان
 
 > Persian-language cloud support ticket management platform (میز خدمت)
 
 ## Overview
 
-Sahab CRM is a full-stack, multi-portal help desk and customer management system built for Persian-speaking enterprises. It provides three distinct role-based portals — **Admin (Dashboard)**, **Support Agent**, and **Customer** — each tailored to its user's workflow.
+پلتفرم مدیریت مشتریان is a full-stack, multi-portal help desk and customer management system built for Persian-speaking enterprises. It provides three distinct role-based portals — **Admin (Dashboard)**, **Support Agent**, and **Customer** — each tailored to its user's workflow.
 
 ## Repository
 
 | Property | Value |
 |----------|-------|
-| **Name** | `sahab-crm` |
+| **Name** | `customer-management-platform` |
 | **Version** | `1.0.0` |
 | **Type** | Full-stack (monorepo with co-located backend) |
 | **Language** | TypeScript (frontend + backend) |
@@ -65,6 +65,6 @@ Sahab CRM is a full-stack, multi-portal help desk and customer management system
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@sahab.ir | 123456 |
-| Agent | rezaei@sahab.ir | 123456 |
+| Admin | admin@example.com | 123456 |
+| Agent | rezaei@example.com | 123456 |
 | Customer | a.karimi@ariasecurity.ir | 123456 |

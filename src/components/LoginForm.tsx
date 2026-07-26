@@ -33,7 +33,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
   const [selectedRole, setSelectedRole] = useState<PortalRole>('admin');
 
   // Input states
-  const [email, setEmail] = useState('admin@sahab.ir');
+  const [email, setEmail] = useState('admin@example.com');
   const [password, setPassword] = useState('123456');
   const [name, setName] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -51,11 +51,11 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
     setSelectedRole(role);
     setErrors({});
     if (role === 'admin') {
-      setEmail('admin@sahab.ir');
+      setEmail('admin@example.com');
     } else if (role === 'agent') {
-      setEmail('agent@sahab.ir');
+      setEmail('agent@example.com');
     } else {
-      setEmail('customer@sahab.ir');
+      setEmail('customer@example.com');
     }
     setPassword('123456');
   };

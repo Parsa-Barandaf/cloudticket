@@ -21,9 +21,9 @@ export function useAuth() {
 
     try {
       const data = await gql<{ login: LoginResult }>(LOGIN_MUTATION, { email, password });
-      localStorage.setItem('sahab_access_token', data.login.accessToken);
-      localStorage.setItem('sahab_user_email', data.login.user.email);
-      localStorage.setItem('sahab_portal_role', data.login.user.role.toLowerCase());
+      localStorage.setItem('cmp_access_token', data.login.accessToken);
+      localStorage.setItem('cmp_user_email', data.login.user.email);
+      localStorage.setItem('cmp_portal_role', data.login.user.role.toLowerCase());
 
       const role = data.login.user.role.toLowerCase() as PortalRole;
       return { email: data.login.user.email, role };
@@ -37,8 +37,8 @@ export function useAuth() {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('sahab_access_token');
-    localStorage.setItem('sahab_logged_in', 'false');
+    localStorage.removeItem('cmp_access_token');
+    localStorage.setItem('cmp_logged_in', 'false');
   }, []);
 
   return { login, logout, loading, error };

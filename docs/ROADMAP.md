@@ -1,6 +1,6 @@
 # Roadmap
 
-> Current status as of Sprint 3 completion. This is the single source of truth for planned work.
+> Current status as of Sprint 4 Task 1 completion. This is the single source of truth for planned work.
 
 ---
 
@@ -84,14 +84,14 @@
 
 ---
 
-## Sprint 4 — Complete Backend CRUD (⏳ Planned)
+## Sprint 4 — Complete Backend CRUD (🔄 In Progress)
 
-**Effort estimate**: ~5 days
+**Effort estimate**: ~5 days (Task 1 completed)
 **Scope**: Missing mutations, RBAC guards, input validation, pagination
 
 | Task | Priority | Status |
 |------|----------|--------|
-| Implement `createCustomer` mutation (DTO exists, resolver + service missing) | High | ❌ |
+| Implement `createCustomer` mutation (DTO exists, resolver + service missing) | High | ✅ |
 | Implement `createTicketMessage` mutation (model exists, DTO + resolver + service missing) | High | ❌ |
 | Add `updateTicket` mutation (allow changing assignedTo, product, priority, title) | High | ❌ |
 | Add Activity CRUD resolvers (queries + mutations) | Medium | ❌ |
@@ -114,7 +114,7 @@
 | Wire activities → Activity API | Medium | ❌ |
 | Wire notifications → Notification API | Medium | ❌ |
 | Wire product creation → `createProduct` API | High | ❌ |
-| Wire customer creation → `createCustomer` API | High | ❌ |
+| Wire customer creation → `createCustomer` API | High | ✅ |
 | Wire ticket assignment → `updateTicket` API | Medium | ❌ |
 
 ---
@@ -163,6 +163,7 @@
 |-------|--------|-------------------|
 | `DashboardPortal.tsx` is 4,611 lines | Maintainability | S6 |
 | `mapConnection` sets `productId: c.customerId` | Data integrity | S7 |
+| Customer creation wired → API (Task 1 frontend work) | Integration | S4 |
 | No RBAC on any backend endpoint | Security | S4 |
 | No input validation on GraphQL mutations | Data quality | S4 |
 | Redis provisioned but unused | Waste | S7 |
@@ -179,7 +180,7 @@
 | # | Question | Relevant Sprint |
 |---|----------|-----------------|
 | 1 | Should `createTicketMessage` use a structured DTO or inline args? | S4 |
-| 2 | Should `createCustomer` auto-create a `User` account? | S4 |
+| 2 | Should `createCustomer` auto-create a `User` account? | S4 — Currently requires existing `userId` FK. Frontend looks up user by email. |
 | 3 | Should Activity/Notification be server-auto-generated or client-submitted? | S4 |
 | 4 | Should login localStorage fallback be removed? | S5 |
 | 5 | Should portals use lazy loading (`React.lazy`)? | S6 |

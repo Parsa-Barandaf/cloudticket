@@ -70,6 +70,10 @@ import SupportAgentPortalView from './AgentPortal';
 import { useTickets } from '../../hooks/useTickets';
 import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
+import { useUsers } from '../../hooks/useUsers';
+import { gql } from '../../api/graphql';
+import { CREATE_CUSTOMER } from '../../api/queries';
+import type { ApiCustomer } from '../../api/types';
 
 // Interfaces for our state elements
 export interface Ticket {
@@ -182,11 +186,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   ]);
 
   const [customerWorkspaceProducts, setCustomerWorkspaceProducts] = useState<any[]>([
-    { id: 'PRD-01', name: 'Cloud Security Platform', logoInitials: 'CS', logoColor: 'from-blue-500 to-indigo-600', version: 'v2.4.1', status: 'فعال', expDate: '۱۴۰۵/۰۴/۱۵', type: 'Enterprise', userLimit: 50, licenseKey: 'SEC-PLAT-88392-SAHAB' },
-    { id: 'PRD-02', name: 'Identity Protection Server', logoInitials: 'IP', logoColor: 'from-emerald-500 to-teal-600', version: 'v3.1.2', status: 'فعال', expDate: '۱۴۰۴/۱۲/۲۰', type: 'Enterprise', userLimit: 100, licenseKey: 'ID-PROT-10029-SAHAB' },
-    { id: 'PRD-03', name: 'Elastic Compute Node', logoInitials: 'EC', logoColor: 'from-rose-500 to-orange-500', version: 'v5.0.1', status: 'فعال', expDate: '۱۴۰۴/۱۰/۰۱', type: 'Business', userLimit: 15, licenseKey: 'EL-COMP-49301-SAHAB' },
-    { id: 'PRD-05', name: 'Global Edge CDN', logoInitials: 'GC', logoColor: 'from-purple-500 to-pink-500', version: 'v2.0.0', status: 'فعال', expDate: '۱۴۰۵/۰۱/۱۰', type: 'Business', userLimit: 20, licenseKey: 'EDGE-CDN-00392-SAHAB' },
-    { id: 'PRD-06', name: 'AI Analytics Framework', logoInitials: 'AI', logoColor: 'from-violet-500 to-fuchsia-500', version: 'v1.5.0', status: 'غیرفعال', expDate: '۱۴۰۳/۰۴/۰۱', type: 'Standard', userLimit: 10, licenseKey: 'AI-ANLT-22910-SAHAB' }
+    { id: 'PRD-01', name: 'Cloud Security Platform', logoInitials: 'CS', logoColor: 'from-blue-500 to-indigo-600', version: 'v2.4.1', status: 'فعال', expDate: '۱۴۰۵/۰۴/۱۵', type: 'Enterprise', userLimit: 50, licenseKey: 'SEC-PLAT-88392-CMP' },
+    { id: 'PRD-02', name: 'Identity Protection Server', logoInitials: 'IP', logoColor: 'from-emerald-500 to-teal-600', version: 'v3.1.2', status: 'فعال', expDate: '۱۴۰۴/۱۲/۲۰', type: 'Enterprise', userLimit: 100, licenseKey: 'ID-PROT-10029-CMP' },
+    { id: 'PRD-03', name: 'Elastic Compute Node', logoInitials: 'EC', logoColor: 'from-rose-500 to-orange-500', version: 'v5.0.1', status: 'فعال', expDate: '۱۴۰۴/۱۰/۰۱', type: 'Business', userLimit: 15, licenseKey: 'EL-COMP-49301-CMP' },
+    { id: 'PRD-05', name: 'Global Edge CDN', logoInitials: 'GC', logoColor: 'from-purple-500 to-pink-500', version: 'v2.0.0', status: 'فعال', expDate: '۱۴۰۵/۰۱/۱۰', type: 'Business', userLimit: 20, licenseKey: 'EDGE-CDN-00392-CMP' },
+    { id: 'PRD-06', name: 'AI Analytics Framework', logoInitials: 'AI', logoColor: 'from-violet-500 to-fuchsia-500', version: 'v1.5.0', status: 'غیرفعال', expDate: '۱۴۰۳/۰۴/۰۱', type: 'Standard', userLimit: 10, licenseKey: 'AI-ANLT-22910-CMP' }
   ]);
 
   // Workspace feedback messages
@@ -208,15 +212,16 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const { tickets: apiTickets, loading: ticketsLoading, createTicket: apiCreateTicket, updateTicketStatus: apiUpdateTicketStatus } = useTickets();
   const { products: apiProducts, loading: productsLoading } = useProducts();
   const { customers: apiCustomers, loading: customersLoading } = useCustomers();
+  const { users: apiUsers } = useUsers();
   useEffect(() => { if (apiTickets.length) setTickets(apiTickets); }, [apiTickets]);
   useEffect(() => { if (apiProducts.length) setProducts(apiProducts); }, [apiProducts]);
   useEffect(() => { if (apiCustomers.length) setCustomers(apiCustomers); }, [apiCustomers]);
 
   const [agents] = useState([
-    { id: 'AGN-01', name: 'امیرحسین رضایی', role: 'پشتیبان فنی ارشد', email: 'rezaei@sahab.ir', status: 'فعال', load: '۳ تیکت فعال' },
-    { id: 'AGN-02', name: 'زهرا موسوی', role: 'کارشناس توسعه‌دهندگان', email: 'mousavi@sahab.ir', status: 'فعال', load: '۲ تیکت فعال' },
-    { id: 'AGN-03', name: 'علی علوی', role: 'کارشناس امنیت شبکه', email: 'alavi@sahab.ir', status: 'مشغول', load: '۱ تیکت فعال' },
-    { id: 'AGN-04', name: 'مریم اکبری', role: 'کارشناس امور مشتریان', email: 'akbari@sahab.ir', status: 'آفلاین', load: '۰ تیکت فعال' }
+    { id: 'AGN-01', name: 'امیرحسین رضایی', role: 'پشتیبان فنی ارشد', email: 'rezaei@example.com', status: 'فعال', load: '۳ تیکت فعال' },
+    { id: 'AGN-02', name: 'زهرا موسوی', role: 'کارشناس توسعه‌دهندگان', email: 'mousavi@example.com', status: 'فعال', load: '۲ تیکت فعال' },
+    { id: 'AGN-03', name: 'علی علوی', role: 'کارشناس امنیت شبکه', email: 'alavi@example.com', status: 'مشغول', load: '۱ تیکت فعال' },
+    { id: 'AGN-04', name: 'مریم اکبری', role: 'کارشناس امور مشتریان', email: 'akbari@example.com', status: 'آفلاین', load: '۰ تیکت فعال' }
   ]);
 
   const [activities, setActivities] = useState<ActivityItem[]>([
@@ -289,7 +294,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [assignUserCount, setAssignUserCount] = useState(10);
   const [assignStartDate, setAssignStartDate] = useState('۱۴۰۵/۰۴/۲۰');
   const [assignEndDate, setAssignEndDate] = useState('۱۴۰۶/۰۴/۲۰');
-  const [assignActivationKey, setAssignActivationKey] = useState('LIC-SAHAB-E4A1-28BF-81C5');
+  const [assignActivationKey, setAssignActivationKey] = useState('LIC-CMP-E4A1-28BF-81C5');
   const [assignNotes, setAssignNotes] = useState('');
 
   // Product-Customer Connections State
@@ -596,7 +601,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
       endDate: assignEndDate,
       licenseStatus: 'فعال',
       userCount: assignUserCount,
-      activationKey: assignActivationKey || `LIC-SAHAB-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      activationKey: assignActivationKey || `LIC-CMP-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       notes: assignNotes,
       subscriptionType: assignSubscriptionType
     };
@@ -660,82 +665,105 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
     }, 4000);
   };
 
-  const handleSaveCustomer = (e: React.FormEvent) => {
+  const handleSaveCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName || !contactName) return;
 
     setIsCustomerLoading(true);
-    setTimeout(() => {
-      setIsCustomerLoading(false);
 
-      if (customerDrawerMode === 'create') {
-        const newCustId = `CST-${100 + customers.length + 1}`;
+    if (customerDrawerMode === 'create') {
+      try {
+        const matchedUser = apiUsers.find(u => u.email === contactEmail);
+        if (!matchedUser) {
+          showCustomerToast('کاربری با این ایمیل در سامانه یافت نشد. ابتدا کاربر را ثبت نام کنید.', 'error');
+          setIsCustomerLoading(false);
+          return;
+        }
+
+        const businessTypeToApiTier: Record<string, string> = {
+          Enterprise: 'GOLD',
+          Business: 'SILVER',
+          Standard: 'BRONZE',
+        };
+        const persianStatusToApi: Record<string, string> = {
+          'فعال': 'ACTIVE',
+          'غیرفعال': 'INACTIVE',
+          'در انتظار': 'PENDING',
+        };
+
+        const data = await gql<{ createCustomer: ApiCustomer }>(CREATE_CUSTOMER, {
+          input: {
+            industry: companyIndustry || 'سایر',
+            commercialName: companyCommercialName || companyName,
+            phone: companyPhone || null,
+            website: companyWebsite || null,
+            address: companyAddress || null,
+            tier: businessTypeToApiTier[businessType] || 'BRONZE',
+            status: persianStatusToApi[businessStatus] || 'ACTIVE',
+            userId: matchedUser.id,
+          },
+        });
+
+        const apiCust = data.createCustomer;
         const newCust: Customer = {
-          id: newCustId,
-          name: companyName,
-          commercialName: companyCommercialName || companyName,
-          industry: companyIndustry || 'سایر',
-          phone: companyPhone || '۰۲۱-۱۲۳۴۵۶۷۸',
-          website: companyWebsite || 'www.domain.ir',
-          address: companyAddress || 'تهران، خیابان اصلی',
-          managerName: contactName,
-          managerEmail: contactEmail || 'info@company.ir',
-          managerPhone: contactPhone || '۰۹۱۲۰۰۰۰۰۰۰',
-          customerType: businessType,
-          status: businessStatus,
-          usersCount: businessStatus === 'فعال' ? 12 : 0,
-          activeProductsCount: businessStatus === 'فعال' ? 1 : 0,
+          id: apiCust.id,
+          name: apiCust.commercialName || matchedUser.name,
+          industry: apiCust.industry,
           activeTickets: 0,
-          tier: businessType === 'Enterprise' ? 'طلایی' : businessType === 'Business' ? 'نقره‌ای' : 'برنزی',
-          lastActivity: 'هم‌اکنون',
-          partnershipStartDate: '۱۴۰۳/۰۴/۳۰'
+          tier: apiCust.tier === 'GOLD' ? 'طلایی' : apiCust.tier === 'SILVER' ? 'نقره‌ای' : 'برنزی',
+          commercialName: apiCust.commercialName,
+          phone: apiCust.phone,
+          website: apiCust.website,
+          address: apiCust.address,
+          managerName: matchedUser.name,
+          managerEmail: matchedUser.email,
+          managerPhone: apiCust.phone,
+          customerType: businessType,
+          status: apiCust.status === 'ACTIVE' ? 'فعال' : apiCust.status === 'INACTIVE' ? 'غیرفعال' : 'در انتظار',
+          usersCount: apiCust.usersCount,
+          activeProductsCount: apiCust.activeProductsCount,
+          partnershipStartDate: apiCust.partnershipStartDate,
+          lastActivity: apiCust.lastActivity || 'هم‌اکنون',
         };
 
         setCustomers([newCust, ...customers]);
-        
-        // Add to activities timeline
-        setActivities([
-          {
-            id: `ACT-${Date.now()}`,
-            type: 'customer',
-            title: 'مشتری سازمانی جدید ثبت شد',
-            subtitle: `مجموعه ${companyName} با سطح ${newCust.tier} با موفقیت افزوده شد.`,
-            time: 'هم‌اکنون'
-          },
-          ...activities
-        ]);
-
         showCustomerToast(`مشتری سازمانی "${companyName}" با موفقیت ثبت گردید.`);
-      } else {
-        // Edit mode
-        if (!selectedCustomerForEdit) return;
-        const updated = customers.map(c => {
-          if (c.id === selectedCustomerForEdit.id) {
-            return {
-              ...c,
-              name: companyName,
-              commercialName: companyCommercialName,
-              industry: companyIndustry,
-              phone: companyPhone,
-              website: companyWebsite,
-              address: companyAddress,
-              managerName: contactName,
-              managerEmail: contactEmail,
-              managerPhone: contactPhone,
-              customerType: businessType,
-              status: businessStatus,
-              tier: businessType === 'Enterprise' ? 'طلایی' : businessType === 'Business' ? 'نقره‌ای' : 'برنزی' as any
-            };
-          }
-          return c;
-        });
-
-        setCustomers(updated);
-        showCustomerToast(`اطلاعات مشتری "${companyName}" با موفقیت بروزرسانی شد.`);
+      } catch (err) {
+        showCustomerToast('خطا در ثبت مشتری: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
       }
+    } else {
+      // Edit mode
+      if (!selectedCustomerForEdit) {
+        setIsCustomerLoading(false);
+        return;
+      }
+      const updated = customers.map(c => {
+        if (c.id === selectedCustomerForEdit.id) {
+          return {
+            ...c,
+            name: companyName,
+            commercialName: companyCommercialName,
+            industry: companyIndustry,
+            phone: companyPhone,
+            website: companyWebsite,
+            address: companyAddress,
+            managerName: contactName,
+            managerEmail: contactEmail,
+            managerPhone: contactPhone,
+            customerType: businessType,
+            status: businessStatus,
+            tier: businessType === 'Enterprise' ? 'طلایی' : businessType === 'Business' ? 'نقره‌ای' : 'برنزی' as any,
+          };
+        }
+        return c;
+      });
 
-      setShowCustomerDrawer(false);
-    }, 600);
+      setCustomers(updated);
+      showCustomerToast(`اطلاعات مشتری "${companyName}" با موفقیت بروزرسانی شد.`);
+    }
+
+    setIsCustomerLoading(false);
+    setShowCustomerDrawer(false);
   };
 
   const handleOpenEditCustomer = (cust: Customer) => {
@@ -891,7 +919,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const unreadNotificationCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200" dir="rtl" id="sahab-dashboard-wrapper">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200" dir="rtl" id="cmp-dashboard-wrapper">
       
       {/* LOADING OVERLAY */}
       {ticketsLoading && tickets.length === 0 && (
@@ -2619,7 +2647,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                         </div>
                         <button
                           onClick={() => {
-                            setAssignActivationKey(`LIC-SAHAB-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`);
+                            setAssignActivationKey(`LIC-CMP-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`);
                             setShowAssignCustomerDrawer(true);
                           }}
                           className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-brand-500/10 cursor-pointer"
@@ -2955,7 +2983,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                               <span>گام اول: احراز هویت با هدر هدیه لایسنس</span>
                             </h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                              کلید فعال‌سازی دریافت شده در پنل مدیریت را با هدر <code className="font-mono bg-slate-50 dark:bg-slate-950 px-1 py-0.5 rounded text-rose-500 text-[10px]">X-Sahab-License</code> در بدنه درخواست‌ها به آدرس API محصول ارسال کنید.
+                              کلید فعال‌سازی دریافت شده در پنل مدیریت را با هدر <code className="font-mono bg-slate-50 dark:bg-slate-950 px-1 py-0.5 rounded text-rose-500 text-[10px]">X-CMP-License</code> در بدنه درخواست‌ها به آدرس API محصول ارسال کنید.
                             </p>
                           </div>
 
@@ -2964,7 +2992,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             <button
                               type="button"
                               onClick={() => {
-                                navigator.clipboard.writeText(`curl -X POST https://api.sahab.ir/v2/auth \\\n  -H "X-Sahab-License: LIC-SAHAB-E4A1-28BF" \\\n  -H "Content-Type: application/json" \\\n  -d '{"client_id": "PRD-01"}'`);
+                                navigator.clipboard.writeText(`curl -X POST https://api.example.com/v2/auth \\\n  -H "X-CMP-License: LIC-CMP-E4A1-28BF" \\\n  -H "Content-Type: application/json" \\\n  -d '{"client_id": "PRD-01"}'`);
                                 setCopiedTextId('curl-code');
                                 setTimeout(() => setCopiedTextId(null), 1500);
                               }}
@@ -2978,8 +3006,8 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                               )}
                             </button>
                             <div className="text-slate-500">// Send request with system license</div>
-                            <div><span className="text-brand-400">curl</span> -X POST https://api.sahab.ir/v2/auth \</div>
-                            <div>  -H <span className="text-emerald-400">"X-Sahab-License: LIC-SAHAB-E4A1-28BF"</span> \</div>
+                            <div><span className="text-brand-400">curl</span> -X POST https://api.example.com/v2/auth \</div>
+                            <div>  -H <span className="text-emerald-400">"X-CMP-License: LIC-CMP-E4A1-28BF"</span> \</div>
                             <div>  -H <span className="text-emerald-400">"Content-Type: application/json"</span> \</div>
                             <div>  -d <span className="text-amber-400">{"'{\"client_id\": \"PRD-01\"}'"}</span></div>
                           </div>
@@ -4029,7 +4057,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">ایمیل پیش‌فرض مکاتبات سیستم</label>
                       <input 
                         type="email" 
-                        defaultValue="support@sahab.ir" 
+                        defaultValue="support@example.com" 
                         className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none" 
                       />
                     </div>
@@ -4321,11 +4349,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
               {/* Drawer Body (Form) */}
               <form 
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   setIsSavingCustomer(true);
-                  handleSaveCustomer(e);
-                  setTimeout(() => setIsSavingCustomer(false), 600);
+                  await handleSaveCustomer(e);
+                  setIsSavingCustomer(false);
                 }} 
                 className="flex-1 overflow-y-auto p-6 space-y-6 font-medium text-xs text-slate-700 dark:text-slate-300"
               >
@@ -4507,10 +4535,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     setIsSavingCustomer(true);
-                    handleSaveCustomer(e);
-                    setTimeout(() => setIsSavingCustomer(false), 600);
+                    await handleSaveCustomer(e);
+                    setIsSavingCustomer(false);
                   }}
                   disabled={isSavingCustomer}
                   className="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-black shadow-md shadow-brand-500/15 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-75"

@@ -43,7 +43,7 @@ Populates the database with:
 1. `LoginForm` calls `useAuth().login(email, password)`
 2. Hook tries real GraphQL API first
 3. If API unavailable, falls back to localStorage mock (admin/agent/customer based on email prefix)
-4. JWT token stored in `localStorage.sahab_access_token`
+4. JWT token stored in `localStorage.cmp_access_token`
 5. All subsequent API calls include `Authorization: Bearer <token>`
 
 ### How to run (full stack)
@@ -70,15 +70,15 @@ npm run dev           # http://localhost:3000
 ### Test credentials (seeded)
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@sahab.ir | 123456 |
-| Agent | rezaei@sahab.ir | 123456 |
+| Admin | admin@example.com | 123456 |
+| Agent | rezaei@example.com | 123456 |
 | Customer | a.karimi@ariasecurity.ir | 123456 |
 
 ### GraphQL Playground
 Open `http://localhost:4000/graphql` and try:
 ```graphql
 query { tickets { id title priority status customer { commercialName } } }
-mutation { login(email: "admin@sahab.ir", password: "123456") { accessToken user { name role } } }
+mutation { login(email: "admin@example.com", password: "123456") { accessToken user { name role } } }
 ```
 
 ### Build verification

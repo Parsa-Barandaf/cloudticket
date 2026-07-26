@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 export function useTheme(defaultDark = true) {
   const [isDark, setIsDark] = useState<boolean>(() => {
-    const saved = localStorage.getItem('sahab_theme');
+    const saved = localStorage.getItem('cmp_theme');
     return saved !== null ? saved === 'dark' : defaultDark;
   });
 
@@ -13,7 +13,7 @@ export function useTheme(defaultDark = true) {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('sahab_theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('cmp_theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   const toggleTheme = useCallback(() => {

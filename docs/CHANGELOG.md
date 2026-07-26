@@ -4,12 +4,32 @@
 
 ---
 
+## [1.1.0] — Sprint 4 Task 1: `createCustomer` Mutation (2026-07-25)
+
+### Added
+
+#### Backend
+- `createCustomer(input: CreateCustomerInput!): Customer!` mutation in `customers.resolver.ts` — validates user exists, checks for duplicate customer profile
+- `create()` service method in `customers.service.ts` with Prisma create + full include
+- Extended `CreateCustomerInput` DTO: added `website?`, `address?`, `status?` fields; `tier` and `status` now use `CustomerTier`/`CustomerStatus` enum types
+
+#### Frontend
+- `CREATE_CUSTOMER` mutation string in `src/api/queries.ts` — returns full customer object with user, tickets, connections
+- `DashboardPortal.tsx` `handleSaveCustomer` create branch now calls real API via `gql(CREATE_CUSTOMER)` instead of mock data
+- `useUsers` hook imported in `DashboardPortal.tsx` to look up user by email for `userId` linking
+
+### Fixed
+- Form `onSubmit` and save button `onClick` now properly `await` the async `handleSaveCustomer` — no more premature loading spinner reset
+- Added `lastActivity` field to frontend customer creation mapping (was missing)
+
+---
+
 ## [1.0.0] — Sprint 3 Complete (2026-07-25)
 
 ### Added
 
 #### Frontend — API Layer
-- `src/api/graphql.ts` — Generic GraphQL fetch wrapper with JWT Bearer token injection from `localStorage.sahab_access_token`
+- `src/api/graphql.ts` — Generic GraphQL fetch wrapper with JWT Bearer token injection from `localStorage.cmp_access_token`
 - `src/api/queries.ts` — All GraphQL query/mutation strings (5 queries: `GET_TICKETS`, `GET_TICKET`, `GET_PRODUCTS`, `GET_CUSTOMERS`, `GET_USERS`; 4 mutations: `LOGIN_MUTATION`, `REGISTER_MUTATION`, `CREATE_TICKET`, `UPDATE_TICKET_STATUS`)
 - `src/api/types.ts` — TypeScript interfaces: `ApiUser`, `ApiCustomer`, `ApiProduct`, `ApiConnection`, `ApiTicketMessage`, `ApiTicket` + 6 enum type aliases (`UserRole`, `TicketPriority`, `TicketStatus`, `ProductStatus`, `CustomerTier`, `CustomerStatus`)
 - `src/api/transform.ts` — API → frontend type mapping: `mapTicket()`, `mapProduct()`, `mapCustomer()`, `mapConnection()` with Persian enum localization

@@ -45,7 +45,7 @@ Open `http://localhost:4000/graphql` in a browser.
 ```graphql
 # Register
 mutation {
-  register(email: "admin@sahab.ir", password: "123456", name: "Admin") {
+  register(email: "admin@example.com", password: "123456", name: "Admin") {
     accessToken
     user { id email name role }
   }
@@ -53,7 +53,7 @@ mutation {
 
 # Login
 mutation {
-  login(email: "admin@sahab.ir", password: "123456") {
+  login(email: "admin@example.com", password: "123456") {
     accessToken
     user { id email name role }
   }

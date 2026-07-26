@@ -146,8 +146,8 @@ LoginForm
   → useAuth().login(email, password)
     → gql(LOGIN_MUTATION, { email, password })
       → Backend: auth.service (bcrypt.compare → JWT.sign)
-    → Stores token in localStorage.sahab_access_token
-  → Sets portalRole in localStorage.sahab_portal_role
+    → Stores token in localStorage.cmp_access_token
+  → Sets portalRole in localStorage.cmp_portal_role
   → App.tsx re-renders with matching portal component
 
 All subsequent gql() calls:

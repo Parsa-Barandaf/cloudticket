@@ -105,7 +105,7 @@
 
 **Context**: Need to persist authentication state across page reloads without a backend session store or refresh token mechanism.
 
-**Decision**: Store JWT token (`sahab_access_token`), user email (`sahab_user_email`), portal role (`sahab_portal_role`), and theme preference (`sahab_theme`) in localStorage.
+**Decision**: Store JWT token (`cmp_access_token`), user email (`cmp_user_email`), portal role (`cmp_portal_role`), and theme preference (`cmp_theme`) in localStorage.
 
 **Consequences**:
 - ✅ Survives page reloads
@@ -118,10 +118,10 @@
 **Improvement plan**: Move to httpOnly cookies + refresh token pattern (Sprint 7).
 
 **Files affected**:
-- `src/hooks/useAuth.ts` — Stores `sahab_access_token`
-- `src/api/graphql.ts` — Reads `sahab_access_token` for Bearer header
-- `src/App.tsx` — Reads `sahab_user_email`, `sahab_portal_role`
-- `src/hooks/useTheme.ts` — Stores `sahab_theme`
+- `src/hooks/useAuth.ts` — Stores `cmp_access_token`
+- `src/api/graphql.ts` — Reads `cmp_access_token` for Bearer header
+- `src/App.tsx` — Reads `cmp_user_email`, `cmp_portal_role`
+- `src/hooks/useTheme.ts` — Stores `cmp_theme`
 
 ---
 

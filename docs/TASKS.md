@@ -28,7 +28,6 @@ No tasks currently active.
 No blockers currently. The following backend tasks must complete before Sprint 5 can begin:
 
 - Task 2 (`createTicketMessage` mutation) blocks Task 10 (wire reply composer)
-- Task 1 (`createCustomer` mutation) blocks Task 14 (wire customer creation)
 
 ---
 
@@ -36,14 +35,13 @@ No blockers currently. The following backend tasks must complete before Sprint 5
 
 | # | Task | Priority | Status | Dependencies | Notes |
 |---|------|----------|--------|--------------|-------|
-| 1 | Implement `createCustomer` mutation | 🔴 High | ❌ | None | DTO at `common/dto/customer.input.ts`. Needs resolver in `customers.resolver.ts` + service method in `customers.service.ts`. Must accept `industry`, `commercialName?`, `phone?`, `tier?`, `userId`. |
 | 2 | Implement `createTicketMessage` mutation | 🔴 High | ❌ | None | Model exists at `common/models/ticket-message.model.ts`. Needs input DTO, resolver, service. Must accept `ticketId`, `text`, `senderName`, `isInternal?`. |
 | 3 | Add `updateTicket` mutation (assignedTo, product, priority) | 🔴 High | ❌ | None | Currently only `updateTicketStatus` exists. Add a general `updateTicket(input)` that can modify any field. |
 | 4 | Add Activity CRUD resolvers | 🟡 Medium | ❌ | None | Model exists, no GraphQL resolvers. At minimum need `activities` query and `createActivity` mutation. |
 | 5 | Add Notification CRUD resolvers | 🟡 Medium | ❌ | None | Model exists. Need `notifications` query, `createNotification`, `markNotificationRead` mutations. |
 | 6 | Add RBAC guards (`@UseGuards(RolesGuard)`) | 🔴 High | ❌ | None | Currently no auth guards on any endpoint. Need `RolesGuard` + `@Roles()` decorator checking `User.role`. |
 | 7 | Add class-validator decorators to DTOs | 🟡 Medium | ❌ | None | `class-validator` + `class-transformer` already in `package.json`. Add `@IsString()`, `@MinLength()`, `@IsOptional()`, etc. to all input DTOs. |
-| 8 | Add pagination arguments to list queries | 🟡 Medium | ❌ | Task 1-3 | `tickets`, `products`, `customers` return all rows. Add `take`/`skip` or `first`/`after` cursor args. |
+| 8 | Add pagination arguments to list queries | 🟡 Medium | ❌ | Task 2-3 | `tickets`, `products`, `customers` return all rows. Add `take`/`skip` or `first`/`after` cursor args. |
 | 9 | Add search/filter arguments to list queries | 🟡 Medium | ❌ | Task 8 | No `where` or `search` args. Add `status`, `priority`, `customerId` filters to `tickets` query. |
 
 ---
@@ -56,7 +54,7 @@ No blockers currently. The following backend tasks must complete before Sprint 5
 | 11 | Wire activities → API | 🟡 Medium | ❌ | Task 4 | Replace all `setActivities` mock calls in `DashboardPortal.tsx` with API calls. |
 | 12 | Wire notifications → API | 🟡 Medium | ❌ | Task 5 | Replace all `setNotifications` mock calls in `DashboardPortal.tsx` with API calls. |
 | 13 | Wire product creation → `createProduct` API | 🔴 High | ❌ | None | `DashboardPortal.tsx` `handleCreateProduct` (~line 460) uses mock. Replace with `gql(CREATE_PRODUCT)`. Note: `CREATE_PRODUCT` string needs to be added to `src/api/queries.ts` — not yet present. |
-| 14 | Wire customer creation → `createCustomer` API | 🔴 High | ❌ | Task 1 | `DashboardPortal.tsx` `handleCreateCustomer` (~line 530) uses mock. Requires backend `createCustomer` mutation first. |
+| 14 | Wire customer creation → `createCustomer` API | 🔴 High | ✅ | Task 1 | `DashboardPortal.tsx` `handleSaveCustomer` create branch now calls `gql(CREATE_CUSTOMER)`. Looks up user by email, maps API response. |
 | 15 | Wire ticket assignment → API | 🟡 Medium | ❌ | Task 3 | `TicketInbox.tsx` (line ~1004) and `TicketDetailsWorkspace.tsx` (`handleUpdateTicketAgent`, line ~260) use local `setTickets` only. Requires `updateTicket` mutation with `assignedToId` field. |
 
 ---
@@ -106,3 +104,5 @@ No blockers currently. The following backend tasks must complete before Sprint 5
 | 47 | Wire create ticket → API (all 3 portals) | S3 | ✅ |
 | 48 | Wire update ticket status → API (TicketInbox + Details) | S3 | ✅ |
 | 49 | Documentation system (14 docs + 7 .ai files) | S3 | ✅ |
+| 50 | Implement `createCustomer` mutation | S4 | ✅ |
+| 51 | Wire customer creation → `createCustomer` API | S4 | ✅ |

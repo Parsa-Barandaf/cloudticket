@@ -4,27 +4,83 @@
 
 ---
 
-## Session 2026-07-25 — AI Memory System Initialization & Documentation Overhaul
+## Session 2026-07-25 — Implement `createCustomer` Mutation (Sprint 4, Task 1)
 
-**Duration**: Active
-**Objective**: Populate all documentation files to become the single source of truth. Never reference conversation history again.
+**Duration**: Complete
+**Objective**: Implement the `createCustomer` GraphQL mutation — backend resolver/service + frontend API wiring.
 
-### Work Done
-- Reviewed and enriched every doc in `docs/` and `.ai/`
-- Added open questions, current priorities, technical debt items
-- Cross-referenced all files for consistency
-- Ensured every file can independently reconstruct project context
+---
+
+### Completed Task
+
+**Task 1 (Sprint 4): Implement `createCustomer` mutation** — ✅ Complete
+
+Also completed **Task 14 (Sprint 5): Wire customer creation → `createCustomer` API** — ✅ Complete (frontend wiring done in same session)
+
+---
 
 ### Files Modified
-| File | Change |
+
+| # | File | Change |
+|---|------|--------|
+| 1 | `backend/src/common/dto/customer.input.ts` | Added `website?`, `address?`, `status?` fields; `tier`/`status` now use enum types |
+| 2 | `backend/src/customers/customers.service.ts` | Added `create()` method with user validation + duplicate check |
+| 3 | `backend/src/customers/customers.resolver.ts` | Added `@Mutation(() => Customer) createCustomer(@Args('input'))` |
+| 4 | `src/api/queries.ts` | Added `CREATE_CUSTOMER` mutation string |
+| 5 | `src/components/portals/DashboardPortal.tsx` | Replaced mock create with API call; added `useUsers`, `gql`, `CREATE_CUSTOMER` imports; fixed async await; added `lastActivity` mapping |
+
+### Documentation Updated
+
+| # | File | Change |
+|---|------|--------|
+| 1 | `docs/SESSION.md` | Full session summary with all sections |
+| 2 | `docs/TASKS.md` | Moved Task 1, 14 to Completed; removed blocker; updated Sprint 5 table |
+| 3 | `docs/CHANGELOG.md` | Added `[1.1.0]` entry for createCustomer |
+| 4 | `docs/API.md` | Added createCustomer mutation docs; removed from Missing Mutations |
+| 5 | `docs/ROADMAP.md` | Sprint 4: Task 1 ✅; Sprint 5: customer wiring ✅ |
+| 6 | `.ai/CURRENT_STATE.md` | Updated sprint, task, backend/frontend progress, mock inventory, DB state |
+| 7 | `.ai/MEMORY.md` | Updated mock data table; added createCustomer pattern; updated queries count |
+
+---
+
+### Known Issues
+
+| # | Issue | Severity |
+|---|-------|----------|
+| 1 | Form `onSubmit` at `DashboardPortal.tsx:4351` and button at `:4538` still use `setIsSavingCustomer` instead of the primary `setIsCustomerLoading` — two separate loading states for the same operation | Low |
+| 2 | Inline Persian→English maps (`businessTypeToApiTier`, `persianStatusToApi`) added in `DashboardPortal.tsx` — adds to pre-existing duplication (ADR-011) | Low |
+| 3 | Race condition: if `useUsers` hasn't loaded when admin submits create customer form, lookup by email fails | Low |
+
+---
+
+### Next Recommended Task
+
+**Task 2 — Implement `createTicketMessage` mutation** (Sprint 4, High priority)
+
+Rationale:
+- High priority per roadmap
+- Blocks Sprint 5 Task 10 (wire reply composer)
+- Follows the same pattern established by Task 1 (DTO + resolver + service)
+
+Alternative: **Task 6 — RBAC guards** (Critical severity, no dependencies)
+
+---
+
+### Current Sprint Progress
+
+**Sprint 4: Complete Backend CRUD** — 🔄 In Progress (1/8 tasks complete)
+
+| Task | Status |
 |------|--------|
-| `docs/SESSION.md` | Full session log with all prior sessions |
-| `docs/TASKS.md` | Added mock data locations, specific line refs, open questions |
-| `docs/ROADMAP.md` | Added estimated effort, open questions section |
-| `docs/CHANGELOG.md` | Added documentation system creation |
-| `docs/DECISIONS.md` | Added ADR-009 through ADR-012 (form state, animation, transform duplication, CORS) |
-| `docs/CURRENT_STATE.md` | Added mock data inventory, open questions, priorities |
-| `.ai/MEMORY.md` | Added all code patterns, mock data locations, gql patterns |
+| 1 — `createCustomer` mutation | ✅ |
+| 2 — `createTicketMessage` mutation | ❌ |
+| 3 — `updateTicket` mutation | ❌ |
+| 4 — Activity CRUD | ❌ |
+| 5 — Notification CRUD | ❌ |
+| 6 — RBAC guards | ❌ |
+| 7 — Input validation | ❌ |
+| 8 — Pagination | ❌ |
+| 9 — Search/filter | ❌ |
 
 ---
 

@@ -1,10 +1,10 @@
 # System Instructions
 
-> You are an expert software engineer, technical lead, and architect for the Sahab CRM project — a Persian-language cloud support ticket management platform.
+> You are an expert software engineer, technical lead, and architect for the پلتفرم مدیریت مشتریان project — a Persian-language cloud support ticket management platform.
 
 ## Project Identity
 
-- **Name**: سامانه مدیریت پشتیبانی ابری (Sahab CRM)
+- **Name**: پلتفرم مدیریت مشتریان
 - **Stack**: React 19 + Vite 6 + TypeScript (frontend), NestJS 11 + Apollo GraphQL + Prisma 7 + PostgreSQL 16 (backend)
 - **Language**: Persian (RTL) UI, English code/enums
 - **Portals**: Admin (Dashboard), Agent (Support), Customer

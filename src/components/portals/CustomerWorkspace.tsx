@@ -72,11 +72,11 @@ export default function CustomerWorkspaceView({
   ]);
 
   const [customerWorkspaceProducts, setCustomerWorkspaceProducts] = useState<any[]>([
-    { id: 'PRD-01', name: 'Cloud Security Platform', logoInitials: 'CS', logoColor: 'from-blue-500 to-indigo-600', version: 'v2.4.1', status: 'فعال', expDate: '۱۴۰۵/۰۴/۱۵', type: 'Enterprise', userLimit: 50, licenseKey: 'SEC-PLAT-88392-SAHAB' },
-    { id: 'PRD-02', name: 'Identity Protection Server', logoInitials: 'IP', logoColor: 'from-emerald-500 to-teal-600', version: 'v3.1.2', status: 'فعال', expDate: '۱۴۰۴/۱۲/۲۰', type: 'Enterprise', userLimit: 100, licenseKey: 'ID-PROT-10029-SAHAB' },
-    { id: 'PRD-03', name: 'Elastic Compute Node', logoInitials: 'EC', logoColor: 'from-rose-500 to-orange-500', version: 'v5.0.1', status: 'فعال', expDate: '۱۴۰۴/۱۰/۰1', type: 'Business', userLimit: 15, licenseKey: 'EL-COMP-49301-SAHAB' },
-    { id: 'PRD-05', name: 'Global Edge CDN', logoInitials: 'GC', logoColor: 'from-purple-500 to-pink-500', version: 'v2.0.0', status: 'فعال', expDate: '۱۴۰۵/۰۱/۱۰', type: 'Business', userLimit: 20, licenseKey: 'EDGE-CDN-00392-SAHAB' },
-    { id: 'PRD-06', name: 'AI Analytics Framework', logoInitials: 'AI', logoColor: 'from-violet-500 to-fuchsia-500', version: 'v1.5.0', status: 'غیرفعال', expDate: '۱۴۰۳/۰۴/۰۱', type: 'Standard', userLimit: 10, licenseKey: 'AI-ANLT-22910-SAHAB' }
+    { id: 'PRD-01', name: 'Cloud Security Platform', logoInitials: 'CS', logoColor: 'from-blue-500 to-indigo-600', version: 'v2.4.1', status: 'فعال', expDate: '۱۴۰۵/۰۴/۱۵', type: 'Enterprise', userLimit: 50, licenseKey: 'SEC-PLAT-88392-CMP' },
+    { id: 'PRD-02', name: 'Identity Protection Server', logoInitials: 'IP', logoColor: 'from-emerald-500 to-teal-600', version: 'v3.1.2', status: 'فعال', expDate: '۱۴۰۴/۱۲/۲۰', type: 'Enterprise', userLimit: 100, licenseKey: 'ID-PROT-10029-CMP' },
+    { id: 'PRD-03', name: 'Elastic Compute Node', logoInitials: 'EC', logoColor: 'from-rose-500 to-orange-500', version: 'v5.0.1', status: 'فعال', expDate: '۱۴۰۴/۱۰/۰1', type: 'Business', userLimit: 15, licenseKey: 'EL-COMP-49301-CMP' },
+    { id: 'PRD-05', name: 'Global Edge CDN', logoInitials: 'GC', logoColor: 'from-purple-500 to-pink-500', version: 'v2.0.0', status: 'فعال', expDate: '۱۴۰۵/۰۱/۱۰', type: 'Business', userLimit: 20, licenseKey: 'EDGE-CDN-00392-CMP' },
+    { id: 'PRD-06', name: 'AI Analytics Framework', logoInitials: 'AI', logoColor: 'from-violet-500 to-fuchsia-500', version: 'v1.5.0', status: 'غیرفعال', expDate: '۱۴۰۳/۰۴/۰۱', type: 'Standard', userLimit: 10, licenseKey: 'AI-ANLT-22910-CMP' }
   ]);
 
   // Modals visibility state
@@ -158,7 +158,7 @@ export default function CustomerWorkspaceView({
       expDate: '۱۴۰۶/۰۱/۰۱',
       type: 'Enterprise',
       userLimit: newProductLimit,
-      licenseKey: `${selectedProd.logoInitials}-PLAT-${Math.floor(10000 + Math.random() * 90000)}-SAHAB`
+      licenseKey: `${selectedProd.logoInitials}-PLAT-${Math.floor(10000 + Math.random() * 90000)}-CMP`
     };
 
     setCustomerWorkspaceProducts([...customerWorkspaceProducts, newProdItem]);

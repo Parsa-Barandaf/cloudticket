@@ -1,4 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { CustomerTier, CustomerStatus } from '../models/customer.model';
 
 @InputType()
 export class CreateCustomerInput {
@@ -12,7 +13,16 @@ export class CreateCustomerInput {
   phone?: string;
 
   @Field({ nullable: true })
-  tier?: string;
+  website?: string;
+
+  @Field({ nullable: true })
+  address?: string;
+
+  @Field(() => CustomerTier, { nullable: true })
+  tier?: CustomerTier;
+
+  @Field(() => CustomerStatus, { nullable: true })
+  status?: CustomerStatus;
 
   @Field()
   userId: string;

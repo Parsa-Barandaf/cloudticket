@@ -73,6 +73,19 @@ export const GET_PRODUCTS = `
 `;
 
 // ── Customers ──
+export const CREATE_CUSTOMER = `
+  mutation CreateCustomer($input: CreateCustomerInput!) {
+    createCustomer(input: $input) {
+      id commercialName industry phone website address tier status
+      usersCount activeProductsCount partnershipStartDate lastActivity
+      userId
+      user { id email name }
+      tickets { id title priority status }
+      connections { id customer { id commercialName } licenseStatus startDate endDate }
+    }
+  }
+`;
+
 export const GET_CUSTOMERS = `
   query Customers {
     customers {

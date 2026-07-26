@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/graphql';
 
 async function getToken(): Promise<string | null> {
-  return localStorage.getItem('sahab_access_token');
+  return localStorage.getItem('cmp_access_token');
 }
 
 export async function gql<T>(

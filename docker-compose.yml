@@ -1,20 +1,20 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: sahab-postgres
+    container_name: cmp-postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: sahab_crm
-      POSTGRES_USER: sahab
-      POSTGRES_PASSWORD: sahab_secret
+      POSTGRES_DB: cmp_crm
+      POSTGRES_USER: cmp
+      POSTGRES_PASSWORD: cmp_secret
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
-    container_name: sahab-redis
+    container_name: cmp-redis
     restart: unless-stopped
     ports:
       - "6379:6379"

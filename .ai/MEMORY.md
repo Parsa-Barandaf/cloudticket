@@ -34,7 +34,7 @@ D:\Dev\CRM\
 │   │   ├── users/              # findAll, findById, findByEmail
 │   │   ├── tickets/            # Full CRUD + status update
 │   │   ├── products/           # Full CRUD + create
-│   │   ├── customers/          # Queries only (no mutations)
+│   │   ├── customers/          # Full CRUD (queries + createCustomer mutation)
 │   │   └── common/
 │   │       ├── models/         # 8 @ObjectType() classes
 │   │       └── dto/            # 4 @InputType() classes
@@ -51,7 +51,7 @@ D:\Dev\CRM\
 
 | File | Lines | Read Strategy |
 |------|-------|---------------|
-| `DashboardPortal.tsx` | 4,611 | Grep + offset read (never read full) |
+| `DashboardPortal.tsx` | 4,982 | Grep + offset read (never read full) |
 | `AgentPortal.tsx` | 2,248 | Grep + offset read |
 | `UserManagement.tsx` | 1,737 | Grep + offset read |
 | `TicketDetailsWorkspace.tsx` | 1,237 | Grep + offset read |
@@ -107,7 +107,7 @@ import { CREATE_TICKET } from '../../api/queries';
 await gql(CREATE_TICKET, { input: { title, priority, customerId } });
 ```
 
-Used in: `CustomerPortal.tsx`, `AgentPortal.tsx`, `TicketInbox.tsx`, `TicketDetailsWorkspace.tsx`
+Used in: `CustomerPortal.tsx`, `AgentPortal.tsx`, `TicketInbox.tsx`, `TicketDetailsWorkspace.tsx`, `DashboardPortal.tsx` (customer creation)
 
 ### Pattern 2: Via hook method
 
@@ -130,8 +130,8 @@ import { api } from '../../api/client';   // NEVER imported anywhere
 
 | Feature | Component | Function/Handler | Line (approx) |
 |---------|-----------|-----------------|---------------|
-| Product creation | `DashboardPortal.tsx` | `handleCreateProduct` | ~460 |
-| Customer creation | `DashboardPortal.tsx` | `handleCreateCustomer` | ~530 |
+| Product creation | `DashboardPortal.tsx` | `handleCreateProduct` → `handleSaveDrawerProduct` | ~492 |
+| ~~Customer creation~~ | ~~`DashboardPortal.tsx`~~ | ~~`handleSaveCustomer`~~ | ✅ Wired to API |
 | Send reply | `TicketDetailsWorkspace.tsx` | `handleSendReply` | ~160 |
 | Send reply | `AgentPortal.tsx` | inline `onSubmit` | ~600 |
 | Activity feeds | `DashboardPortal.tsx` | `setActivities(...)` | various |
@@ -145,12 +145,33 @@ import { api } from '../../api/client';   // NEVER imported anywhere
 
 | Key | Type | Set By | Used By |
 |-----|------|--------|---------|
-| `sahab_access_token` | `string` (JWT) | `useAuth.ts` | `graphql.ts` (Bearer header) |
-| `sahab_user_email` | `string` | `useAuth.ts` / `App.tsx` | `App.tsx` |
-| `sahab_portal_role` | `string` (`admin`/`agent`/`customer`) | `useAuth.ts` / `App.tsx` | `App.tsx` |
-| `sahab_logged_in` | `string` (`"true"`/`"false"`) | `App.tsx` | `App.tsx` |
-| `sahab_theme` | `string` (`"dark"`/`"light"`) | `useTheme.ts` | `useTheme.ts` |
-| `sahab_*` (any) | — | — | Future hooks may read |
+| `cmp_access_token` | `string` (JWT) | `useAuth.ts` | `graphql.ts` (Bearer header) |
+| `cmp_user_email` | `string` | `useAuth.ts` / `App.tsx` | `App.tsx` |
+| `cmp_portal_role` | `string` (`admin`/`agent`/`customer`) | `useAuth.ts` / `App.tsx` | `App.tsx` |
+| `cmp_logged_in` | `string` (`"true"`/`"false"`) | `App.tsx` | `App.tsx` |
+| `cmp_theme` | `string` (`"dark"`/`"light"`) | `useTheme.ts` | `useTheme.ts` |
+| `cmp_*` (any) | — | — | Future hooks may read |
+
+---
+
+## createCustomer Pattern (Sprint 4, Task 1)
+
+### Backend
+- **DTO**: `backend/src/common/dto/customer.input.ts` — `@InputType() CreateCustomerInput` with fields: `industry`, `commercialName?`, `phone?`, `website?`, `address?`, `tier?`, `status?`, `userId`
+- **Service**: `backend/src/customers/customers.service.ts` — `create(input)` validates user exists (findUnique), checks duplicate (findUnique by userId), then `prisma.customer.create` with defaults `?? 'BRONZE'` / `?? 'ACTIVE'`
+- **Resolver**: `backend/src/customers/customers.resolver.ts` — `@Mutation(() => Customer) createCustomer(@Args('input') input: CreateCustomerInput)`
+
+### Frontend
+- **Query**: `CREATE_CUSTOMER` in `src/api/queries.ts` — returns full Customer + user + tickets + connections
+- **Call site**: `DashboardPortal.tsx` `handleSaveCustomer` — finds user by `contactEmail` via `useUsers`, maps response to local `Customer` type
+
+### Data Flow
+1. Admin fills customer form (name, industry, contact email, etc.)
+2. `handleSaveCustomer` finds user via `apiUsers.find(u => u.email === contactEmail)`
+3. Maps Persian→English enums inline (`businessTypeToApiTier`, `persianStatusToApi`)
+4. Calls `gql(CREATE_CUSTOMER, { input })` 
+5. Maps response `ApiCustomer` → local `Customer` type (inline, not via `mapCustomer` from transform.ts)
+6. Prepends to local `customers` state
 
 ---
 
@@ -183,7 +204,7 @@ npm run dev
 | Root component | `src/App.tsx` |
 | Types (frontend) | `src/types/index.ts` |
 | Types (API) | `src/api/types.ts` |
-| GQL queries | `src/api/queries.ts` |
+| GQL queries | `src/api/queries.ts` (5 queries, 5 mutations) |
 | Transform layer | `src/api/transform.ts` |
 | GraphQL schema | `backend/src/schema.gql` |
 | Prisma schema | `backend/prisma/schema.prisma` |

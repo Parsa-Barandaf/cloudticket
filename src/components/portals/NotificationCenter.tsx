@@ -237,11 +237,11 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
   ]);
 
   const teamMembers = [
-    { name: 'امیرحسین رضایی', role: 'کارشناس پشتیبانی', email: 'rezaei@sahab.ir' },
+    { name: 'امیرحسین رضایی', role: 'کارشناس پشتیبانی', email: 'rezaei@example.com' },
     { name: 'آرش کریمی', role: 'مدیر امنیت', email: 'a.karimi@ariasecurity.ir' },
     { name: 'سارا صادقی', role: 'مدیر فروش', email: 's.sadeghi@afarin.shop' },
     { name: 'علیرضا مجیدی', role: 'مدیر کل', email: 'majidi@novintech.ir' },
-    { name: 'مریم اکبری', role: 'کارشناس فنی', email: 'akbari@sahab.ir' }
+    { name: 'مریم اکبری', role: 'کارشناس فنی', email: 'akbari@example.com' }
   ];
 
   // Notification Preferences State

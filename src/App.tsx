@@ -15,41 +15,41 @@ import SupportAgentPortalView from './components/portals/AgentPortal';
 
 function AppContent() {
   const [screen, setScreen] = useState<AuthScreen>(() => {
-    const saved = localStorage.getItem('sahab_logged_in');
+    const saved = localStorage.getItem('cmp_logged_in');
     if (saved === 'false') return 'login';
     return 'dashboard';
   });
   const { isDark, toggleTheme } = useTheme(true);
   const [userEmail, setUserEmail] = useState<string>(() => {
-    return localStorage.getItem('sahab_user_email') || 'admin@sahab.ir';
+    return localStorage.getItem('cmp_user_email') || 'admin@example.com';
   });
   const [portalRole, setPortalRole] = useState<PortalRole>(() => {
-    return (localStorage.getItem('sahab_portal_role') as PortalRole) || 'admin';
+    return (localStorage.getItem('cmp_portal_role') as PortalRole) || 'admin';
   });
   const { tickets: realTickets } = useTickets();
   const { products: realProducts } = useProducts();
   const { customers: realCustomers } = useCustomers();
 
   const handleLoginSuccess = (email: string, role?: PortalRole) => {
-    const mail = email || 'admin@sahab.ir';
+    const mail = email || 'admin@example.com';
     const activeRole = role || 'admin';
     setUserEmail(mail);
     setPortalRole(activeRole);
-    localStorage.setItem('sahab_logged_in', 'true');
-    localStorage.setItem('sahab_user_email', mail);
-    localStorage.setItem('sahab_portal_role', activeRole);
+    localStorage.setItem('cmp_logged_in', 'true');
+    localStorage.setItem('cmp_user_email', mail);
+    localStorage.setItem('cmp_portal_role', activeRole);
     setScreen('dashboard');
   };
 
   const handleLogout = () => {
-    localStorage.setItem('sahab_logged_in', 'false');
-    localStorage.removeItem('sahab_access_token');
+    localStorage.setItem('cmp_logged_in', 'false');
+    localStorage.removeItem('cmp_access_token');
     setScreen('login');
   };
 
   const handleSwitchPortalRole = (newRole: PortalRole) => {
     setPortalRole(newRole);
-    localStorage.setItem('sahab_portal_role', newRole);
+    localStorage.setItem('cmp_portal_role', newRole);
   };
 
   // If logged in, render according to active portalRole

@@ -9,8 +9,8 @@
 | Field | Value |
 |-------|-------|
 | **Last Updated** | 2026-07-25 |
-| **Current Sprint** | Sprint 3 (Integration) — Complete |
-| **Next Sprint** | Sprint 4 (Backend CRUD Completion) |
+| **Current Sprint** | Sprint 4 (Backend CRUD Completion) — In Progress |
+| **Next Sprint** | Sprint 5 (Wire Remaining Frontend Mutations) |
 | **Build Status** | ✅ `npm run build` passes (0 errors) |
 | **TypeScript** | ✅ `tsc --noEmit` passes (0 errors) |
 | **Backend Build** | ✅ `nest build` passes |
@@ -24,7 +24,7 @@
 | Sprint 1 | Frontend Stabilization & Refactoring | ✅ Complete |
 | Sprint 2 | Backend Foundation | ✅ Complete |
 | Sprint 3 | Frontend-Backend Integration | ✅ Complete |
-| Sprint 4 | Complete Backend CRUD | ⏳ Planned |
+| Sprint 4 | Complete Backend CRUD | 🔄 In Progress |
 | Sprint 5 | Wire Remaining Frontend Mutations | ⏳ Planned |
 | Sprint 6 | Component Decomposition & Shared Layout | ⏳ Planned |
 | Sprint 7 | Polish & Production Readiness | ⏳ Planned |
@@ -33,7 +33,9 @@
 
 ## Current Task
 
-**None active.** The last task (wire mutations to API) completed Sprint 3. Awaiting instructions to begin Sprint 4.
+**Task 1 (Sprint 4): Implement `createCustomer` mutation — ✅ Complete.**
+
+Implemented backend mutation (`customers.resolver.ts` + `customers.service.ts`) with user validation and duplicate check. Extended DTO with `website`, `address`, `status` fields. Wired frontend `DashboardPortal.tsx` to call `gql(CREATE_CUSTOMER)` instead of mock data. Awaiting next task.
 
 ---
 
@@ -44,7 +46,7 @@ The following features still use local/mock data instead of API calls:
 | Feature | Location | What It Does Instead |
 |---------|----------|---------------------|
 | Product creation | `DashboardPortal.tsx` `handleCreateProduct` (~line 460) | Generates mock ID, pushes to local `setProducts` |
-| Customer creation | `DashboardPortal.tsx` `handleCreateCustomer` (~line 530) | Generates mock ID, pushes to local `setCustomers` |
+| Customer creation | `DashboardPortal.tsx` `handleSaveCustomer` (~line 668) | ✅ Wired to API — calls `gql(CREATE_CUSTOMER)`, looks up user by email |
 | Reply/send message | `TicketDetailsWorkspace.tsx` `handleSendReply` (~line 160) | Pushes to local `conversationThreads` state |
 | Reply/send in AgentPortal | `AgentPortal.tsx` (~line 600) | Pushes to local `conversationThreads` |
 | Activities | `DashboardPortal.tsx` passim | `setActivities` calls with mock `ActivityItem` objects |
@@ -63,14 +65,13 @@ The following features still use local/mock data instead of API calls:
 | **Auth** | — | `login`, `register` | ✅ Full (bcrypt + JWT) |
 | **Tickets** | `tickets`, `ticket(id)` | `createTicket`, `updateTicketStatus` | ✅ Full (Prisma CRUD) |
 | **Products** | `products`, `product(id)` | `createProduct` | ✅ Full |
-| **Customers** | `customers`, `customer(id)` | — | ✅ Queries only |
+| **Customers** | `customers`, `customer(id)` | `createCustomer` | ✅ Full (Prisma CRUD) |
 | **Users** | `users` | — | ✅ Queries only |
 
 ### Missing Resolvers/Services (DTO or Model Exists)
 
 | Feature | DTO Exists? | Model Exists? | Resolver? | Service? |
 |---------|-------------|---------------|-----------|----------|
-| `createCustomer` | ✅ `customer.input.ts` | ✅ `Customer` | ❌ | ❌ |
 | `createTicketMessage` | ❌ | ✅ `TicketMessage` | ❌ | ❌ |
 | `updateTicket` (full) | ❌ | ✅ `Ticket` | ❌ | ❌ |
 | Activity queries/mutations | ❌ | ✅ `Activity` | ❌ | ❌ |
@@ -95,7 +96,7 @@ The following features still use local/mock data instead of API calls:
 
 | Component | Lines | API Integration | Mock Data Remaining |
 |-----------|-------|-----------------|---------------------|
-| `DashboardPortal.tsx` | 4,611 | Create ticket ✅, Status update ✅ | Products, Customers, Activities, Notifications |
+| `DashboardPortal.tsx` | 4,982 | Create ticket ✅, Status update ✅, Customer creation ✅ | Products, Activities, Notifications |
 | `AgentPortal.tsx` | 2,248 | Create ticket ✅ | Reply/messages, ticket assignment |
 | `CustomerPortal.tsx` | 509 | Create ticket ✅ | Reply/messages (via `conversationThreads`) |
 | `TicketInbox.tsx` | 1,126 | Status update ✅ | Agent assignment, transfer to other product |
@@ -109,7 +110,7 @@ The following features still use local/mock data instead of API calls:
 | File | Purpose | Status |
 |------|---------|--------|
 | `src/api/graphql.ts` | Generic GQL fetch with JWT Bearer injection | ✅ Complete |
-| `src/api/queries.ts` | All query/mutation strings | ✅ Complete (5 queries, 4 mutations) |
+| `src/api/queries.ts` | All query/mutation strings | ✅ Complete (5 queries, 5 mutations) |
 | `src/api/types.ts` | API response interfaces (ApiTicket, etc.) | ✅ Complete |
 | `src/api/transform.ts` | API→frontend mapping (Persian localization) | ✅ Complete |
 | `src/api/transform-agent.ts` | Agent transforms + SLA | ✅ Complete |
@@ -135,7 +136,7 @@ The following features still use local/mock data instead of API calls:
 | Table | Records (Seeded) | Has API? |
 |-------|------------------|----------|
 | `User` | 6 | ✅ Query + Mutation (register) |
-| `Customer` | 1 | ✅ Query only |
+| `Customer` | 1 | ✅ Query + Mutation (create) |
 | `Product` | 4 | ✅ Query + Mutation (create) |
 | `ProductCustomerConnection` | 0 | ❌ No CRUD at all |
 | `Ticket` | 5 | ✅ Full CRUD |
@@ -156,7 +157,7 @@ The following features still use local/mock data instead of API calls:
 | 5 | No input validation on GQL mutations | Medium | `common/dto/*.ts` | class-validator decorators absent |
 | 6 | Activity + Notification tables have no FKs | Low | Prisma schema | No referential integrity |
 | 7 | Redis container is provisioned but unused | Low | `docker-compose.yml` | Waste of resources |
-| 8 | JWT secret hardcoded fallback | Medium | `backend/src/auth/*.ts` | Falls back to `sahab-jwt-secret` |
+| 8 | JWT secret hardcoded fallback | Medium | `backend/src/auth/*.ts` | Falls back to `cmp-jwt-secret` |
 | 9 | `AuthPayload` defined inline in resolver | Low | `backend/src/auth/auth.resolver.ts` | Inconsistent with model convention |
 | 10 | `seed.ts` uses Prisma adapter pattern | Medium | `backend/prisma/seed.ts` | Service uses standard `PrismaClient` |
 | 11 | `src/api/client.ts` is dead code | Low | `src/api/client.ts` | REST wrapper, no imports |
@@ -182,7 +183,7 @@ The following features still use local/mock data instead of API calls:
 ## Current Priorities
 
 1. **🚨 Security**: Implement RBAC guards on all backend endpoints (Critical)
-2. **🚨 Backend completeness**: Add missing mutations (`createCustomer`, `createTicketMessage`, etc.)
+2. **🚨 Backend completeness**: Add missing mutations (`createTicketMessage`, `updateTicket`, etc.)
 3. **⚠️ Quality**: Wire remaining frontend mock features to real API
 4. **⚠️ Maintainability**: Break down `DashboardPortal.tsx` (4,611 lines)
 5. **📋 Polish**: Add input validation, pagination, error handling

@@ -9,7 +9,7 @@
 - **JWT-based authentication**: Users register and login via `login` and `register` GraphQL mutations.
 - **Password hashing**: Passwords are hashed with bcryptjs (10 salt rounds) before storage.
 - **JWT signing**: Tokens are signed using HS256 with a configurable secret (`JWT_SECRET`) and expiry (`JWT_EXPIRATION`, default 7 days).
-- **Bearer token injection**: Frontend `gql()` wrapper reads `localStorage.sahab_access_token` and sets `Authorization: Bearer <token>` header.
+- **Bearer token injection**: Frontend `gql()` wrapper reads `localStorage.cmp_access_token` and sets `Authorization: Bearer <token>` header.
 
 ```
 Login → bcrypt.compare → JWT.sign({ sub: userId, email })
@@ -62,7 +62,7 @@ Required state:  User   → Guard checks role   → Authorized access only
 
 ## Token Storage
 
-- JWT is stored in `localStorage` under key `sahab_access_token`.
+- JWT is stored in `localStorage` under key `cmp_access_token`.
 - This is vulnerable to XSS attacks — any injected script can read the token.
 - Alternative (more secure): `httpOnly` cookies would prevent JavaScript access but require backend changes.
 
@@ -72,14 +72,14 @@ Required state:  User   → Guard checks role   → Authorized access only
 |---------|--------|
 | Database accessible only via Docker internal network | ⚠️ (Exposed on port 5432 to host) |
 | Redis requires authentication | ❌ (No password configured) |
-| PostgreSQL default credentials | ⚠️ (`sahab/sahab_secret`) |
+| PostgreSQL default credentials | ⚠️ (`cmp/cmp_secret`) |
 | Docker containers run as root | Unknown |
 
 ## Secrets Management
 
 | Secret | Where | Protected? |
 |--------|-------|------------|
-| `JWT_SECRET` | `backend/.env` + hardcoded fallback | ⚠️ (Hardcoded fallback: `sahab-jwt-secret`) |
+| `JWT_SECRET` | `backend/.env` + hardcoded fallback | ⚠️ (Hardcoded fallback: `cmp-jwt-secret`) |
 | `DATABASE_URL` | `backend/.env` | ✅ (In gitignore) |
 | `GEMINI_API_KEY` | Not used in app code | N/A |
 | `POSTGRES_PASSWORD` | `docker-compose.yml` | ⚠️ (Plaintext in compose file) |

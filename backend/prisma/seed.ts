@@ -10,29 +10,29 @@ async function main() {
   const hashed = await bcrypt.hash('123456', 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@sahab.ir' },
+    where: { email: 'admin@example.com' },
     update: {},
-    create: { email: 'admin@sahab.ir', password: hashed, name: 'مدیر سامانه', role: 'ADMIN' },
+    create: { email: 'admin@example.com', password: hashed, name: 'مدیر سامانه', role: 'ADMIN' },
   });
   const agent1 = await prisma.user.upsert({
-    where: { email: 'rezaei@sahab.ir' },
+    where: { email: 'rezaei@example.com' },
     update: {},
-    create: { email: 'rezaei@sahab.ir', password: hashed, name: 'امیرحسین رضایی', role: 'AGENT' },
+    create: { email: 'rezaei@example.com', password: hashed, name: 'امیرحسین رضایی', role: 'AGENT' },
   });
   const agent2 = await prisma.user.upsert({
-    where: { email: 'mousavi@sahab.ir' },
+    where: { email: 'mousavi@example.com' },
     update: {},
-    create: { email: 'mousavi@sahab.ir', password: hashed, name: 'زهرا موسوی', role: 'AGENT' },
+    create: { email: 'mousavi@example.com', password: hashed, name: 'زهرا موسوی', role: 'AGENT' },
   });
   const agent3 = await prisma.user.upsert({
-    where: { email: 'alavi@sahab.ir' },
+    where: { email: 'alavi@example.com' },
     update: {},
-    create: { email: 'alavi@sahab.ir', password: hashed, name: 'علی علوی', role: 'AGENT' },
+    create: { email: 'alavi@example.com', password: hashed, name: 'علی علوی', role: 'AGENT' },
   });
   const agent4 = await prisma.user.upsert({
-    where: { email: 'akbari@sahab.ir' },
+    where: { email: 'akbari@example.com' },
     update: {},
-    create: { email: 'akbari@sahab.ir', password: hashed, name: 'مریم اکبری', role: 'AGENT' },
+    create: { email: 'akbari@example.com', password: hashed, name: 'مریم اکبری', role: 'AGENT' },
   });
   const custUser = await prisma.user.upsert({
     where: { email: 'a.karimi@ariasecurity.ir' },
