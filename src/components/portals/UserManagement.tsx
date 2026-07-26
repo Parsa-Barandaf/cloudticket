@@ -1445,20 +1445,19 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      {/* Company Selection */}
+                      {/* Company Selection — from real customers */}
                       <div className="space-y-1 col-span-2">
                         <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">شرکت / سازمان وابسته</label>
                         <select
                           value={formDataCompany}
                           onChange={(e) => setFormDataCompany(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                          style={{ colorScheme: 'dark' }}
                         >
-                          <option value="سحاب">سحاب (ادمین مرکزی)</option>
-                          <option value="شرکت توسعه امنیت آریا">شرکت توسعه امنیت آریا</option>
-                          <option value="شرکت فناوری نوین">شرکت فناوری نوین</option>
-                          <option value="بازرگانی آریا جم">بازرگانی آریا جم</option>
-                          <option value="صنایع فولاد الوند">صنایع فولاد الوند</option>
-                          <option value="هلدینگ عمران مهر">هلدینگ عمران مهر</option>
+                          <option className='dark:bg-slate-700' value="">انتخاب سازمان</option>
+                          {apiCustomers.map(c => (
+                            <option className='dark:bg-slate-700' key={c.id} value={c.name}>{c.name}</option>
+                          ))}
                         </select>
                       </div>
 
@@ -1468,11 +1467,12 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                         <select
                           value={formDataDepartmentId}
                           onChange={(e) => setFormDataDepartmentId(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                          style={{ colorScheme: 'dark' }}
                         >
-                          <option value="">بدون دپارتمان</option>
+                          <option className='dark:bg-slate-700' value="">بدون دپارتمان</option>
                           {departments.map(d => (
-                            <option key={d.id} value={d.id}>{d.name}</option>
+                            <option className='dark:bg-slate-700' key={d.id} value={d.id}>{d.name}</option>
                           ))}
                         </select>
                       </div>
@@ -1483,11 +1483,12 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                         <select
                           value={formDataCustomRoleId}
                           onChange={(e) => setFormDataCustomRoleId(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                          style={{ colorScheme: 'dark' }}
                         >
-                          <option value="">بدون نقش</option>
+                          <option className='dark:bg-slate-700' value="">بدون نقش</option>
                           {apiRoles.map(r => (
-                            <option key={r.id} value={r.id}>{r.name}</option>
+                            <option className='dark:bg-slate-700' key={r.id} value={r.id}>{r.name}</option>
                           ))}
                         </select>
                       </div>
