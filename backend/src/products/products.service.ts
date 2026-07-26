@@ -8,7 +8,7 @@ export class ProductsService {
 
   async findAll() {
     return this.prisma.product.findMany({
-      include: { connections: { include: { customer: true } } },
+      include: { connections: { include: { customer: true, product: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -16,14 +16,14 @@ export class ProductsService {
   async findById(id: string) {
     return this.prisma.product.findUnique({
       where: { id },
-      include: { connections: { include: { customer: true } } },
+      include: { connections: { include: { customer: true, product: true } } },
     });
   }
 
   async create(data: { name: string; category: string; description?: string; version?: string; logoColor?: string; logoInitials?: string }) {
     return this.prisma.product.create({
       data,
-      include: { connections: { include: { customer: true } } },
+      include: { connections: { include: { customer: true, product: true } } },
     });
   }
 
@@ -34,7 +34,7 @@ export class ProductsService {
     return this.prisma.product.update({
       where: { id },
       data,
-      include: { connections: { include: { customer: true } } },
+      include: { connections: { include: { customer: true, product: true } } },
     });
   }
 

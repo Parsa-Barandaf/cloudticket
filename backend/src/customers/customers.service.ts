@@ -8,7 +8,7 @@ export class CustomersService {
 
   async findAll() {
     return this.prisma.customer.findMany({
-      include: { user: true, tickets: true, connections: { include: { product: true } } },
+      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -16,7 +16,7 @@ export class CustomersService {
   async findById(id: string) {
     return this.prisma.customer.findUnique({
       where: { id },
-      include: { user: true, tickets: true, connections: { include: { product: true } } },
+      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
     });
   }
 
@@ -38,7 +38,7 @@ export class CustomersService {
         status: input.status ?? 'ACTIVE',
         userId: input.userId,
       },
-      include: { user: true, tickets: true, connections: { include: { product: true } } },
+      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
     });
   }
 
@@ -57,7 +57,7 @@ export class CustomersService {
         ...(input.tier !== undefined && { tier: input.tier }),
         ...(input.status !== undefined && { status: input.status }),
       },
-      include: { user: true, tickets: true, connections: { include: { product: true } } },
+      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
     });
   }
 }
