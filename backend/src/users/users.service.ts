@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateUserInput, UpdateUserInput } from '../common/dto/user.input';
 
@@ -58,6 +58,14 @@ export class UsersService {
   }
 
   async delete(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { customerProfile: true },
+    });
+    if (!user) throw new BadRequestException('User not found');
+    if (user.customerProfile) {
+      throw new BadRequestException('این کاربر به یک شرکت (مشتری) متصل است. ابتدا مشتری مربوطه را حذف کنید.');
+    }
     await this.prisma.user.delete({ where: { id } });
     return true;
   }

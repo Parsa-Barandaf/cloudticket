@@ -31,7 +31,7 @@ export class AccessRequestsService {
 
     const hashed = await bcrypt.hash('123456', 10);
     const user = await this.prisma.user.create({
-      data: { email: request.email, password: hashed, name: request.name, role: 'CUSTOMER' },
+      data: { email: request.email, password: hashed, name: request.name, role: 'CUSTOMER', phone: request.phone, company: request.companyName },
     });
 
     await this.prisma.customer.create({

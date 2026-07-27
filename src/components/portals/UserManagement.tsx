@@ -859,8 +859,15 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                           </td>
 
                           {/* Role */}
-                          <td className="p-4 font-black text-brand-600 dark:text-brand-400">
-                            {user.role}
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-brand-600 dark:text-brand-400">{user.role}</span>
+                              {user.company && (
+                                <span className="text-[9px] font-bold bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/40">
+                                  مشتری
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           {/* Status badge */}
@@ -1445,24 +1452,24 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                     <div className="flex items-center gap-3 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl">
                       <button
                         type="button"
-                        onClick={() => setUserType('organization')}
-                        className={`flex-1 py-2 px-3 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                        onClick={() => { if (userDrawerMode !== 'edit') setUserType('organization'); }}
+                        className={`flex-1 py-2 px-3 text-[11px] font-black rounded-lg transition-all ${
                           userType === 'organization'
                             ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                        }`}
+                        } ${userDrawerMode === 'edit' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <Users className="w-3.5 h-3.5 inline ml-1" />
                         کاربر سازمانی
                       </button>
                       <button
                         type="button"
-                        onClick={() => setUserType('customer')}
-                        className={`flex-1 py-2 px-3 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                        onClick={() => { if (userDrawerMode !== 'edit') setUserType('customer'); }}
+                        className={`flex-1 py-2 px-3 text-[11px] font-black rounded-lg transition-all ${
                           userType === 'customer'
                             ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                        }`}
+                        } ${userDrawerMode === 'edit' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <Building className="w-3.5 h-3.5 inline ml-1" />
                         کاربر مشتری
