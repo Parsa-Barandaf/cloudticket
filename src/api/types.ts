@@ -105,6 +105,8 @@ export interface ApiTicketMessage {
   senderName: string;
   isInternal: boolean;
   createdAt: string;
+  authorId?: string;
+  authorType?: string;
 }
 
 export interface ApiAccessRequest {
@@ -121,10 +123,14 @@ export interface ApiAccessRequest {
 
 export interface ApiTicket {
   id: string;
+  ticketNumber: number;
   title: string;
   priority: TicketPriority;
   status: TicketStatus;
   date: string;
+  updatedAt: string;
+  resolvedAt?: string;
+  closedAt?: string;
   customerId: string;
   customer: ApiCustomer;
   productId?: string;

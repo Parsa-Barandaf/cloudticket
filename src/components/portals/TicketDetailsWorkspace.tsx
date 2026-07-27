@@ -47,7 +47,8 @@ import {
 } from 'lucide-react';
 import type { Ticket, Customer, Product } from '../../types';
 import { gql } from '../../api/graphql';
-import { UPDATE_TICKET_STATUS } from '../../api/queries';
+import { UPDATE_TICKET_STATUS, UPDATE_TICKET, CREATE_TICKET_MESSAGE, GET_TICKET, UPDATE_TICKET_MESSAGE, DELETE_TICKET_MESSAGE } from '../../api/queries';
+import { formatTimeAgo } from '../../lib/utils';
 
 interface TicketDetailsWorkspaceProps {
   ticket: Ticket;
@@ -59,7 +60,7 @@ interface TicketDetailsWorkspaceProps {
   showCustomerToast: (msg: string, type?: 'success' | 'error') => void;
   conversationThreads: { [ticketId: string]: any[] };
   setConversationThreads: React.Dispatch<React.SetStateAction<{ [ticketId: string]: any[] }>>;
-  agentsList: string[];
+  agentsList: { id: string; name: string; email: string }[];
 }
 
 export default function TicketDetailsWorkspace({
@@ -118,40 +119,36 @@ export default function TicketDetailsWorkspace({
     }, 100);
   };
 
-  // Safe fetch conversation threads with rich defaults for Screen 08
-  const defaultThreads = [
-    {
-      sender: 'customer',
-      name: 'مهندس احمد زارعی',
-      role: 'رابط فنی ارشد و مدیر لایه امنیت کلاینت',
-      message: `با سلام و عرض خسته نباشید خدمت تیم پشتیبانی فنی سحاب. ما دیشب طبق مستندات راهنمای بخش ۲.۳ اقدام به ارتقای آنتی‌ویروس سرور مرکزی سازمان کردیم. اما متأسفانه با خطای عدم همگام‌سازی دیتابیس امضاها مواجه شدیم. فایل‌های لاگ سرور ارتقا دهنده را پیوست می‌کنم. خواهشمند است موضوع را به صورت بحرانی پیگیری فرمایید.`,
-      time: 'دیروز - ۱۸:۳۰',
-      avatarColor: 'bg-indigo-600',
-      attachments: [
-        { name: 'update_error_logs_28451.txt', size: '1.4 MB', type: 'pdf' },
-        { name: 'config_backup_xml.zip', size: '4.8 MB', type: 'zip' },
-        { name: 'db_sync_error_screenshot.png', size: '840 KB', type: 'img' }
-      ]
-    },
-    {
-      sender: 'agent',
-      name: 'امیرحسین رضایی',
-      role: 'کارشناس ارشد لایه دوم پشتیبانی فنی',
-      message: `سلام جناب مهندس زارعی گرامی. ارادت فراوان. لاگ‌های ارسالی شما بررسی شد. این مشکل معمولاً به دلیل مسدود بودن پورت ۸۴۴۳ در فایروال محلی سازمان هنگام همگام‌سازی امضاهای جدید رخ می‌دهد. لطفاً ارتباط سرور را روی این پورت بررسی نمایید. در این اثنا، هم‌اکنون این پرونده را به لایه سوم مهندسی جهت مانیتورینگ آنلاین دیتابیس ارجاع می‌دهم.`,
-      time: 'امروز - ۰۹:۱۵',
-      avatarColor: 'bg-brand-600'
-    },
-    {
-      sender: 'internal_note',
-      name: 'مدیر فنی سیستم سحاب',
-      role: 'یادداشت داخلی تیم سحاب',
-      message: `همکاران گرامی لایه ۲ و ۳، توجه داشته باشید که این مشتری جزء حساب‌های سطح ویژه (VIP Platinum) است. لطفاً پورت فایروال را خودمان به صورت ریموت با تایید رابط فنی آنها تست کنیم و تا رفع نهایی مشکل، پرونده بسته نشود.`,
-      time: 'امروز - ۱۰:۰۵',
-      avatarColor: 'bg-amber-600 text-amber-50'
-    }
-  ];
+  // Fetch ticket details with messages from API
+  const [apiMessages, setApiMessages] = useState<any[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
 
-  const threads = conversationThreads[currentTicket.id] || defaultThreads;
+  useEffect(() => {
+    setMessagesLoading(true);
+    gql<{ ticket: any }>(GET_TICKET, { id: ticket.id })
+      .then((data) => {
+        if (data?.ticket) {
+          const msgs = (data.ticket.messages || []).map((m: any) => ({
+            id: m.id,
+            sender: m.isInternal ? 'internal_note' : (m.authorType === 'customer' ? 'customer' : 'agent'),
+            name: m.senderName,
+            role: m.isInternal ? 'یادداشت داخلی' : (m.authorType === 'customer' ? 'مشتری' : 'کارشناس پشتیبانی'),
+            message: m.text,
+            time: m.createdAt ? new Date(m.createdAt).toLocaleString('fa-IR') : '',
+            avatarColor: m.isInternal ? 'bg-amber-600 text-amber-50' : (m.authorType === 'customer' ? 'bg-indigo-600' : 'bg-brand-600'),
+          }));
+          setApiMessages(msgs);
+        }
+        setMessagesLoading(false);
+      })
+      .catch(() => {
+        setMessagesLoading(false);
+      });
+  }, [ticket.id]);
+
+  const threads = apiMessages;
+
+  // Auto typing simulator state
 
   // Sync typing updates simulated
   const handleComposeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -185,15 +182,39 @@ export default function TicketDetailsWorkspace({
   const handleSubmitComposer = () => {
     if (!replyText.trim()) return;
 
-    const now = new Date();
-    const timeStr = 'هم‌اکنون';
+    const senderName = composerTab === 'reply' ? 'امیرحسین رضایی' : 'یادداشت داخلی';
+
+    // Call API
+    gql(CREATE_TICKET_MESSAGE, {
+      input: { ticketId: currentTicket.id, text: replyText, senderName, isInternal: composerTab === 'note', authorType: 'agent' },
+    }).then(() => {
+      // Refetch messages after sending
+      gql<{ ticket: any }>(GET_TICKET, { id: currentTicket.id }).then((data) => {
+        if (data?.ticket) {
+          const msgs = (data.ticket.messages || []).map((m: any) => ({
+            id: m.id,
+            sender: m.isInternal ? 'internal_note' : (m.authorType === 'customer' ? 'customer' : 'agent'),
+            name: m.senderName,
+            role: m.isInternal ? 'یادداشت داخلی' : (m.authorType === 'customer' ? 'مشتری' : 'کارشناس پشتیبانی'),
+            message: m.text,
+            time: m.createdAt ? new Date(m.createdAt).toLocaleString('fa-IR') : '',
+            avatarColor: m.isInternal ? 'bg-amber-600 text-amber-50' : (m.authorType === 'customer' ? 'bg-indigo-600' : 'bg-brand-600'),
+          }));
+          setApiMessages(msgs);
+          setConversationThreads({
+            ...conversationThreads,
+            [currentTicket.id]: msgs,
+          });
+        }
+      });
+    }).catch(() => {});
 
     const newMsg = {
       sender: composerTab === 'reply' ? 'agent' : 'internal_note',
-      name: 'امیرحسین رضایی',
+      name: senderName,
       role: composerTab === 'reply' ? 'کارشناس ارشد پشتیبانی سحاب' : 'یادداشت داخلی تیم سحاب',
       message: replyText,
-      time: timeStr,
+      time: 'هم‌اکنون',
       avatarColor: composerTab === 'reply' ? 'bg-brand-600' : 'bg-amber-600 text-amber-50',
       attachments: []
     };
@@ -211,7 +232,7 @@ export default function TicketDetailsWorkspace({
         return {
           ...t,
           status: nextStatus as Ticket['status'],
-          date: 'هم‌اکنون'
+          updatedAt: new Date().toISOString(),
         };
       }
       return t;
@@ -220,8 +241,12 @@ export default function TicketDetailsWorkspace({
     setCurrentTicket(prev => ({
       ...prev,
       status: nextStatus as Ticket['status'],
-      date: 'هم‌اکنون'
     }));
+
+    // Also update status via API if reply
+    if (composerTab === 'reply') {
+      apiUpdateTicketStatus(currentTicket.id, 'منتظر پاسخ مشتری');
+    }
 
     showCustomerToast(
       composerTab === 'reply' 
@@ -262,18 +287,24 @@ export default function TicketDetailsWorkspace({
 
   // Change single attributes of tickets
   const handleUpdateTicketStatus = (newStatus: Ticket['status']) => {
-    setTickets(tickets.map(t => t.id === currentTicket.id ? { ...t, status: newStatus } : t));
+    setTickets(tickets.map(t => t.id === currentTicket.id ? { ...t, status: newStatus, updatedAt: new Date().toISOString() } : t));
     setCurrentTicket(prev => ({ ...prev, status: newStatus }));
     apiUpdateTicketStatus(currentTicket.id, newStatus);
     showCustomerToast(`وضعیت پرونده با موفقیت به «${newStatus}» تغییر یافت.`, 'success');
     setShowStatusDropdown(false);
   };
 
-  const handleUpdateTicketAgent = (newAgent: string) => {
-    setTickets(tickets.map(t => t.id === currentTicket.id ? { ...t, assignedTo: newAgent } : t));
-    setCurrentTicket(prev => ({ ...prev, assignedTo: newAgent }));
-    showCustomerToast(`مسئول پرونده با موفقیت به «${newAgent}» واگذار گردید.`, 'success');
+  const handleUpdateTicketAgent = (agent: { id: string; name: string; email: string }) => {
     setShowAgentDropdown(false);
+    gql(UPDATE_TICKET, { input: { id: currentTicket.id, assignedToId: agent.id } })
+      .then(() => {
+        setTickets(tickets.map(t => t.id === currentTicket.id ? { ...t, assignedTo: agent.name } : t));
+        setCurrentTicket(prev => ({ ...prev, assignedTo: agent.name }));
+        showCustomerToast(`مسئول پرونده با موفقیت به «${agent.name}» واگذار گردید.`, 'success');
+      })
+      .catch((err) => {
+        showCustomerToast('خطا در واگذاری: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+      });
   };
 
   // Related Tickets simulation dataset
@@ -347,7 +378,7 @@ export default function TicketDetailsWorkspace({
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                #{currentTicket.id}
+                #{currentTicket.ticketNumber}
               </span>
               <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black border ${
                 currentTicket.priority === 'بحرانی' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
@@ -376,9 +407,9 @@ export default function TicketDetailsWorkspace({
               <span>•</span>
               <span className="flex items-center gap-1.5"><Layers className="w-4 h-4 text-slate-400/80" /> {currentTicket.product}</span>
               <span>•</span>
-              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-slate-400/80" /> ایجاد شده در: ۲ روز پیش</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-slate-400/80" /> {currentTicket.date ? formatTimeAgo(currentTicket.date) : ''}</span>
               <span>•</span>
-              <span className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-slate-400/80" /> آخرین فعالیت: {currentTicket.date}</span>
+              <span className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-slate-400/80" /> آخرین فعالیت: {currentTicket.updatedAt ? formatTimeAgo(currentTicket.updatedAt) : ''}</span>
             </div>
           </div>
 
@@ -498,17 +529,28 @@ export default function TicketDetailsWorkspace({
                   >
                     {agentsList.map((ag) => (
                       <button
-                        key={ag}
+                        key={ag.id}
                         onClick={() => handleUpdateTicketAgent(ag)}
                         className={`w-full text-right text-xs font-bold px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 ${
-                          currentTicket.assignedTo === ag ? 'bg-brand-500/5 text-brand-600' : ''
+                          currentTicket.assignedTo === ag.name ? 'bg-brand-500/5 text-brand-600' : ''
                         }`}
                       >
-                        {ag}
+                        {ag.name}
                       </button>
                     ))}
                     <button
-                      onClick={() => handleUpdateTicketAgent('بدون تخصیص (هوشمند)')}
+                      onClick={() => {
+                        setShowAgentDropdown(false);
+                        gql(UPDATE_TICKET, { input: { id: currentTicket.id, assignedToId: null } })
+                          .then(() => {
+                            setTickets(tickets.map(t => t.id === currentTicket.id ? { ...t, assignedTo: '' } : t));
+                            setCurrentTicket(prev => ({ ...prev, assignedTo: '' }));
+                            showCustomerToast('تخصیص مسئول پرونده لغو شد.', 'success');
+                          })
+                          .catch((err) => {
+                            showCustomerToast('خطا: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                          });
+                      }}
                       className="w-full text-right text-xs font-bold px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 border-t border-slate-100 dark:border-slate-700/60"
                     >
                       بدون تخصیص (هوشمند)
@@ -715,11 +757,16 @@ export default function TicketDetailsWorkspace({
                               </button>
                               <button
                                 onClick={() => {
+                                  const msgId = threads[index]?.id;
+                                  if (msgId) {
+                                    gql(DELETE_TICKET_MESSAGE, { id: msgId }).catch(() => {});
+                                  }
                                   const updated = threads.filter((_, i) => i !== index);
                                   setConversationThreads({
                                     ...conversationThreads,
                                     [currentTicket.id]: updated
                                   });
+                                  setApiMessages(apiMessages.filter((_, i) => i !== index));
                                   showCustomerToast('یادداشت داخلی با موفقیت حذف شد.', 'error');
                                 }}
                                 className="p-1 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
@@ -1289,6 +1336,10 @@ export default function TicketDetailsWorkspace({
                 </button>
                 <button
                   onClick={() => {
+                    const msgId = threads[editingNoteIndex!]?.id;
+                    if (msgId) {
+                      gql(UPDATE_TICKET_MESSAGE, { id: msgId, text: editingNoteText }).catch(() => {});
+                    }
                     const updated = [...threads];
                     updated[editingNoteIndex!] = {
                       ...updated[editingNoteIndex!],
@@ -1298,6 +1349,12 @@ export default function TicketDetailsWorkspace({
                       ...conversationThreads,
                       [currentTicket.id]: updated
                     });
+                    const apiUpdated = [...apiMessages];
+                    apiUpdated[editingNoteIndex!] = {
+                      ...apiUpdated[editingNoteIndex!],
+                      message: editingNoteText
+                    };
+                    setApiMessages(apiUpdated);
                     setEditingNoteIndex(null);
                     showCustomerToast('یادداشت داخلی با موفقیت ویرایش شد.', 'success');
                   }}

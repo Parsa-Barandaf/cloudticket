@@ -25,6 +25,7 @@ const customerStatusMap: Record<string, 'فعال' | 'غیرفعال' | 'در ا
 export function mapTicket(t: ApiTicket): Ticket {
   return {
     id: t.id,
+    ticketNumber: t.ticketNumber,
     title: t.title,
     customerId: t.customerId,
     customer: t.customer?.commercialName || t.customer?.user?.name || '',
@@ -33,6 +34,7 @@ export function mapTicket(t: ApiTicket): Ticket {
     status: statusMap[t.status] || 'باز',
     assignedTo: t.assignedTo?.name || '',
     date: t.date,
+    updatedAt: t.updatedAt,
   };
 }
 

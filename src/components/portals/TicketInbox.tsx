@@ -36,9 +36,11 @@ import {
   Activity,
   UserCheck
 } from 'lucide-react';
+import { formatTimeAgo } from '../../lib/utils';
 import type { Ticket, Product, Customer } from '../../types';
 import { gql } from '../../api/graphql';
-import { UPDATE_TICKET_STATUS } from '../../api/queries';
+import { UPDATE_TICKET_STATUS, UPDATE_TICKET, DELETE_TICKETS, CREATE_TICKET_MESSAGE } from '../../api/queries';
+import { useUsers } from '../../hooks/useUsers';
 import TicketDetailsWorkspace from './TicketDetailsWorkspace';
 
 interface TicketInboxViewProps {
@@ -115,7 +117,7 @@ export default function TicketInboxView({
     ]
   });
 
-  const statusToApi: Record<string, string> = { 'باز': 'OPEN', 'در حال بررسی': 'INVESTIGATING', 'منتظر پاسخ مشتری': 'AWAITING_CUSTOMER', 'بسته شده': 'CLOSED' };
+  const statusToApi: Record<string, string> = { 'باز': 'OPEN', 'در حال بررسی': 'INVESTIGATING', 'منتظر پاسخ مشتری': 'AWAITING_CUSTOMER', 'بسته شده': 'CLOSED', 'حل شده': 'RESOLVED' };
 
   const updateStatusViaApi = async (id: string, status: string) => {
     const apiStatus = statusToApi[status] || 'OPEN';
@@ -124,8 +126,9 @@ export default function TicketInboxView({
     } catch { /* local state already updated */ }
   };
 
-  // Agents static list for assignment
-  const agentsList = ['امیرحسین رضایی', 'علی علوی', 'زهرا موسوی', 'مریم اکبری', 'مهدی قربانی'];
+  // Agents list from real API users
+  const { users: apiUsers } = useUsers();
+  const agentsList = apiUsers.filter(u => u.role === 'ADMIN' || u.role === 'AGENT');
 
   // Handle outside clicks to close menus
   useEffect(() => {
@@ -212,45 +215,72 @@ export default function TicketInboxView({
     }
   };
 
-  const handleBulkStatusChange = (status: Ticket['status']) => {
-    setTickets(tickets.map(t => {
-      if (selectedTicketIds.includes(t.id)) {
-        return { ...t, status };
+  const handleBulkStatusChange = async (status: string) => {
+    const apiStatus = status === 'باز' ? 'OPEN' : status === 'در حال بررسی' ? 'INVESTIGATING' : status === 'منتظر پاسخ مشتری' ? 'AWAITING_CUSTOMER' : status === 'بسته شده' ? 'CLOSED' : 'OPEN';
+    try {
+      for (const id of selectedTicketIds) {
+        await gql(UPDATE_TICKET_STATUS, { input: { id, status: apiStatus } });
       }
-      return t;
-    }));
-    setSelectedTicketIds([]);
-    setShowBulkStatusDropdown(false);
-    showCustomerToast(`وضعیت ${selectedTicketIds.length} تیکت با موفقیت به «${status}» تغییر یافت.`, 'success');
+      setTickets(tickets.map(t => {
+        if (selectedTicketIds.includes(t.id)) {
+          return { ...t, status: status as Ticket['status'] };
+        }
+        return t;
+      }));
+      setSelectedTicketIds([]);
+      setShowBulkStatusDropdown(false);
+      showCustomerToast(`وضعیت ${selectedTicketIds.length} تیکت با موفقیت به «${status}» تغییر یافت.`, 'success');
+    } catch (err) {
+      showCustomerToast('خطا در تغییر وضعیت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
-  const handleBulkAgentAssign = (agent: string) => {
-    setTickets(tickets.map(t => {
-      if (selectedTicketIds.includes(t.id)) {
-        return { ...t, assignedTo: agent };
+  const handleBulkAgentAssign = async (agentId: string, agentName: string) => {
+    try {
+      for (const id of selectedTicketIds) {
+        await gql(UPDATE_TICKET, { input: { id, assignedToId: agentId } });
       }
-      return t;
-    }));
-    setSelectedTicketIds([]);
-    setShowBulkAgentDropdown(false);
-    showCustomerToast(`مجموعه تیکت‌های انتخابی به کارشناس «${agent}» ارجاع داده شد.`, 'success');
+      setTickets(tickets.map(t => {
+        if (selectedTicketIds.includes(t.id)) {
+          return { ...t, assignedTo: agentName };
+        }
+        return t;
+      }));
+      setSelectedTicketIds([]);
+      setShowBulkAgentDropdown(false);
+      showCustomerToast(`مجموعه تیکت‌های انتخابی به کارشناس «${agentName}» ارجاع داده شد.`, 'success');
+    } catch (err) {
+      showCustomerToast('خطا در ارجاع تیکت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
-  const handleBulkClose = () => {
-    setTickets(tickets.map(t => {
-      if (selectedTicketIds.includes(t.id)) {
-        return { ...t, status: 'بسته شده' };
+  const handleBulkClose = async () => {
+    try {
+      for (const id of selectedTicketIds) {
+        await gql(UPDATE_TICKET_STATUS, { input: { id, status: 'CLOSED' } });
       }
-      return t;
-    }));
-    setSelectedTicketIds([]);
-    showCustomerToast(`تعداد ${selectedTicketIds.length} تیکت پشتیبانی بسته شد.`, 'success');
+      setTickets(tickets.map(t => {
+        if (selectedTicketIds.includes(t.id)) {
+          return { ...t, status: 'بسته شده' as Ticket['status'] };
+        }
+        return t;
+      }));
+      setSelectedTicketIds([]);
+      showCustomerToast(`تعداد ${selectedTicketIds.length} تیکت پشتیبانی بسته شد.`, 'success');
+    } catch (err) {
+      showCustomerToast('خطا در بستن تیکت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
-  const handleBulkDelete = () => {
-    setTickets(tickets.filter(t => !selectedTicketIds.includes(t.id)));
-    setSelectedTicketIds([]);
-    showCustomerToast('تیکت‌های انتخاب شده با موفقیت از سرور حذف گردیدند.', 'success');
+  const handleBulkDelete = async () => {
+    try {
+      await gql(DELETE_TICKETS, { input: { ids: selectedTicketIds } });
+      setTickets(tickets.filter(t => !selectedTicketIds.includes(t.id)));
+      setSelectedTicketIds([]);
+      showCustomerToast('تیکت‌های انتخاب شده با موفقیت از سرور حذف گردیدند.', 'success');
+    } catch (err) {
+      showCustomerToast('خطا در حذف تیکت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
   const handleResetAllFilters = () => {
@@ -303,45 +333,57 @@ export default function TicketInboxView({
     setIsSendingReply(true);
     const targetId = selectedTicketForDetail.id;
 
-    setTimeout(() => {
-      const currentThreads = conversationThreads[targetId] || [];
-      const newMsg = {
-        sender: 'agent',
-        name: 'امیرحسین رضایی',
-        role: 'کارشناس ارشد پشتیبانی سحاب',
-        message: replyText,
-        time: 'هم‌اکنون',
-        avatarColor: 'bg-brand-600'
-      };
+    // Call API
+    gql(CREATE_TICKET_MESSAGE, {
+      input: {
+        ticketId: targetId,
+        text: replyText,
+        senderName: 'امیرحسین رضایی',
+        isInternal: false,
+      },
+    })
+      .then(() => {
+        const currentThreads = conversationThreads[targetId] || [];
+        const newMsg = {
+          sender: 'agent',
+          name: 'امیرحسین رضایی',
+          role: 'کارشناس ارشد پشتیبانی سحاب',
+          message: replyText,
+          time: 'هم‌اکنون',
+          avatarColor: 'bg-brand-600'
+        };
 
-      setConversationThreads({
-        ...conversationThreads,
-        [targetId]: [...currentThreads, newMsg]
+        setConversationThreads({
+          ...conversationThreads,
+          [targetId]: [...currentThreads, newMsg]
+        });
+
+        // Update last activity and status on ticket
+        setTickets(tickets.map(t => {
+          if (t.id === targetId) {
+            return {
+              ...t,
+              status: 'منتظر پاسخ مشتری',
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return t;
+        }));
+
+        // Update selectedTicketForDetail ref
+        setSelectedTicketForDetail({
+          ...selectedTicketForDetail,
+          status: 'منتظر پاسخ مشتری',
+        });
+
+        setReplyText('');
+        setIsSendingReply(false);
+        showCustomerToast('پاسخ رسمی پشتیبانی با موفقیت ثبت و ارسال شد.', 'success');
+      })
+      .catch((err) => {
+        setIsSendingReply(false);
+        showCustomerToast('خطا در ارسال پاسخ: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
       });
-
-      // Update last activity and status on ticket
-      setTickets(tickets.map(t => {
-        if (t.id === targetId) {
-          return {
-            ...t,
-            status: 'منتظر پاسخ مشتری',
-            date: 'هم‌اکنون'
-          };
-        }
-        return t;
-      }));
-
-      // Update selectedTicketForDetail ref
-      setSelectedTicketForDetail({
-        ...selectedTicketForDetail,
-        status: 'منتظر پاسخ مشتری',
-        date: 'هم‌اکنون'
-      });
-
-      setReplyText('');
-      setIsSendingReply(false);
-      showCustomerToast('پاسخ رسمی پشتیبانی با موفقیت ثبت و ارسال شد.', 'success');
-    }, 700);
   };
 
   // Keyboard shortcut support
@@ -637,7 +679,7 @@ export default function TicketInboxView({
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 cursor-pointer font-bold"
                   >
                     <option value="همه">همه کارشناسان</option>
-                    {agentsList.map(a => <option key={a} value={a}>{a}</option>)}
+                    {agentsList.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
                   </select>
                 </div>
 
@@ -748,14 +790,14 @@ export default function TicketInboxView({
                   تخصیص کارشناس
                 </button>
                 {showBulkAgentDropdown && (
-                  <div className="absolute bottom-11 right-0 w-48 bg-slate-800 border border-slate-750 rounded-xl py-1 shadow-2xl z-50 text-right">
+                  <div className="absolute bottom-11 right-0 w-56 bg-slate-800 border border-slate-750 rounded-xl py-1 shadow-2xl z-50 text-right max-h-48 overflow-y-auto">
                     {agentsList.map(ag => (
                       <button
-                        key={ag}
-                        onClick={() => handleBulkAgentAssign(ag)}
-                        className="w-full text-right text-slate-300 hover:text-white hover:bg-slate-750 px-4 py-2"
+                        key={ag.id}
+                        onClick={() => handleBulkAgentAssign(ag.id, ag.name)}
+                        className="w-full text-right text-slate-300 hover:text-white hover:bg-slate-750 px-4 py-2 text-xs"
                       >
-                        {ag}
+                        {ag.name}
                       </button>
                     ))}
                   </div>
@@ -865,7 +907,7 @@ export default function TicketInboxView({
                             onClick={() => setSelectedTicketForDetail(t)}
                             className="font-mono font-bold text-slate-400 dark:text-slate-500 hover:text-brand-500 transition-colors cursor-pointer"
                           >
-                            #{t.id}
+                            #{t.ticketNumber}
                           </span>
                         </td>
 
@@ -942,8 +984,8 @@ export default function TicketInboxView({
 
                         {/* Last Activity */}
                         <td className="p-4 whitespace-nowrap">
-                          <span className="font-mono text-slate-500 font-bold block">{t.date}</span>
-                          <span className="text-[9px] text-slate-400">ثبت پاسخ سیستم</span>
+                          <span className="font-mono text-slate-500 font-bold block">{formatTimeAgo(t.updatedAt)}</span>
+                          <span className="text-[9px] text-slate-400">آخرین فعالیت</span>
                         </td>
 
                         {/* Actions menu */}
@@ -1015,11 +1057,13 @@ export default function TicketInboxView({
                                 </button>
                                 <button
                                   onClick={() => {
-                                    // Rotate agents
-                                    const currIndex = agentsList.indexOf(t.assignedTo);
+                                    const currIndex = agentsList.findIndex(a => a.name === t.assignedTo);
                                     const nextAgent = agentsList[(currIndex + 1) % agentsList.length];
-                                    setTickets(tickets.map(item => item.id === t.id ? { ...item, assignedTo: nextAgent } : item));
-                                    showCustomerToast(`تیکت به کارشناس فنی «${nextAgent}» تخصیص یافت.`, 'success');
+                                    setTickets(tickets.map(item => item.id === t.id ? { ...item, assignedTo: nextAgent.name } : item));
+                                    if (nextAgent) {
+                                      gql(UPDATE_TICKET, { input: { id: t.id, assignedToId: nextAgent.id } }).catch(() => {});
+                                    }
+                                    showCustomerToast(`تیکت به کارشناس فنی «${nextAgent.name}» تخصیص یافت.`, 'success');
                                   }}
                                   className="w-full text-right text-xs font-bold px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 block"
                                 >
@@ -1060,7 +1104,7 @@ export default function TicketInboxView({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-bold text-slate-400">#{t.id}</span>
+                      <span className="font-mono text-[10px] font-bold text-slate-400">#{t.ticketNumber}</span>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
                         t.priority === 'بحرانی' ? 'bg-rose-500/10 text-rose-600' :
                         t.priority === 'بالا' ? 'bg-amber-500/10 text-amber-600' :
@@ -1082,7 +1126,7 @@ export default function TicketInboxView({
 
                     <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
                       <span className="font-bold text-slate-500">پشتیبان: {t.assignedTo}</span>
-                      <span className="font-mono text-slate-400 font-bold">{t.date}</span>
+                      <span className="font-mono text-slate-400 font-bold">{formatTimeAgo(t.updatedAt)}</span>
                     </div>
 
                     <div className="flex items-center justify-between pt-2">

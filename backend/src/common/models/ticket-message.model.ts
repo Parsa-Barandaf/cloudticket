@@ -16,4 +16,10 @@ export class TicketMessage {
 
   @Field()
   createdAt: Date;
+
+  @Field({ nullable: true })
+  authorId?: string;
+
+  @Field({ nullable: true })
+  authorType?: string;
 }

@@ -78,6 +78,7 @@ import type { ApiCustomer, ApiAccessRequest, ApiProduct } from '../../api/types'
 // Interfaces for our state elements
 export interface Ticket {
   id: string;
+  ticketNumber: number;
   title: string;
   customerId: string;
   customer: string;
@@ -86,6 +87,7 @@ export interface Ticket {
   status: 'باز' | 'در حال بررسی' | 'منتظر پاسخ مشتری' | 'بسته شده';
   assignedTo: string;
   date: string;
+  updatedAt: string;
 }
 
 export interface Product {

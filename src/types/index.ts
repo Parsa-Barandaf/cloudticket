@@ -16,6 +16,7 @@ export type TicketStatus = 'باز' | 'در حال بررسی' | 'منتظر پ�
 
 export interface Ticket {
   id: string;
+  ticketNumber: number;
   title: string;
   customerId: string;
   customer: string;
@@ -24,6 +25,7 @@ export interface Ticket {
   status: TicketStatus;
   assignedTo: string;
   date: string;
+  updatedAt: string;
 }
 
 export interface Product {

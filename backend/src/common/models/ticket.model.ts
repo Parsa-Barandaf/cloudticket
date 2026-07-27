@@ -28,6 +28,9 @@ export class Ticket {
   id: string;
 
   @Field()
+  ticketNumber: number;
+
+  @Field()
   title: string;
 
   @Field(() => TicketPriority)
@@ -38,6 +41,15 @@ export class Ticket {
 
   @Field()
   date: Date;
+
+  @Field()
+  updatedAt: Date;
+
+  @Field({ nullable: true })
+  resolvedAt?: Date;
+
+  @Field({ nullable: true })
+  closedAt?: Date;
 
   @Field()
   customerId: string;

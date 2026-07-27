@@ -82,6 +82,15 @@ input CreateTicketInput {
   title: String!
 }
 
+input CreateTicketMessageInput {
+  authorId: String
+  authorType: String
+  isInternal: Boolean! = false
+  senderName: String!
+  text: String!
+  ticketId: String!
+}
+
 input CreateUserInput {
   active: Boolean! = true
   company: String
@@ -143,6 +152,10 @@ input DeleteCustomRoleInput {
   reassignRoleId: String
 }
 
+input DeleteTicketsInput {
+  ids: [String!]!
+}
+
 type Department {
   assignedProducts: [String!]!
   createdAt: DateTime!
@@ -160,12 +173,16 @@ type Mutation {
   createDepartment(input: CreateDepartmentInput!): Department!
   createProduct(input: CreateProductInput!): Product!
   createTicket(input: CreateTicketInput!): Ticket!
+  createTicketMessage(input: CreateTicketMessageInput!): TicketMessage!
   createUser(input: CreateUserInput!): User!
   deleteConnection(id: String!): Boolean!
   deleteCustomRole(input: DeleteCustomRoleInput!): Boolean!
   deleteCustomer(id: String!): Boolean!
   deleteDepartment(id: String!): Boolean!
   deleteProduct(id: String!): Boolean!
+  deleteTicket(id: String!): Boolean!
+  deleteTicketMessage(id: String!): Boolean!
+  deleteTickets(input: DeleteTicketsInput!): Boolean!
   deleteUser(id: String!): Boolean!
   login(email: String!, password: String!): AuthPayload!
   register(email: String!, name: String!, password: String!): AuthPayload!
@@ -176,6 +193,8 @@ type Mutation {
   updateCustomer(input: UpdateCustomerInput!): Customer!
   updateDepartment(input: UpdateDepartmentInput!): Department!
   updateProduct(input: UpdateProductInput!): Product!
+  updateTicket(input: UpdateTicketInput!): Ticket!
+  updateTicketMessage(id: String!, text: String!): TicketMessage!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
   updateUser(input: UpdateUserInput!): User!
 }
@@ -250,6 +269,7 @@ input RequestAccessInput {
 type Ticket {
   assignedTo: User
   assignedToId: String
+  closedAt: DateTime
   customer: Customer!
   customerId: String!
   date: DateTime!
@@ -258,11 +278,16 @@ type Ticket {
   priority: TicketPriority!
   product: Product
   productId: String
+  resolvedAt: DateTime
   status: TicketStatus!
+  ticketNumber: Float!
   title: String!
+  updatedAt: DateTime!
 }
 
 type TicketMessage {
+  authorId: String
+  authorType: String
   createdAt: DateTime!
   id: String!
   isInternal: Boolean!
@@ -330,6 +355,15 @@ input UpdateProductInput {
   name: String
   status: ProductStatus
   version: String
+}
+
+input UpdateTicketInput {
+  assignedToId: String
+  id: String!
+  priority: TicketPriority
+  productId: String
+  status: String
+  title: String
 }
 
 input UpdateTicketStatusInput {

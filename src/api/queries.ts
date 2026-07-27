@@ -20,8 +20,50 @@ export const REGISTER_MUTATION = `
 export const UPDATE_TICKET_STATUS = `
   mutation UpdateTicketStatus($input: UpdateTicketStatusInput!) {
     updateTicketStatus(input: $input) {
-      id title priority status date
+      id title priority status date updatedAt
     }
+  }
+`;
+
+export const UPDATE_TICKET = `
+  mutation UpdateTicket($input: UpdateTicketInput!) {
+    updateTicket(input: $input) {
+      id title priority status date updatedAt assignedToId
+    }
+  }
+`;
+
+export const CREATE_TICKET_MESSAGE = `
+  mutation CreateTicketMessage($input: CreateTicketMessageInput!) {
+    createTicketMessage(input: $input) {
+      id text senderName isInternal createdAt authorId authorType
+    }
+  }
+`;
+
+export const DELETE_TICKET = `
+  mutation DeleteTicket($id: String!) {
+    deleteTicket(id: $id)
+  }
+`;
+
+export const DELETE_TICKETS = `
+  mutation DeleteTickets($input: DeleteTicketsInput!) {
+    deleteTickets(input: $input)
+  }
+`;
+
+export const UPDATE_TICKET_MESSAGE = `
+  mutation UpdateTicketMessage($id: String!, $text: String!) {
+    updateTicketMessage(id: $id, text: $text) {
+      id text senderName isInternal createdAt authorId authorType
+    }
+  }
+`;
+
+export const DELETE_TICKET_MESSAGE = `
+  mutation DeleteTicketMessage($id: String!) {
+    deleteTicketMessage(id: $id)
   }
 `;
 
@@ -29,9 +71,9 @@ export const UPDATE_TICKET_STATUS = `
 export const GET_TICKETS = `
   query Tickets {
     tickets {
-      id title priority status date
+      id ticketNumber title priority status date updatedAt
       customerId productId assignedToId
-      customer { id commercialName industry }
+      customer { id commercialName industry user { id name } }
       product { id name }
       assignedTo { id name }
     }
@@ -41,11 +83,11 @@ export const GET_TICKETS = `
 export const GET_TICKET = `
   query Ticket($id: String!) {
     ticket(id: $id) {
-      id title priority status date
-      customer { id commercialName industry }
+      id ticketNumber title priority status date updatedAt
+      customer { id commercialName industry user { id name email } }
       product { id name version }
       assignedTo { id name email }
-      messages { id text senderName isInternal createdAt }
+      messages { id text senderName isInternal createdAt authorId authorType }
     }
   }
 `;
@@ -53,7 +95,7 @@ export const GET_TICKET = `
 export const CREATE_TICKET = `
   mutation CreateTicket($input: CreateTicketInput!) {
     createTicket(input: $input) {
-      id title priority status date
+      id ticketNumber title priority status date
     }
   }
 `;
