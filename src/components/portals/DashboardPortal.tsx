@@ -1261,24 +1261,6 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
             </button>
 
             <button
-              onClick={() => { setActiveTab('agent-portal'); setMobileMenuOpen(false); }}
-              className={`w-full flex items-center transition-all duration-200 ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'} rounded-xl text-xs font-semibold ${
-                activeTab === 'agent-portal' 
-                  ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border-r-4 border-brand-500' 
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
-              title={sidebarCollapsed ? "پنل پشتیبانی" : undefined}
-            >
-              <Headphones className="w-4.5 h-4.5 shrink-0 text-brand-500" />
-              {!sidebarCollapsed && <span className="whitespace-nowrap font-bold">پنل پشتیبانی</span>}
-              {!sidebarCollapsed && (
-                <span className="mr-auto text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-extrabold px-1.5 py-0.5 rounded-md border border-brand-500/20">
-                  کارشناس
-                </span>
-              )}
-            </button>
-
-            <button
               onClick={() => { setActiveTab('products'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center transition-all duration-200 ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'} rounded-xl text-xs font-semibold ${
                 activeTab === 'products' 
