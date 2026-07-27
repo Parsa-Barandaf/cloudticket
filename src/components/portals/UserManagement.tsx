@@ -163,7 +163,8 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
   const [formDataCompany, setFormDataCompany] = useState('شرکت توسعه امنیت آریا');
   const [formDataDepartmentId, setFormDataDepartmentId] = useState('');
   const [formDataCustomRoleId, setFormDataCustomRoleId] = useState('');
-  const [formDataRole, setFormDataRole] = useState('کارشناس پشتیبانی');
+  const [userType, setUserType] = useState<'organization' | 'customer'>('organization');
+  const [formDataCustomerRole, setFormDataCustomerRole] = useState('');
   const [formDataAccessLevel, setFormDataAccessLevel] = useState('متوسط');
   const [formDataSendInvite, setFormDataSendInvite] = useState(true);
   const [formDataImmediateActive, setFormDataImmediateActive] = useState(true);
@@ -251,13 +252,11 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
     setFormDataEmail('');
     setFormDataPassword('');
     setFormDataPhone('');
-    setFormDataCompany('سحاب');
+    setFormDataCompany('');
     setFormDataDepartmentId('');
     setFormDataCustomRoleId('');
-    setFormDataRole('کارشناس پشتیبانی');
-    setFormDataAccessLevel('متوسط');
-    setFormDataSendInvite(true);
-    setFormDataImmediateActive(true);
+    setUserType('organization');
+    setFormDataCustomerRole('');
     setFormErrors({});
     setShowUserDrawer(true);
   };
@@ -272,10 +271,8 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
     setFormDataCompany(user.company);
     setFormDataDepartmentId(user.departmentId || '');
     setFormDataCustomRoleId(user.customRoleId || '');
-    setFormDataRole(user.role);
-    setFormDataAccessLevel('متوسط');
-    setFormDataSendInvite(false);
-    setFormDataImmediateActive(user.status === 'فعال');
+    setUserType(user.company ? 'customer' : 'organization');
+    setFormDataCustomerRole('');
     setFormErrors({});
     setShowUserDrawer(true);
   };
@@ -301,9 +298,9 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
           password: formDataPassword || 'Temp@123456',
           name: formDataName,
           phone: formDataPhone,
-          company: formDataCompany,
-          departmentId: formDataDepartmentId || undefined,
-          customRoleId: formDataCustomRoleId || undefined,
+          company: userType === 'customer' ? formDataCompany : '',
+          departmentId: userType === 'organization' ? formDataDepartmentId || undefined : undefined,
+          customRoleId: userType === 'organization' ? formDataCustomRoleId || undefined : undefined,
           active: formDataImmediateActive,
         });
         const newUserItem: UserItem = {
@@ -316,7 +313,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
           role: newUser.role === 'ADMIN' ? 'مدیر کل' : newUser.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
           status: formDataImmediateActive ? 'فعال' : 'دعوت شده',
           lastLogin: '',
-          createdDate: newUser.createdAt?.split('T')[0]?.replace(/-/g, '/') || '',
+          createdDate: formatDate(newUser.createdAt) || '',
           avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-violet-600', 'bg-rose-600', 'bg-indigo-600'][Math.floor(Math.random() * 6)],
           departmentId: newUser.departmentId,
           customRoleId: newUser.customRoleId,
@@ -330,10 +327,10 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
           name: formDataName,
           email: formDataEmail,
           phone: formDataPhone,
-          company: formDataCompany,
+          company: userType === 'customer' ? formDataCompany : '',
           active: formDataImmediateActive,
-          departmentId: formDataDepartmentId || undefined,
-          customRoleId: formDataCustomRoleId || undefined,
+          departmentId: userType === 'organization' ? formDataDepartmentId || undefined : undefined,
+          customRoleId: userType === 'organization' ? formDataCustomRoleId || undefined : undefined,
         });
         setUsers(prev => prev.map(u => u.id === selectedUserForEdit.id ? {
           ...u,
@@ -768,7 +765,7 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
               {/* Filter Actions */}
               <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/40">
                 <span className="text-[10px] text-slate-450 dark:text-slate-500 font-bold">
-                  تعداد کل موارد انطباق یافته: <b className="text-brand-600 dark:text-brand-400 font-mono text-xs">{filteredUsers.length}</b> کاربر سازمانی
+                  تعداد کل موارد انطباق یافته: <b className="text-brand-600 dark:text-brand-400 font-mono text-xs">{filteredUsers.length}</b> کاربر سازمان
                 </span>
                 
                 <div className="flex items-center gap-2">
@@ -1444,55 +1441,110 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
                       <span className="text-xs font-black text-slate-800 dark:text-slate-200">بخش اداری و انتساب‌های سازمانی</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Company Selection — from real customers */}
-                      <div className="space-y-1 col-span-2">
-                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">شرکت / سازمان وابسته</label>
-                        <select
-                          value={formDataCompany}
-                          onChange={(e) => setFormDataCompany(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
-                          style={{ colorScheme: 'dark' }}
-                        >
-                          <option className='dark:bg-slate-700' value="">انتخاب سازمان</option>
-                          {apiCustomers.map(c => (
-                            <option className='dark:bg-slate-700' key={c.id} value={c.name}>{c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Department selection (from API) */}
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">دپارتمان / تیم کاری</label>
-                        <select
-                          value={formDataDepartmentId}
-                          onChange={(e) => setFormDataDepartmentId(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
-                          style={{ colorScheme: 'dark' }}
-                        >
-                          <option className='dark:bg-slate-700' value="">بدون دپارتمان</option>
-                          {departments.map(d => (
-                            <option className='dark:bg-slate-700' key={d.id} value={d.id}>{d.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Custom role selection (from API) */}
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش دسترسی (RBAC)</label>
-                        <select
-                          value={formDataCustomRoleId}
-                          onChange={(e) => setFormDataCustomRoleId(e.target.value)}
-                          className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
-                          style={{ colorScheme: 'dark' }}
-                        >
-                          <option className='dark:bg-slate-700' value="">بدون نقش</option>
-                          {apiRoles.map(r => (
-                            <option className='dark:bg-slate-700' key={r.id} value={r.id}>{r.name}</option>
-                          ))}
-                        </select>
-                      </div>
+                    {/* User Type Toggle */}
+                    <div className="flex items-center gap-3 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() => setUserType('organization')}
+                        className={`flex-1 py-2 px-3 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                          userType === 'organization'
+                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                      >
+                        <Users className="w-3.5 h-3.5 inline ml-1" />
+                        کاربر سازمانی
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUserType('customer')}
+                        className={`flex-1 py-2 px-3 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                          userType === 'customer'
+                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                      >
+                        <Building className="w-3.5 h-3.5 inline ml-1" />
+                        کاربر مشتری
+                      </button>
                     </div>
+
+                    <motion.div
+                      key={userType}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="grid grid-cols-2 gap-4"
+                    >
+                      {userType === 'organization' ? (
+                        <>
+                          {/* Department selection (from API) */}
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">دپارتمان / تیم کاری</label>
+                            <select
+                              value={formDataDepartmentId}
+                              onChange={(e) => setFormDataDepartmentId(e.target.value)}
+                              className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                              style={{ colorScheme: 'dark' }}
+                            >
+                              <option className='dark:bg-slate-700' value="">بدون دپارتمان</option>
+                              {departments.map(d => (
+                                <option className='dark:bg-slate-700' key={d.id} value={d.id}>{d.name}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Custom role selection (from API) */}
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش دسترسی (RBAC)</label>
+                            <select
+                              value={formDataCustomRoleId}
+                              onChange={(e) => setFormDataCustomRoleId(e.target.value)}
+                              className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                              style={{ colorScheme: 'dark' }}
+                            >
+                              <option className='dark:bg-slate-700' value="">بدون نقش</option>
+                              {apiRoles.map(r => (
+                                <option className='dark:bg-slate-700' key={r.id} value={r.id}>{r.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {/* Company Selection — from real customers */}
+                          <div className="space-y-1 col-span-1">
+                            <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">شرکت / سازمان وابسته <b className="text-rose-500">*</b></label>
+                            <select
+                              value={formDataCompany}
+                              onChange={(e) => setFormDataCompany(e.target.value)}
+                              className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                              style={{ colorScheme: 'dark' }}
+                            >
+                              <option className='dark:bg-slate-700' value="">انتخاب سازمان</option>
+                              {apiCustomers.map(c => (
+                                <option className='dark:bg-slate-700' key={c.id} value={c.name}>{c.name}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Customer role selection (predefined) */}
+                          <div className="space-y-1 col-span-1">
+                            <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش کاربری</label>
+                            <select
+                              value={formDataCustomerRole}
+                              onChange={(e) => setFormDataCustomerRole(e.target.value)}
+                              className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+                              style={{ colorScheme: 'dark' }}
+                            >
+                              <option className='dark:bg-slate-700' value="">انتخاب نقش</option>
+                              <option className='dark:bg-slate-700' value="مدیر اصلی">مدیر اصلی</option>
+                              <option className='dark:bg-slate-700' value="کاربر">کاربر</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
                   </div>
 
                   {/* Section: Access Levels */}
