@@ -401,6 +401,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [showDeleteCustomerConfirm, setShowDeleteCustomerConfirm] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
+  const [pendingCustomerCompany, setPendingCustomerCompany] = useState<string | null>(null);
 
   // Form Field States
   const [newTicketTitle, setNewTicketTitle] = useState('');
@@ -4016,7 +4017,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                 exit={{ opacity: 0, y: -12 }}
                 className="space-y-6"
               >
-                <UserManagementView showCustomerToast={showWorkspaceToast} />
+                <UserManagementView showCustomerToast={showWorkspaceToast} initialCustomerCompany={pendingCustomerCompany ?? undefined} onClearInitialCustomerCompany={() => setPendingCustomerCompany(null)} />
               </motion.div>
             )}
 
@@ -4325,6 +4326,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                 setNewTicketCustomer={setNewTicketCustomer}
                 setNewTicketProduct={setNewTicketProduct}
                 showCustomerToast={showCustomerToast}
+                onAddCustomerUser={(companyName) => {
+                  setPendingCustomerCompany(companyName);
+                  setActiveTab('users');
+                }}
               />
             )}
 

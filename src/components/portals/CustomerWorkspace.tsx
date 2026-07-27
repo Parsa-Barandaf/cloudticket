@@ -49,6 +49,7 @@ interface CustomerWorkspaceViewProps {
   setNewTicketCustomer: React.Dispatch<React.SetStateAction<string>>;
   setNewTicketProduct: React.Dispatch<React.SetStateAction<string>>;
   showCustomerToast: (msg: string, type?: 'success' | 'error') => void;
+  onAddCustomerUser?: (companyName: string) => void;
 }
 
 export default function CustomerWorkspaceView({
@@ -63,7 +64,8 @@ export default function CustomerWorkspaceView({
   setShowTicketModal,
   setNewTicketCustomer,
   setNewTicketProduct,
-  showCustomerToast
+  showCustomerToast,
+  onAddCustomerUser
 }: CustomerWorkspaceViewProps) {
   // Currently active internal tab
   const [customerWorkspaceTab, setCustomerWorkspaceTab] = useState<'overview' | 'products' | 'users' | 'tickets' | 'licenses' | 'activities' | 'settings'>('overview');
@@ -769,7 +771,13 @@ export default function CustomerWorkspaceView({
                 <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-xs font-black text-slate-900 dark:text-white">لیست کاربران مجاز و فعال سازمان</h3>
                   <button 
-                    onClick={() => setShowAddUserModal(true)}
+                    onClick={() => {
+                      if (onAddCustomerUser) {
+                        onAddCustomerUser(c.name);
+                      } else {
+                        setShowAddUserModal(true);
+                      }
+                    }}
                     className="bg-brand-500/10 hover:bg-brand-500/15 text-brand-600 dark:text-brand-400 text-xs font-black px-4.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <UserPlus className="w-4.5 h-4.5" />

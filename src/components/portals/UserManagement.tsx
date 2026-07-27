@@ -72,7 +72,7 @@ interface TeamItem {
   assignedProducts: string[];
 }
 
-export default function UserManagementView({ showCustomerToast }: { showCustomerToast: (msg: string, type?: 'success' | 'error') => void }) {
+export default function UserManagementView({ showCustomerToast, initialCustomerCompany, onClearInitialCustomerCompany }: { showCustomerToast: (msg: string, type?: 'success' | 'error') => void; initialCustomerCompany?: string; onClearInitialCustomerCompany?: () => void }) {
   // Page level tabs
   const [activeSubTab, setActiveSubTab] = useState<'users' | 'roles' | 'teams'>('users');
   
@@ -107,6 +107,27 @@ export default function UserManagementView({ showCustomerToast }: { showCustomer
       })));
     }
   }, [apiUsers, departments]);
+
+  // Open drawer with customer type pre-filled when initialCustomerCompany is set
+  useEffect(() => {
+    if (initialCustomerCompany) {
+      setActiveSubTab('users');
+      setUserDrawerMode('create');
+      setSelectedUserForEdit(null);
+      setFormDataName('');
+      setFormDataEmail('');
+      setFormDataPassword('');
+      setFormDataPhone('');
+      setFormDataCompany(initialCustomerCompany);
+      setFormDataDepartmentId('');
+      setFormDataCustomRoleId('');
+      setUserType('customer');
+      setFormDataCustomerRole('کاربر');
+      setFormErrors({});
+      setShowUserDrawer(true);
+      onClearInitialCustomerCompany?.();
+    }
+  }, [initialCustomerCompany]);
 
   // Active role selected for Matrix editing
   const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<string>('');
