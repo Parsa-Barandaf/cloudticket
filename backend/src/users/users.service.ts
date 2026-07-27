@@ -21,6 +21,14 @@ export class UsersService {
     });
   }
 
+  async findByCompany(company: string) {
+    return this.prisma.user.findMany({
+      where: { company },
+      include: { department: true, customRole: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async create(input: CreateUserInput) {
     return this.prisma.user.create({
       data: {

@@ -42,6 +42,11 @@ export class UsersResolver {
     return this.usersService.delete(id);
   }
 
+  @Query(() => [User])
+  async usersByCompany(@Args('company') company: string) {
+    return this.usersService.findByCompany(company);
+  }
+
   @Query(() => [Department])
   async departments() {
     return this.departmentsService.findAll();

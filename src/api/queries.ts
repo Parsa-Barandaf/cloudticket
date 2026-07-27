@@ -229,6 +229,12 @@ export const GET_USERS = `
   }
 `;
 
+export const GET_USERS_BY_COMPANY = `
+  query UsersByCompany($company: String!) {
+    usersByCompany(company: $company) { id email name role active phone company departmentId customRoleId createdAt updatedAt }
+  }
+`;
+
 export const CREATE_USER = `
   mutation CreateUser($input: CreateUserInput!) {
     createUser(input: $input) {

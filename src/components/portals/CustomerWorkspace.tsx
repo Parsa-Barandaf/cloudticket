@@ -32,8 +32,8 @@ import {
 } from 'lucide-react';
 import type { Customer, Product, Ticket, ProductCustomerConnection } from '../../types';
 import { gql } from '../../api/graphql';
-import { UPDATE_CUSTOMER, CREATE_CONNECTION, DELETE_CONNECTION, UPDATE_CONNECTION, GET_CUSTOMER_CONNECTIONS } from '../../api/queries';
-import type { ApiCustomer, ApiConnection } from '../../api/types';
+import { UPDATE_CUSTOMER, CREATE_CONNECTION, DELETE_CONNECTION, UPDATE_CONNECTION, GET_CUSTOMER_CONNECTIONS, GET_USERS_BY_COMPANY, CREATE_USER, UPDATE_USER, DELETE_USER } from '../../api/queries';
+import type { ApiCustomer, ApiConnection, ApiUser } from '../../api/types';
 import { mapConnection } from '../../api/transform';
 
 interface CustomerWorkspaceViewProps {
@@ -72,11 +72,8 @@ export default function CustomerWorkspaceView({
   const c = selectedCustomerWorkspace || customers[0];
 
   // Internal interactive data lists for this workspace
-  const [customerWorkspaceUsers, setCustomerWorkspaceUsers] = useState<any[]>([
-    { id: 'USR-201', name: 'مهندس آرش کریمی', email: 'a.karimi@ariasecurity.ir', role: 'مدیر', lastLogin: '۱۰ دقیقه پیش', status: 'فعال' },
-    { id: 'USR-202', name: 'مهندس حسام نوری', email: 'h.noori@ariasecurity.ir', role: 'کاربر', lastLogin: '۱ ساعت پیش', status: 'فعال' },
-    { id: 'USR-203', name: 'خانم الهام سلیمی', email: 'e.salimi@ariasecurity.ir', role: 'مشاهده‌گر', lastLogin: 'دیروز', status: 'غیرفعال' }
-  ]);
+  const [customerWorkspaceUsers, setCustomerWorkspaceUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   // Customer connections (active products from API)
   const [connections, setConnections] = useState<any[]>([]);
@@ -97,6 +94,28 @@ export default function CustomerWorkspaceView({
   }, [c?.id]);
 
   useEffect(() => { fetchConnections(); }, [fetchConnections]);
+
+  const fetchUsers = useCallback(async () => {
+    if (!c?.name) return;
+    setUsersLoading(true);
+    try {
+      const data = await gql<{ usersByCompany: ApiUser[] }>(GET_USERS_BY_COMPANY, { company: c.name });
+      const list = data?.usersByCompany;
+      setCustomerWorkspaceUsers(Array.isArray(list) ? list.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.customRoleId ? 'کاربر' : 'کاربر',
+        lastLogin: 'هرگز',
+        status: u.active ? 'فعال' : 'غیرفعال',
+      })) : []);
+    } catch (err) {
+      showWorkspaceToast('خطا در دریافت کاربران: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
+    setUsersLoading(false);
+  }, [c?.name]);
+
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
   const handleToggleSelectAllConnections = () => {
     if (selectedConnectionIds.length === connections.length) {
@@ -159,27 +178,41 @@ export default function CustomerWorkspaceView({
     setTimeout(() => setWorkspaceFeedback(null), 4000);
   };
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserName.trim() || !newUserEmail.trim()) {
       showWorkspaceToast('لطفا تمامی فیلدهای الزامی را تکمیل نمایید.', 'error');
       return;
     }
-    const newUser = {
-      id: `USR-${Math.floor(100 + Math.random() * 900)}`,
-      name: newUserName,
-      email: newUserEmail,
-      role: newUserRole,
-      lastLogin: 'هرگز',
-      status: 'فعال'
-    };
-    setCustomerWorkspaceUsers([...customerWorkspaceUsers, newUser]);
-    // Increment customer users count globally
-    setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, usersCount: (cust.usersCount || 0) + 1 } : cust));
-    setNewUserName('');
-    setNewUserEmail('');
-    setShowAddUserModal(false);
-    showWorkspaceToast(`کاربر جدید «${newUserName}» با موفقیت تعریف شد.`, 'success');
+    try {
+      const created = await gql<{ createUser: ApiUser }>(CREATE_USER, {
+        input: {
+          email: newUserEmail,
+          password: '123456',
+          name: newUserName,
+          company: c.name,
+          active: true,
+        },
+      });
+      const u = created.createUser;
+      const newUser = {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: 'کاربر',
+        lastLogin: 'هرگز',
+        status: 'فعال',
+      };
+      setCustomerWorkspaceUsers([...customerWorkspaceUsers, newUser]);
+      setCustomers(customers.map(cust => cust.id === c.id ? { ...cust, usersCount: (cust.usersCount || 0) + 1 } : cust));
+      setNewUserName('');
+      setNewUserEmail('');
+      setNewUserRole('کاربر');
+      setShowAddUserModal(false);
+      showWorkspaceToast(`کاربر جدید «${newUserName}» با موفقیت تعریف شد.`, 'success');
+    } catch (err) {
+      showWorkspaceToast('خطا در تعریف کاربر: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -788,21 +821,32 @@ export default function CustomerWorkspaceView({
                             </td>
                             <td className="p-4 pl-6 text-left space-x-3 space-x-reverse">
                               <button 
-                                onClick={() => {
-                                  const updated = customerWorkspaceUsers.map(wu => 
-                                    wu.id === u.id ? { ...wu, status: wu.status === 'فعال' ? 'غیرفعال' : 'فعال' } : wu
-                                  );
-                                  setCustomerWorkspaceUsers(updated);
-                                  showWorkspaceToast(`وضعیت حساب کاربری ${u.name} بروزرسانی شد.`, 'success');
+                                onClick={async () => {
+                                  try {
+                                    const updated = await gql<{ updateUser: ApiUser }>(UPDATE_USER, {
+                                      input: { id: u.id, active: u.status !== 'فعال' },
+                                    });
+                                    setCustomerWorkspaceUsers(customerWorkspaceUsers.map(wu => 
+                                      wu.id === u.id ? { ...wu, status: updated.updateUser.active ? 'فعال' : 'غیرفعال' } : wu
+                                    ));
+                                    showWorkspaceToast(`وضعیت حساب کاربری ${u.name} بروزرسانی شد.`, 'success');
+                                  } catch (err) {
+                                    showWorkspaceToast('خطا در تغییر وضعیت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                                  }
                                 }}
                                 className="text-[10px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold cursor-pointer"
                               >
                                 {u.status === 'فعال' ? 'غیرفعال‌سازی' : 'فعال‌سازی'}
                               </button>
                               <button 
-                                onClick={() => {
-                                  setCustomerWorkspaceUsers(customerWorkspaceUsers.filter(wu => wu.id !== u.id));
-                                  showWorkspaceToast(`حساب کاربری ${u.name} با موفقیت حذف گردید.`, 'success');
+                                onClick={async () => {
+                                  try {
+                                    await gql<{ deleteUser: boolean }>(DELETE_USER, { id: u.id });
+                                    setCustomerWorkspaceUsers(customerWorkspaceUsers.filter(wu => wu.id !== u.id));
+                                    showWorkspaceToast(`حساب کاربری ${u.name} با موفقیت حذف گردید.`, 'success');
+                                  } catch (err) {
+                                    showWorkspaceToast('خطا در حذف کاربر: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                                  }
                                 }}
                                 className="text-[10px] text-rose-500 hover:text-rose-650 font-bold cursor-pointer"
                               >

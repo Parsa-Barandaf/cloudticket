@@ -232,6 +232,7 @@ type Query {
   tickets: [Ticket!]!
   user(id: String!): User
   users: [User!]!
+  usersByCompany(company: String!): [User!]!
 }
 
 input RejectAccessRequestInput {
