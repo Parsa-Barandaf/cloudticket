@@ -106,3 +106,13 @@ No blockers currently. The following backend tasks must complete before Sprint 5
 | 49 | Documentation system (14 docs + 7 .ai files) | S3 | ✅ |
 | 50 | Implement `createCustomer` mutation | S4 | ✅ |
 | 51 | Wire customer creation → `createCustomer` API | S4 | ✅ |
+| 52 | Implement Department CRUD (model, service, resolver, DTOs) | S4 | ✅ |
+| 53 | Implement CustomRole CRUD (model, service, resolver, DTOs) | S4 | ✅ |
+| 54 | Implement User CRUD (create, update, delete) | S4 | ✅ |
+| 55 | Prisma migration: Department + CustomRole + User fields | S4 | ✅ |
+| 56 | Frontend: departments hook + teams tab in UserManagement | S4 | ✅ |
+| 57 | Frontend: custom roles hook + roles tab with permission matrix | S4 | ✅ |
+| 58 | Frontend: user CRUD hook + users tab + org/customer toggle form | S4 | ✅ |
+| 59 | Show "مشتری" badge in RBAC column for customer users | S4 | ✅ |
+| 60 | Phone/company saved on access request approval | S4 | ✅ |
+| 61 | Block delete of customer-linked users (Persian error) | S4 | ✅ |

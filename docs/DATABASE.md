@@ -1,6 +1,6 @@
 # Database Schema
 
-> Powered by Prisma 7 ORM, PostgreSQL 16. Schema defined in `backend/prisma/schema.prisma` (141 lines). Migration at `backend/prisma/migrations/20260723103135_init/migration.sql`.
+> Powered by Prisma 7 ORM, PostgreSQL 16. Schema defined in `backend/prisma/schema.prisma` (214 lines). Migration at `backend/prisma/migrations/20260723103135_init/migration.sql` + `backend/prisma/migrations/20260726100856_add_department_customrole_user_fields/`.
 
 ## Entity Relationship Diagram
 
@@ -8,12 +8,16 @@
 User (1) ──── (0..1) Customer (1) ──── (0..*) ProductCustomerConnection (0..*) ──── (1) Product
   │                       │
   │                       │
+  │── (0..*) Department   │
+  │── (0..*) CustomRole   │
+  │                       │
   └── (0..*) Ticket ──────┘
                │
                └── (0..*) TicketMessage
 
 Activity       (standalone, no FK)
 Notification   (standalone, no FK)
+AccessRequest  (standalone, no FK)
 ```
 
 ## Tables
@@ -29,10 +33,40 @@ Notification   (standalone, no FK)
 | `role` | `UserRole` | NOT NULL, default `ADMIN` | Enum: ADMIN, AGENT, CUSTOMER |
 | `avatar` | `TEXT?` | nullable | |
 | `active` | `BOOLEAN` | NOT NULL, default `true` | |
+| `phone` | `TEXT?` | nullable | Contact phone |
+| `company` | `TEXT?` | nullable | Company name (for customer-type users) |
+| `departmentId` | `TEXT?` | nullable, FK → Department.id | Support team assignment |
+| `customRoleId` | `TEXT?` | nullable, FK → CustomRole.id | Custom RBAC role |
 | `createdAt` | `TIMESTAMP(3)` | NOT NULL, default `now()` | |
 | `updatedAt` | `TIMESTAMP(3)` | NOT NULL, auto-updated | |
 
-**Relations**: `assignedTickets` → `Ticket[]` via `assignedToId` (named "AssignedAgent"), `customerProfile` → `Customer?`
+**Relations**: `assignedTickets` → `Ticket[]` via `assignedToId` (named "AssignedAgent"), `customerProfile` → `Customer?`, `department` → `Department?`, `customRole` → `CustomRole?`
+
+### Department (New)
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `TEXT` | PK, default `cuid()` | |
+| `name` | `TEXT` | NOT NULL | Department name |
+| `lead` | `TEXT` | NOT NULL | Department lead name |
+| `assignedProducts` | `TEXT[]` | NOT NULL, default `[]` | Product IDs |
+| `createdAt` | `TIMESTAMP(3)` | NOT NULL, default `now()` | |
+| `updatedAt` | `TIMESTAMP(3)` | NOT NULL, auto-updated | |
+
+**Relations**: `users` → `User[]`
+
+### CustomRole (New)
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `TEXT` | PK, default `cuid()` | |
+| `name` | `TEXT` | NOT NULL | Role name |
+| `description` | `TEXT?` | nullable | |
+| `permissions` | `JSON` | NOT NULL, default `{}` | JSON permission matrix |
+| `createdAt` | `TIMESTAMP(3)` | NOT NULL, default `now()` | |
+| `updatedAt` | `TIMESTAMP(3)` | NOT NULL, auto-updated | |
+
+**Relations**: `users` → `User[]`
 
 ### Customer
 

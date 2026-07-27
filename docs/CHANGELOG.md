@@ -4,6 +4,39 @@
 
 ---
 
+## [1.2.0] — User Management: Departments, Custom Roles, User CRUD (2026-07-26)
+
+### Added
+
+#### Backend
+- **Prisma schema**: `Department` model (id, name, lead, assignedProducts[]), `CustomRole` model (id, name, description, permissions JSON). `User` extended with `phone?`, `company?`, `departmentId?`, `customRoleId?`
+- **Migration**: `20260726100856_add_department_customrole_user_fields`
+- **Department CRUD**: `CreateDepartmentInput`, `UpdateDepartmentInput` DTOs; `departments`/`department` queries; `createDepartment`/`updateDepartment`/`deleteDepartment` mutations — delete clears `departmentId` on assigned users
+- **CustomRole CRUD**: `CreateCustomRoleInput`, `UpdateCustomRoleInput`, `DeleteCustomRoleInput` (with `reassignRoleId`); `customRoles`/`customRole` queries; `createCustomRole`/`updateCustomRole`/`deleteCustomRole` mutations — delete reassigns users or clears `customRoleId`
+- **User CRUD**: `CreateUserInput`, `UpdateUserInput` DTOs; `createUser`/`updateUser`/`deleteUser` mutations; delete checks for `customerProfile` and throws Persian error if linked
+- **Access request approval**: Now saves `phone` and `company` fields on user create from request data
+
+#### Frontend
+- `src/api/queries.ts`: Added 12 new strings — `GET_USERS` with phone/company/departmentId/customRoleId, `CREATE_USER`, `UPDATE_USER`, `DELETE_USER`, `GET_DEPARTMENTS`, `CREATE_DEPARTMENT`, `UPDATE_DEPARTMENT`, `DELETE_DEPARTMENT`, `GET_CUSTOM_ROLES`, `CREATE_CUSTOM_ROLE`, `UPDATE_CUSTOM_ROLE`, `DELETE_CUSTOM_ROLE`
+- `src/api/types.ts`: Added `ApiDepartment`, `ApiCustomRole` interfaces; extended `ApiUser` with `phone?`, `company?`, `departmentId?`, `customRoleId?`
+- `src/hooks/useDepartments.ts`: New — fetch, create, update, delete
+- `src/hooks/useCustomRoles.ts`: New — fetch, create, update, delete
+- `src/hooks/useUsers.ts`: Added `createUser()`, `updateUser()`, `deleteUser()`
+
+#### UserManagement Component
+- **Users tab**: Real data table (name, email, phone, company, team, role, Jalali date); create/edit drawer with organization/customer type toggle (disabled in edit mode); delete with confirm dialog
+- **Roles tab (RBAC)**: List custom roles from API; permission matrix checkboxes toggle via `updateRole`; create/duplicate/delete with replacement role select on delete
+- **Teams tab (Departments)**: List from API; product checkboxes for assigned products; create/update/delete with confirm dialog (user count warning)
+- **Customer badge**: "مشتری" amber badge next to role in RBAC column for customer-type users
+- **Dark mode**: `color-scheme: dark` on `<select>` elements; proper text colors on inputs/labels
+
+### Fixed
+- User type toggle now disabled (`opacity-50 cursor-not-allowed`) in edit mode to prevent changing user type
+- Delete of customer-linked users now blocked with Persian error message
+- Access request approval now preserves phone number and company name
+
+---
+
 ## [1.1.0] — Sprint 4 Task 1: `createCustomer` Mutation (2026-07-25)
 
 ### Added

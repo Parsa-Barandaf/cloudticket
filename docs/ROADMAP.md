@@ -86,8 +86,8 @@
 
 ## Sprint 4 — Complete Backend CRUD (🔄 In Progress)
 
-**Effort estimate**: ~5 days (Task 1 completed)
-**Scope**: Missing mutations, RBAC guards, input validation, pagination
+**Effort estimate**: ~6 days (Tasks 1, 10–15 completed)
+**Scope**: Missing mutations, RBAC guards, input validation, pagination, user management
 
 | Task | Priority | Status |
 |------|----------|--------|
@@ -100,6 +100,12 @@
 | Add class-validator decorators to all input DTOs | Medium | ❌ |
 | Add pagination arguments (`take`/`skip`) to list queries | Medium | ❌ |
 | Add search/filter arguments (status, priority, customerId filters on `tickets`) | Medium | ❌ |
+| **Department CRUD** (model + DTOs + service + resolver) | High | ✅ |
+| **CustomRole CRUD** (model + DTOs + service + resolver + reassign on delete) | High | ✅ |
+| **User CRUD** (create/update/delete with org/customer toggle) | High | ✅ |
+| **Customer badge** — "مشتری" tag in RBAC column | Low | ✅ |
+| **Access request approve** — save phone + company on user create | Medium | ✅ |
+| **Delete guard** — block delete of customer-linked users with Persian error | Medium | ✅ |
 
 ---
 
@@ -162,6 +168,7 @@
 | Issue | Impact | Sprint to Address |
 |-------|--------|-------------------|
 | `DashboardPortal.tsx` is 4,611 lines | Maintainability | S6 |
+| `UserManagement.tsx` is ~1,737 lines | Maintainability | S6 |
 | `mapConnection` sets `productId: c.customerId` | Data integrity | S7 |
 | Customer creation wired → API (Task 1 frontend work) | Integration | S4 |
 | No RBAC on any backend endpoint | Security | S4 |

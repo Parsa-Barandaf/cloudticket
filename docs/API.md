@@ -218,9 +218,177 @@ mutation CreateCustomer($input: CreateCustomerInput!) {
 
 ```graphql
 query Users {
-  users { id email name role active }
+  users { id email name role active phone company departmentId customRoleId createdAt updatedAt }
 }
 ```
+
+Returns all users ordered by `createdAt DESC`. Includes `departmentId` and `customRoleId` for relationship wiring.
+
+### `user(id)` (Query)
+
+```graphql
+query User($id: String!) {
+  user(id: $id) { id email name role active phone company departmentId customRoleId createdAt updatedAt }
+}
+```
+
+Returns a single user by ID, or `null` if not found.
+
+### `createUser` (Mutation)
+
+```graphql
+mutation CreateUser($input: CreateUserInput!) {
+  createUser(input: $input) { id email name role active phone company departmentId customRoleId createdAt updatedAt }
+}
+```
+
+**Input**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `email` | `String!` | ✅ | Must be unique |
+| `password` | `String!` | ✅ | Plain text, hashed server-side |
+| `name` | `String!` | ✅ | Display name |
+| `phone` | `String` | ❌ | Contact phone |
+| `company` | `String` | ❌ | Company name (for customer-type users) |
+| `departmentId` | `String` | ❌ | FK to Department |
+| `customRoleId` | `String` | ❌ | FK to CustomRole |
+| `active` | `Boolean` | ❌ | Defaults to `true` |
+
+### `updateUser` (Mutation)
+
+```graphql
+mutation UpdateUser($input: UpdateUserInput!) {
+  updateUser(input: $input) { id email name role active phone company departmentId customRoleId createdAt updatedAt }
+}
+```
+
+**Input**: Same fields as `CreateUserInput` plus `id` (required). All fields optional except `id`. Pass `null` for `departmentId`/`customRoleId` to disconnect.
+
+### `deleteUser` (Mutation)
+
+```graphql
+mutation DeleteUser($id: String!) {
+  deleteUser(id: $id)
+}
+```
+
+Returns `true` on success. Throws `BadRequestException` with Persian error if user has a linked `Customer` profile: «این کاربر به یک شرکت (مشتری) متصل است. ابتدا مشتری مربوطه را حذف کنید.»
+
+## Departments
+
+### `departments` (Query)
+
+```graphql
+query Departments {
+  departments { id name lead assignedProducts createdAt updatedAt }
+}
+```
+
+### `department(id)` (Query)
+
+```graphql
+query Department($id: String!) {
+  department(id: $id) { id name lead assignedProducts createdAt updatedAt }
+}
+```
+
+### `createDepartment` (Mutation)
+
+```graphql
+mutation CreateDepartment($input: CreateDepartmentInput!) {
+  createDepartment(input: $input) { id name lead assignedProducts createdAt updatedAt }
+}
+```
+
+**Input**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | `String!` | ✅ | Department name |
+| `lead` | `String!` | ✅ | Department lead name |
+| `assignedProducts` | `[String!]` | ❌ | Defaults to `[]` |
+
+### `updateDepartment` (Mutation)
+
+```graphql
+mutation UpdateDepartment($input: UpdateDepartmentInput!) {
+  updateDepartment(input: $input) { id name lead assignedProducts createdAt updatedAt }
+}
+```
+
+**Input**: Same as create + `id` (required). All fields optional.
+
+### `deleteDepartment` (Mutation)
+
+```graphql
+mutation DeleteDepartment($id: String!) {
+  deleteDepartment(id: $id)
+}
+```
+
+Returns `true`. Before deleting, clears `departmentId` on all users assigned to this department.
+
+## Custom Roles
+
+### `customRoles` (Query)
+
+```graphql
+query CustomRoles {
+  customRoles { id name description permissions createdAt updatedAt }
+}
+```
+
+### `customRole(id)` (Query)
+
+```graphql
+query CustomRole($id: String!) {
+  customRole(id: $id) { id name description permissions createdAt updatedAt }
+}
+```
+
+### `createCustomRole` (Mutation)
+
+```graphql
+mutation CreateCustomRole($input: CreateCustomRoleInput!) {
+  createCustomRole(input: $input) { id name description permissions createdAt updatedAt }
+}
+```
+
+**Input**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | `String!` | ✅ | Role name |
+| `description` | `String` | ❌ | Optional description |
+| `permissions` | `String` | ❌ | JSON string, defaults to `"{}"` |
+
+### `updateCustomRole` (Mutation)
+
+```graphql
+mutation UpdateCustomRole($input: UpdateCustomRoleInput!) {
+  updateCustomRole(input: $input) { id name description permissions createdAt updatedAt }
+}
+```
+
+**Input**: Same as create + `id` (required). All fields optional.
+
+### `deleteCustomRole` (Mutation)
+
+```graphql
+mutation DeleteCustomRole($input: DeleteCustomRoleInput!) {
+  deleteCustomRole(input: $input)
+}
+```
+
+**Input**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | `String!` | ✅ | Role to delete |
+| `reassignRoleId` | `String` | ❌ | If provided, users with this role are reassigned; otherwise `customRoleId` is cleared |
+
+Returns `true`. Throws `BadRequestException` if role not found or if `reassignRoleId` references a non-existent role.
 
 ## GraphQL Schema Types
 
@@ -239,7 +407,9 @@ query Users {
 
 | Type | Fields |
 |------|--------|
-| `User` | id, email, name, role, avatar?, active, createdAt, updatedAt |
+| `User` | id, email, name, role, avatar?, active, phone?, company?, departmentId?, customRoleId?, createdAt, updatedAt |
+| `Department` | id, name, lead, assignedProducts[], createdAt, updatedAt |
+| `CustomRole` | id, name, description?, permissions, createdAt, updatedAt |
 | `Customer` | id, industry, commercialName?, phone?, website?, address?, tier, status, usersCount, activeProductsCount, partnershipStartDate?, lastActivity?, userId, user, tickets[], connections[] |
 | `Product` | id, name, category, description?, version, status, clientsCount, logoColor?, logoInitials?, createdAt, lastUpdated, connections[] |
 | `ProductCustomerConnection` | id, startDate, endDate, licenseStatus, userCount, activationKey, notes?, subscriptionType, customerId, customer |
@@ -257,6 +427,7 @@ The following queries or mutations are defined as DTOs or models but have NO res
 |---------|-------------------|-----------|----------|
 | `createTicketMessage` | ❌ (no input) | ❌ | ❌ |
 | `updateTicket` (general) | ❌ | ❌ | ❌ |
+| Department, CustomRole, User CRUD | ✅ | ✅ | ✅ |
 
 ## Frontend API Layer
 
@@ -265,7 +436,7 @@ Files in `src/api/`:
 | File | Purpose |
 |------|---------|
 | `graphql.ts` | Generic GQL fetch with JWT Bearer injection |
-| `queries.ts` | All query/mutation strings (5 queries, 5 mutations: added `CREATE_CUSTOMER`) |
+| `queries.ts` | All query/mutation strings (17 queries & mutations: tickets, products, customers, connections, access requests, users, departments, custom roles) |
 | `types.ts` | TypeScript interfaces matching GraphQL responses |
 | `transform.ts` | Maps API types → frontend types (Persian enums, field renaming) |
 | `transform-agent.ts` | Agent-specific transforms + SLA calculations |
@@ -280,4 +451,6 @@ Files in `src/api/`:
 | `useTickets()` | `GET_TICKETS`, `CREATE_TICKET`, `UPDATE_TICKET_STATUS` | `{ tickets, loading, error, createTicket, updateTicketStatus }` |
 | `useProducts()` | `GET_PRODUCTS` | `{ products, loading, error }` |
 | `useCustomers()` | `GET_CUSTOMERS` | `{ customers, loading, error }` |
-| `useUsers()` | `GET_USERS` | `{ users, loading, error }` |
+| `useUsers()` | `GET_USERS`, `CREATE_USER`, `UPDATE_USER`, `DELETE_USER` | `{ users, loading, error, createUser, updateUser, deleteUser }` |
+| `useDepartments()` | `GET_DEPARTMENTS`, `CREATE_DEPARTMENT`, `UPDATE_DEPARTMENT`, `DELETE_DEPARTMENT` | `{ departments, loading, error, createDepartment, updateDepartment, deleteDepartment }` |
+| `useCustomRoles()` | `GET_CUSTOM_ROLES`, `CREATE_CUSTOM_ROLE`, `UPDATE_CUSTOM_ROLE`, `DELETE_CUSTOM_ROLE` | `{ customRoles, loading, error, createCustomRole, updateCustomRole, deleteCustomRole }` |
