@@ -26,4 +26,9 @@ export class CustomersResolver {
   async updateCustomer(@Args('input') input: UpdateCustomerInput) {
     return this.customersService.update(input);
   }
+
+  @Mutation(() => Boolean)
+  async deleteCustomer(@Args('id') id: string) {
+    return this.customersService.delete(id);
+  }
 }

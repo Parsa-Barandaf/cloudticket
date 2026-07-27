@@ -60,4 +60,25 @@ export class CustomersService {
       include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
     });
   }
+
+  async delete(id: string) {
+    const customer = await this.prisma.customer.findUnique({
+      where: { id },
+      include: { tickets: { include: { messages: true } }, connections: true },
+    });
+    if (!customer) throw new BadRequestException('مشتری یافت نشد');
+
+    const ticketIds = customer.tickets.map((t) => t.id);
+    const messageIds = customer.tickets.flatMap((t) => t.messages.map((m) => m.id));
+    const connectionIds = customer.connections.map((c) => c.id);
+
+    await this.prisma.$transaction([
+      ...(messageIds.length ? [this.prisma.ticketMessage.deleteMany({ where: { id: { in: messageIds } } })] : []),
+      ...(ticketIds.length ? [this.prisma.ticket.deleteMany({ where: { id: { in: ticketIds } } })] : []),
+      ...(connectionIds.length ? [this.prisma.productCustomerConnection.deleteMany({ where: { id: { in: connectionIds } } })] : []),
+      this.prisma.customer.delete({ where: { id } }),
+    ]);
+
+    return true;
+  }
 }

@@ -183,6 +183,12 @@ export const UPDATE_CUSTOMER = `
   }
 `;
 
+export const DELETE_CUSTOMER = `
+  mutation DeleteCustomer($id: String!) {
+    deleteCustomer(id: $id)
+  }
+`;
+
 // ── Access Requests ──
 export const REQUEST_ACCESS = `
   mutation RequestAccess($input: RequestAccessInput!) {

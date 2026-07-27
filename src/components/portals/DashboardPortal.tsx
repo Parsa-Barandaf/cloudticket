@@ -72,7 +72,7 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
 import { gql } from '../../api/graphql';
-import { CREATE_CUSTOMER, UPDATE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT } from '../../api/queries';
+import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT } from '../../api/queries';
 import type { ApiCustomer, ApiAccessRequest, ApiProduct } from '../../api/types';
 
 // Interfaces for our state elements
@@ -398,6 +398,9 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   // Confirmation dialogs
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
   const [customerToDeactivate, setCustomerToDeactivate] = useState<Customer | null>(null);
+  const [showDeleteCustomerConfirm, setShowDeleteCustomerConfirm] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
 
   // Form Field States
   const [newTicketTitle, setNewTicketTitle] = useState('');
@@ -861,6 +864,27 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
     setCustomerToDeactivate(cust);
     setShowDeactivateConfirm(true);
     setActiveRowActionId(null);
+  };
+
+  const handleDeleteCustomer = (cust: Customer) => {
+    setCustomerToDelete(cust);
+    setShowDeleteCustomerConfirm(true);
+    setActiveRowActionId(null);
+  };
+
+  const confirmDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    setIsDeletingCustomer(true);
+    try {
+      await gql<{ deleteCustomer: boolean }>(DELETE_CUSTOMER, { id: customerToDelete.id });
+      setCustomers(customers.filter((c) => c.id !== customerToDelete.id));
+      showCustomerToast(`مشتری «${customerToDelete.name}» و تمامی داده‌های مرتبط با موفقیت حذف شد.`, 'success');
+    } catch (err) {
+      showCustomerToast('خطا در حذف مشتری: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+    }
+    setIsDeletingCustomer(false);
+    setShowDeleteCustomerConfirm(false);
+    setCustomerToDelete(null);
   };
 
   const confirmDeactivateCustomer = async () => {
@@ -3932,6 +3956,14 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                             <RefreshCw className="w-4.5 h-4.5 text-slate-400 shrink-0" />
                                             <span>{c.status === 'فعال' ? 'غیرفعال‌سازی شرکت' : 'فعال‌سازی مجدد'}</span>
                                           </button>
+
+                                          <button
+                                            onClick={() => handleDeleteCustomer(c)}
+                                            className="w-full text-right text-[11px] font-black px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                                          >
+                                            <Trash2 className="w-4.5 h-4.5 text-rose-400 shrink-0" />
+                                            <span>حذف دائمی شرکت</span>
+                                          </button>
                                         </div>
                                       </>
                                     )}
@@ -5157,6 +5189,48 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                   }`}
                 >
                   تایید و اعمال وضعیت
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {showDeleteCustomerConfirm && customerToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs" dir="rtl">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-right"
+            >
+              <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 animate-bounce" />
+              </div>
+
+              <h3 className="text-xs font-black text-slate-950 dark:text-white">
+                حذف دائمی مشتری سازمانی
+              </h3>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed font-bold">
+                آیا از حذف کامل سازمان <strong className="text-slate-900 dark:text-white">«{customerToDelete.name}»</strong> اطمینان دارید؟ این عملیات غیر قابل بازگشت بوده و تمامی تیکت‌ها، پیام‌ها، لایسنس‌ها و اطلاعات مرتبط با این مشتری به صورت کامل از پایگاه داده حذف خواهد شد.
+              </p>
+
+              <div className="pt-5 border-t border-slate-100 dark:border-slate-800 mt-4 flex items-center justify-end gap-3 font-bold">
+                <button
+                  onClick={() => {
+                    setShowDeleteCustomerConfirm(false);
+                    setCustomerToDelete(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={confirmDeleteCustomer}
+                  disabled={isDeletingCustomer}
+                  className="px-5 py-2.5 rounded-xl text-white text-xs font-black shadow-md transition-all bg-rose-600 hover:bg-rose-700 shadow-rose-600/15 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDeletingCustomer ? 'در حال حذف...' : 'تایید و حذف کامل'}
                 </button>
               </div>
             </motion.div>
