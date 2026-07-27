@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateUserInput, UpdateUserInput } from '../common/dto/user.input';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -30,10 +31,11 @@ export class UsersService {
   }
 
   async create(input: CreateUserInput) {
+    const hashed = await bcrypt.hash(input.password, 10);
     return this.prisma.user.create({
       data: {
         email: input.email,
-        password: input.password,
+        password: hashed,
         name: input.name,
         phone: input.phone,
         company: input.company,
