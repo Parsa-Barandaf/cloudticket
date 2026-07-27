@@ -946,7 +946,7 @@ export default function TicketInboxView({
                             <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center font-black text-[9px] font-sans border border-slate-200 dark:border-slate-700">
                               {t.assignedTo === 'بدون تخصیص (هوشمند)' ? '؟؟' : t.assignedTo.substring(0, 2)}
                             </div>
-                            <span className="font-bold text-slate-800 dark:text-slate-350">
+                            <span className="font-bold text-slate-800 dark:text-slate-200">
                               {t.assignedTo}
                             </span>
                           </div>
@@ -984,8 +984,7 @@ export default function TicketInboxView({
 
                         {/* Last Activity */}
                         <td className="p-4 whitespace-nowrap">
-                          <span className="font-mono text-slate-500 font-bold block">{formatTimeAgo(t.updatedAt)}</span>
-                          <span className="text-[9px] text-slate-400">آخرین فعالیت</span>
+                          <span className="font-mono text-slate-500 font-bold">{formatTimeAgo(t.updatedAt)}</span>
                         </td>
 
                         {/* Actions menu */}
