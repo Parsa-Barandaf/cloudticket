@@ -97,6 +97,7 @@ input CreateUserInput {
   customRoleId: String
   departmentId: String
   email: String!
+  isCustomer: Boolean! = false
   name: String!
   password: String!
   phone: String
@@ -378,6 +379,7 @@ input UpdateUserInput {
   departmentId: String
   email: String
   id: String!
+  isCustomer: Boolean
   name: String
   phone: String
 }
@@ -391,6 +393,7 @@ type User {
   departmentId: String
   email: String!
   id: String!
+  isCustomer: Boolean!
   name: String!
   phone: String
   role: UserRole!

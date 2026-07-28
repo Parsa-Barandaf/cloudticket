@@ -267,20 +267,20 @@ export const REJECT_ACCESS_REQUEST = `
 // ── Users ──
 export const GET_USERS = `
   query Users {
-    users { id email name role active phone company departmentId customRoleId createdAt updatedAt }
+    users { id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt }
   }
 `;
 
 export const GET_USERS_BY_COMPANY = `
   query UsersByCompany($company: String!) {
-    usersByCompany(company: $company) { id email name role active phone company departmentId customRoleId createdAt updatedAt }
+    usersByCompany(company: $company) { id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt }
   }
 `;
 
 export const CREATE_USER = `
   mutation CreateUser($input: CreateUserInput!) {
     createUser(input: $input) {
-      id email name role active phone company departmentId customRoleId createdAt updatedAt
+      id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt
     }
   }
 `;
@@ -288,7 +288,7 @@ export const CREATE_USER = `
 export const UPDATE_USER = `
   mutation UpdateUser($input: UpdateUserInput!) {
     updateUser(input: $input) {
-      id email name role active phone company departmentId customRoleId createdAt updatedAt
+      id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt
     }
   }
 `;

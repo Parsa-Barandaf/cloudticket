@@ -17,6 +17,9 @@ export class CreateUserInput {
   @Field({ nullable: true })
   company?: string;
 
+  @Field({ defaultValue: false })
+  isCustomer: boolean;
+
   @Field({ nullable: true })
   departmentId?: string;
 
@@ -43,6 +46,9 @@ export class UpdateUserInput {
 
   @Field({ nullable: true })
   company?: string;
+
+  @Field({ nullable: true })
+  isCustomer?: boolean;
 
   @Field({ nullable: true })
   departmentId?: string;

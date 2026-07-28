@@ -34,6 +34,9 @@ export class User {
   @Field({ nullable: true })
   company?: string;
 
+  @Field({ defaultValue: false })
+  isCustomer: boolean;
+
   @Field({ nullable: true })
   departmentId?: string;
 

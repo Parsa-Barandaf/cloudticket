@@ -37,7 +37,7 @@ async function main() {
   const custUser = await prisma.user.upsert({
     where: { email: 'a.karimi@ariasecurity.ir' },
     update: {},
-    create: { email: 'a.karimi@ariasecurity.ir', password: hashed, name: 'مهندس آرش کریمی', role: 'CUSTOMER' },
+      create: { email: 'a.karimi@ariasecurity.ir', password: hashed, name: 'مهندس آرش کریمی', role: 'CUSTOMER', isCustomer: true },
   });
 
   const cust1 = await prisma.customer.upsert({

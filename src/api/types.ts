@@ -15,6 +15,7 @@ export interface ApiUser {
   avatar?: string;
   phone?: string;
   company?: string;
+  isCustomer: boolean;
   departmentId?: string;
   customRoleId?: string;
   createdAt: string;

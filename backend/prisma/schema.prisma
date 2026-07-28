@@ -76,9 +76,10 @@ model User {
   role      UserRole @default(ADMIN)
   avatar    String?
   active    Boolean  @default(true)
-  phone     String?
-  company   String?
-  createdAt DateTime @default(now())
+  phone      String?
+  company    String?
+  isCustomer Boolean  @default(false)
+  createdAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   departmentId String?

@@ -31,6 +31,9 @@ export class UsersService {
   }
 
   async create(input: CreateUserInput) {
+    if (input.isCustomer && !input.company) {
+      throw new BadRequestException('برای کاربر مشتری، نام شرکت الزامی است.');
+    }
     const hashed = await bcrypt.hash(input.password, 10);
     return this.prisma.user.create({
       data: {
@@ -39,6 +42,7 @@ export class UsersService {
         name: input.name,
         phone: input.phone,
         company: input.company,
+        isCustomer: input.isCustomer ?? false,
         active: input.active ?? true,
         ...(input.departmentId && { department: { connect: { id: input.departmentId } } }),
         ...(input.customRoleId && { customRole: { connect: { id: input.customRoleId } } }),
@@ -48,6 +52,13 @@ export class UsersService {
   }
 
   async update(input: UpdateUserInput) {
+    const existing = await this.prisma.user.findUnique({ where: { id: input.id } });
+    if (!existing) throw new BadRequestException('User not found');
+    const willBeCustomer = input.isCustomer ?? existing.isCustomer;
+    const company = input.company ?? existing.company;
+    if (willBeCustomer && !company) {
+      throw new BadRequestException('برای کاربر مشتری، نام شرکت الزامی است.');
+    }
     return this.prisma.user.update({
       where: { id: input.id },
       data: {
@@ -55,6 +66,7 @@ export class UsersService {
         ...(input.email !== undefined && { email: input.email }),
         ...(input.phone !== undefined && { phone: input.phone }),
         ...(input.company !== undefined && { company: input.company }),
+        ...(input.isCustomer !== undefined && { isCustomer: input.isCustomer }),
         ...(input.active !== undefined && { active: input.active }),
         ...(input.departmentId !== undefined && {
           department: input.departmentId ? { connect: { id: input.departmentId } } : { disconnect: true },
