@@ -741,12 +741,12 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     onChange={(e) => setFilterRole(e.target.value)}
                     className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
-                    <option value="همه">نقش: همه نقش‌ها</option>
-                    <option value="مدیر کل">مدیر کل</option>
-                    <option value="مدیر شرکت">مدیر شرکت</option>
-                    <option value="کارشناس پشتیبانی">کارشناس پشتیبانی</option>
-                    <option value="کاربر">کاربر</option>
-                    <option value="مشاهده‌گر">مشاهده‌گر</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">نقش: همه نقش‌ها</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="مدیر کل">مدیر کل</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="مدیر شرکت">مدیر شرکت</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="کارشناس پشتیبانی">کارشناس پشتیبانی</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="کاربر">کاربر</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="مشاهده‌گر">مشاهده‌گر</option>
                   </select>
                 </div>
 
@@ -757,11 +757,11 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     onChange={(e) => setFilterTeam(e.target.value)}
                     className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
-                    <option value="همه">تیم: همه تیم‌ها</option>
-                    <option value="تیم فنی">تیم فنی</option>
-                    <option value="DevOps">DevOps</option>
-                    <option value="تیم فروش">تیم فروش</option>
-                    <option value="بدون تیم">بدون تیم</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">تیم: همه تیم‌ها</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="تیم فنی">تیم فنی</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="DevOps">DevOps</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="تیم فروش">تیم فروش</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="بدون تیم">بدون تیم</option>
                   </select>
                 </div>
 
@@ -772,10 +772,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     onChange={(e) => setFilterStatus(e.target.value)}
                     className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
-                    <option value="همه">وضعیت: همه موارد</option>
-                    <option value="فعال">وضعیت: فعال</option>
-                    <option value="غیرفعال">وضعیت: غیرفعال</option>
-                    <option value="دعوت شده">وضعیت: دعوت شده</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه موارد</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="فعال">وضعیت: فعال</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="غیرفعال">وضعیت: غیرفعال</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="دعوت شده">وضعیت: دعوت شده</option>
                   </select>
                 </div>
 
@@ -786,10 +786,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     onChange={(e) => setFilterLastLogin(e.target.value)}
                     className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
-                    <option value="همه">آخرین ورود: همه زمان‌ها</option>
-                    <option value="امروز">امروز / هم‌اکنون</option>
-                    <option value="اخیر">هفته اخیر</option>
-                    <option value="تاکنون وارد نشده">تاکنون وارد نشده</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">آخرین ورود: همه زمان‌ها</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="امروز">امروز / هم‌اکنون</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="اخیر">هفته اخیر</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="تاکنون وارد نشده">تاکنون وارد نشده</option>
                   </select>
                 </div>
               </div>
@@ -872,7 +872,6 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     <thead>
                       <tr className="bg-slate-50/60 dark:bg-slate-950/20 border-b border-slate-150 dark:border-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-wider">
                         <th className="p-4 pr-5">کاربر و پست سازمانی</th>
-                        <th className="p-4">مجموعه / شرکت</th>
                         <th className="p-4">تیم تخصیصی</th>
                         <th className="p-4">نقش سیستمی (RBAC)</th>
                         <th className="p-4">وضعیت</th>
@@ -894,13 +893,12 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                               </div>
                               <div className="space-y-0.5">
                                 <h4 className="font-black text-slate-900 dark:text-white">{user.name}</h4>
-                                <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 block">{user.email}</span>
+                                <span className="font-mono text-xs text-slate-400 dark:text-slate-500 block">{user.email}</span>
                               </div>
                             </div>
                           </td>
-                          <td className="p-4 font-bold text-slate-800 dark:text-slate-300">{user.company}</td>
                           <td className="p-4">
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
+                            <span className={`px-2.5 py-1 rounded-lg text-xs font-black ${
                               user.team === 'بدون تیم' 
                                 ? 'text-slate-400 bg-slate-50 dark:bg-slate-950/40' 
                                 : 'text-slate-600 bg-slate-100 dark:text-slate-300 dark:bg-slate-800'
@@ -1005,7 +1003,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                               </div>
                               <div className="space-y-0.5">
                                 <h4 className="font-black text-slate-900 dark:text-white">{user.name}</h4>
-                                <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 block">{user.email}</span>
+                                <span className="font-mono text-xs text-slate-400 dark:text-slate-500 block">{user.email}</span>
                               </div>
                             </div>
                           </td>
