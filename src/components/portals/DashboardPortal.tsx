@@ -1231,7 +1231,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
         
         {/* FIXED RIGHT SIDEBAR NAVIGATION */}
         <aside 
-          className={`md:sticky md:top-0 md:h-screen md:self-start fixed inset-y-0 right-0 z-30 bg-white dark:bg-slate-900 border-l border-slate-200/60 dark:border-slate-800/60 pt-20 pb-6 transform transition-all duration-300 ease-in-out md:translate-x-0 md:pt-6 flex flex-col ${
+          className={`md:sticky md:top-0 fixed inset-y-0 right-0 z-30 bg-white dark:bg-slate-900 border-l border-slate-200/60 dark:border-slate-800/60 pt-20 pb-6 transform transition-all duration-300 ease-in-out md:translate-x-0 md:pt-6 flex flex-col ${
             sidebarCollapsed ? 'md:w-20 md:px-2.5' : 'md:w-64 md:px-4'
           } w-64 px-4 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
           id="sidebar-navigation"
