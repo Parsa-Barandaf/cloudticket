@@ -1,10 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { ActivitiesService } from '../activities/activities.service';
 import { TicketPriority, TicketStatus } from '@prisma/client';
 
 @Injectable()
 export class TicketsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activitiesService: ActivitiesService,
+  ) {}
 
   async findAll() {
     return this.prisma.ticket.findMany({
@@ -27,10 +31,19 @@ export class TicketsService {
     productId?: string;
     assignedToId?: string;
   }) {
-    return this.prisma.ticket.create({
+    const ticket = await this.prisma.ticket.create({
       data,
       include: { customer: { include: { user: true } }, product: true, assignedTo: true, messages: { orderBy: { createdAt: 'asc' } } },
     });
+
+    const customerName = ticket.customer?.commercialName || ticket.customer?.user?.name || '';
+    await this.activitiesService.create({
+      type: 'ticket',
+      title: 'تیکت جدید ایجاد شد',
+      subtitle: `تیکت #${ticket.ticketNumber} توسط ${customerName} با اولویت ${data.priority} ثبت شد.`,
+    });
+
+    return ticket;
   }
 
   async update(data: {
@@ -93,10 +106,15 @@ export class TicketsService {
       },
     });
 
-    // Touch updatedAt on parent ticket
     await this.prisma.ticket.update({
       where: { id: data.ticketId },
       data: {},
+    });
+
+    await this.activitiesService.create({
+      type: 'reply',
+      title: 'پاسخ جدید دریافت شد',
+      subtitle: `${data.senderName} به تیکت #${ticket.ticketNumber} پاسخ داد.`,
     });
 
     return msg;

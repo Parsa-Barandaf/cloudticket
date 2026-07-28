@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { ActivitiesService } from '../activities/activities.service';
 import { ProductStatus } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activitiesService: ActivitiesService,
+  ) {}
 
   async findAll() {
     return this.prisma.product.findMany({
@@ -21,10 +25,18 @@ export class ProductsService {
   }
 
   async create(data: { name: string; category: string; description?: string; version?: string; logoColor?: string; logoInitials?: string }) {
-    return this.prisma.product.create({
+    const product = await this.prisma.product.create({
       data,
       include: { connections: { include: { customer: true, product: true } } },
     });
+
+    await this.activitiesService.create({
+      type: 'product',
+      title: 'محصول جدید اضافه شد',
+      subtitle: `زیرسرویس ${data.name} به ساختار کاتالوگ اضافه گردید.`,
+    });
+
+    return product;
   }
 
   async update(id: string, data: { name?: string; category?: string; description?: string; version?: string; status?: ProductStatus; logoColor?: string; logoInitials?: string }) {

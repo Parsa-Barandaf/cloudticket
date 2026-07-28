@@ -1,10 +1,14 @@
 import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { ActivitiesService } from '../activities/activities.service';
 import { CreateCustomerInput, UpdateCustomerInput } from '../common/dto/customer.input';
 
 @Injectable()
 export class CustomersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activitiesService: ActivitiesService,
+  ) {}
 
   async findAll() {
     return this.prisma.customer.findMany({
@@ -27,7 +31,7 @@ export class CustomersService {
     const existing = await this.prisma.customer.findUnique({ where: { userId: input.userId } });
     if (existing) throw new ConflictException('User already has a customer profile');
 
-    return this.prisma.customer.create({
+    const customer = await this.prisma.customer.create({
       data: {
         industry: input.industry,
         commercialName: input.commercialName,
@@ -40,6 +44,14 @@ export class CustomersService {
       },
       include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
     });
+
+    await this.activitiesService.create({
+      type: 'customer',
+      title: 'کاربر جدید ثبت شد',
+      subtitle: `نماینده جدید ${input.commercialName || input.userId} به سامانه پیوست.`,
+    });
+
+    return customer;
   }
 
   async update(input: UpdateCustomerInput) {

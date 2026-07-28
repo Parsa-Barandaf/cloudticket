@@ -122,6 +122,14 @@ export interface ApiAccessRequest {
   updatedAt: string;
 }
 
+export interface ApiActivity {
+  id: string;
+  type: string;
+  title: string;
+  subtitle: string;
+  createdAt: string;
+}
+
 export interface ApiTicket {
   id: string;
   ticketNumber: number;

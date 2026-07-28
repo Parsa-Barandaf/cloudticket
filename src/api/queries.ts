@@ -1,3 +1,12 @@
+// ── Activities ──
+export const GET_ACTIVITIES = `
+  query Activities($limit: Int) {
+    activities(limit: $limit) {
+      id type title subtitle createdAt
+    }
+  }
+`;
+
 // ── Auth ──
 export const LOGIN_MUTATION = `
   mutation Login($email: String!, $password: String!) {

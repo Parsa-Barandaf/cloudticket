@@ -71,6 +71,7 @@ import { useTickets } from '../../hooks/useTickets';
 import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
+import { useActivities } from '../../hooks/useActivities';
 import { gql } from '../../api/graphql';
 import { formatDateTime } from '../../lib/utils';
 import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, GET_USERS } from '../../api/queries';
@@ -126,15 +127,7 @@ export interface Customer {
   partnershipStartDate?: string;
 }
 
-interface ActivityItem {
-  id: string;
-  type: 'ticket' | 'reply' | 'product' | 'customer';
-  title: string;
-  subtitle: string;
-  time: string;
-}
-
-import { PortalRole } from '../../types';
+import { PortalRole, ActivityItem } from '../../types';
 
 interface NotificationItem {
   id: string;
@@ -227,6 +220,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const { products: apiProducts, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { customers: apiCustomers, loading: customersLoading, refetch: refetchCustomers } = useCustomers();
   const { users: apiUsers } = useUsers();
+  const { activities, refetch: refetchActivities } = useActivities(10);
   useEffect(() => { if (apiTickets.length) setTickets(apiTickets); }, [apiTickets]);
   useEffect(() => { if (apiProducts.length) setProducts(apiProducts); }, [apiProducts]);
   useEffect(() => { if (apiCustomers.length) setCustomers(apiCustomers); }, [apiCustomers]);
@@ -249,13 +243,6 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
     { id: 'AGN-02', name: 'زهرا موسوی', role: 'کارشناس توسعه‌دهندگان', email: 'mousavi@example.com', status: 'فعال', load: '۲ تیکت فعال' },
     { id: 'AGN-03', name: 'علی علوی', role: 'کارشناس امنیت شبکه', email: 'alavi@example.com', status: 'مشغول', load: '۱ تیکت فعال' },
     { id: 'AGN-04', name: 'مریم اکبری', role: 'کارشناس امور مشتریان', email: 'akbari@example.com', status: 'آفلاین', load: '۰ تیکت فعال' }
-  ]);
-
-  const [activities, setActivities] = useState<ActivityItem[]>([
-    { id: 'ACT-1', type: 'ticket', title: 'تیکت جدید ایجاد شد', subtitle: 'توسط شرکت فناوری نوین در ۲ دقیقه پیش', time: '۱۰:۴۲' },
-    { id: 'ACT-2', type: 'reply', title: 'پاسخ جدید دریافت شد', subtitle: 'پشتیبان امیرحسین رضایی به تیکت TKT-1023 پاسخ داد', time: '۱۰:۲۷' },
-    { id: 'ACT-3', type: 'product', title: 'محصول جدید اضافه شد', subtitle: 'زیرسرویس API وب‌هوک به کاتالوگ اضافه شد', time: '۰۹:۱۵' },
-    { id: 'ACT-4', type: 'customer', title: 'کاربر جدید ثبت شد', subtitle: 'نماینده جدید مریم اکبری به سامانه پیوست', time: 'دیروز' }
   ]);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([
@@ -448,15 +435,8 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
       });
     }
 
-    // Append to activities (local only — no API for activities)
-    const newAct: ActivityItem = {
-      id: `ACT-${Date.now()}`,
-      type: 'ticket',
-      title: 'تیکت جدید ایجاد شد',
-      subtitle: `تیکت توسط ${newTicketCustomer} با اولویت ${newTicketPriority} ثبت شد.`,
-      time: 'هم‌اکنون'
-    };
-    setActivities([newAct, ...activities]);
+    // Refresh activities list
+    refetchActivities();
 
     // Append to notifications (local only)
     const newNtf: NotificationItem = {
@@ -563,16 +543,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
         .then(() => {
           showFeedback(`محصول "${drawerName}" با موفقیت ایجاد شد.`);
           refetchProducts();
-          setActivities([
-            {
-              id: `ACT-${Date.now()}`,
-              type: 'product',
-              title: 'محصول جدید اضافه شد',
-              subtitle: `زیرسرویس ${drawerName} به ساختار کاتالوگ سحاب اضافه گردید.`,
-              time: 'هم‌اکنون'
-            },
-            ...activities
-          ]);
+          refetchActivities();
         })
         .catch((err) => {
           showFeedback('خطا در ایجاد محصول: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
@@ -1470,22 +1441,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                     <Sparkles className="w-36 h-36 text-white" />
                   </div>
 
-                  <div className="max-w-xl space-y-4 relative z-10">
+                  <div className="max-w-xl space-y-5 relative z-10">
+                    <h2 className="text-xl md:text-2xl font-black">سلام، خوش آمدید</h2>
                     <span className="text-[10px] uppercase tracking-wider font-extrabold bg-white/10 dark:bg-brand-500/20 px-3 py-1 rounded-full text-brand-100 dark:text-brand-300">
                       محیط مدیریت فعال
                     </span>
-                    <h2 className="text-xl md:text-2xl font-black">سلام، خوش آمدید</h2>
-                    <p className="text-xs md:text-sm text-brand-100 dark:text-slate-300 leading-relaxed">
-                      وضعیت سیستم و فعالیت‌های اخیر را مشاهده کنید. تمام فرایندهای پشتیبانی، پاسخگویی به زیرسرویس‌ها و مشتریان سازمانی در وضعیت ایمن قرار دارند.
-                    </p>
-                    <div className="pt-2">
-                      <button 
-                        onClick={() => setShowTicketModal(true)}
-                        className="bg-white hover:bg-slate-100 text-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 dark:text-white text-xs font-black px-5 py-3 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shadow-black/10 cursor-pointer"
-                      >
-                        ایجاد تیکت جدید
-                      </button>
-                    </div>
                   </div>
                 </div>
 

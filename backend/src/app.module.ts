@@ -8,6 +8,7 @@ import { TicketsModule } from './tickets/tickets.module';
 import { ProductsModule } from './products/products.module';
 import { CustomersModule } from './customers/customers.module';
 import { AccessRequestsModule } from './access-requests/access-requests.module';
+import { ActivitiesModule } from './activities/activities.module';
 import { DatabaseModule } from './common/database.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { DatabaseModule } from './common/database.module';
     ProductsModule,
     CustomersModule,
     AccessRequestsModule,
+    ActivitiesModule,
   ],
 })
 export class AppModule {}

@@ -1,6 +1,6 @@
-import type { ApiTicket, ApiProduct, ApiCustomer, ApiConnection, ApiUser } from './types';
-import type { Ticket, Product, Customer, ProductCustomerConnection } from '../types';
-import { formatDate } from '../lib/utils';
+import type { ApiActivity, ApiTicket, ApiProduct, ApiCustomer, ApiConnection, ApiUser } from './types';
+import type { ActivityItem, Ticket, Product, Customer, ProductCustomerConnection } from '../types';
+import { formatDate, formatTimeAgo } from '../lib/utils';
 
 const priorityMap: Record<string, 'بحرانی' | 'بالا' | 'متوسط' | 'پایین'> = {
   CRITICAL: 'بحرانی', HIGH: 'بالا', MEDIUM: 'متوسط', LOW: 'پایین',
@@ -74,6 +74,16 @@ export function mapCustomer(c: ApiCustomer): Customer {
     lastActivity: c.lastActivity,
     activeProductsCount: c.activeProductsCount,
     partnershipStartDate: c.partnershipStartDate,
+  };
+}
+
+export function mapActivity(a: ApiActivity): ActivityItem {
+  return {
+    id: a.id,
+    type: a.type as ActivityItem['type'],
+    title: a.title,
+    subtitle: a.subtitle,
+    time: formatTimeAgo(a.createdAt),
   };
 }
 
