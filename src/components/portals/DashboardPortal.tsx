@@ -72,6 +72,7 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
 import { gql } from '../../api/graphql';
+import { formatDateTime } from '../../lib/utils';
 import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, GET_USERS } from '../../api/queries';
 import type { ApiCustomer, ApiAccessRequest, ApiProduct, ApiUser } from '../../api/types';
 
@@ -1576,10 +1577,8 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                       <table className="w-full text-right border-collapse">
                         <thead>
                           <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-[10px] font-bold">
-                            <th className="p-4 pr-5">شناسه</th>
-                            <th className="p-4">موضوع تیکت</th>
+                            <th className="p-4 pr-5">موضوع تیکت</th>
                             <th className="p-4">مشتری</th>
-                            <th className="p-4">زیرسرویس</th>
                             <th className="p-4">اولویت</th>
                             <th className="p-4">وضعیت</th>
                             <th className="p-4 pl-5">زمان</th>
@@ -1591,10 +1590,8 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                               key={ticket.id} 
                               className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 text-xs text-slate-700 dark:text-slate-300 transition-colors"
                             >
-                              <td className="p-4 pr-5 font-mono font-bold text-slate-400">{ticket.id}</td>
-                              <td className="p-4 font-semibold text-slate-900 dark:text-white max-w-[180px] truncate">{ticket.title}</td>
+                              <td className="p-4 pr-5 font-semibold text-slate-900 dark:text-white max-w-[200px] truncate">{ticket.title}</td>
                               <td className="p-4">{ticket.customer}</td>
-                              <td className="p-4 text-slate-500">{ticket.product}</td>
                               <td className="p-4">
                                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${
                                   ticket.priority === 'بحرانی' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
@@ -1621,7 +1618,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                   {ticket.status}
                                 </span>
                               </td>
-                              <td className="p-4 pl-5 text-slate-400 dark:text-slate-500 font-medium">{ticket.date}</td>
+                              <td className="p-4 pl-5 text-slate-400 dark:text-slate-500 font-bold text-sm">{formatDateTime(ticket.date)}</td>
                             </tr>
                           ))}
                         </tbody>

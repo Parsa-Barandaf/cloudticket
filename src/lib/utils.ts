@@ -13,6 +13,20 @@ export function formatDate(dateStr: string): string {
   }).format(d);
 }
 
+export function formatDateTime(dateStr: string): string {
+  const d = new Date(dateStr);
+  const date = new Intl.DateTimeFormat('fa-IR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
+  const time = new Intl.DateTimeFormat('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d);
+  return `${date} - ${time}`;
+}
+
 export function formatTimeAgo(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
