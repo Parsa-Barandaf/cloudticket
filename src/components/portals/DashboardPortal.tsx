@@ -1665,48 +1665,6 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                   </div>
                 </div>
 
-                {/* 4. QUICK ACTIONS SECTION (Requested) */}
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sliders className="w-4.5 h-4.5 text-brand-500" />
-                    <h3 className="text-xs font-black text-slate-800 dark:text-slate-200">دسترسی سریع و ایجاد رکوردها</h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <button 
-                      onClick={() => setShowProductModal(true)}
-                      className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-brand-500 hover:bg-brand-500/5 dark:hover:bg-brand-500/5 flex flex-col items-center justify-center gap-2 group transition-all cursor-pointer"
-                    >
-                      <PlusCircle className="w-5 h-5 text-brand-500 group-hover:scale-110 transition-transform" />
-                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">ایجاد محصول جدید</span>
-                    </button>
-
-                    <button 
-                      onClick={() => setShowCustomerModal(true)}
-                      className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-brand-500 hover:bg-brand-500/5 dark:hover:bg-brand-500/5 flex flex-col items-center justify-center gap-2 group transition-all cursor-pointer"
-                    >
-                      <UserPlus className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
-                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">ایجاد مشتری جدید</span>
-                    </button>
-
-                    <button 
-                      onClick={() => setShowTicketModal(true)}
-                      className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-brand-500 hover:bg-brand-500/5 dark:hover:bg-brand-500/5 flex flex-col items-center justify-center gap-2 group transition-all cursor-pointer"
-                    >
-                      <Inbox className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" />
-                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">ایجاد تیکت</span>
-                    </button>
-
-                    <button 
-                      onClick={() => setActiveTab('reports')}
-                      className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-brand-500 hover:bg-brand-500/5 dark:hover:bg-brand-500/5 flex flex-col items-center justify-center gap-2 group transition-all cursor-pointer"
-                    >
-                      <BarChart3 className="w-5 h-5 text-indigo-500 group-hover:scale-110 transition-transform" />
-                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">مشاهده گزارش‌ها</span>
-                    </button>
-                  </div>
-                </div>
-
               </motion.div>
             )}
 
