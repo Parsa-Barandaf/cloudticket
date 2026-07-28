@@ -72,8 +72,8 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
 import { gql } from '../../api/graphql';
-import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT } from '../../api/queries';
-import type { ApiCustomer, ApiAccessRequest, ApiProduct } from '../../api/types';
+import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, GET_USERS } from '../../api/queries';
+import type { ApiCustomer, ApiAccessRequest, ApiProduct, ApiUser } from '../../api/types';
 
 // Interfaces for our state elements
 export interface Ticket {
@@ -172,6 +172,16 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSavingCustomer, setIsSavingCustomer] = useState(false);
+  const [currentUserData, setCurrentUserData] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    gql<{ users: ApiUser[] }>(GET_USERS)
+      .then(data => {
+        const u = data.users.find(x => x.email === userEmail);
+        if (u) setCurrentUserData({ name: u.name, role: u.role });
+      })
+      .catch(() => {});
+  }, [userEmail]);
 
   // Active Tab state
   const [activeTab, setActiveTab] = useState<
@@ -1205,11 +1215,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
           <div className="h-9 w-[1px] bg-slate-200 dark:bg-slate-800" />
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs shadow-inner">
-              ار
+              {currentUserData ? currentUserData.name.substring(0, 2) : '?'}
             </div>
             <div className="hidden lg:flex flex-col text-right">
-              <span className="text-xs font-black text-slate-800 dark:text-slate-200">امیر راد</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">مدیر ارشد سیستم</span>
+              <span className="text-xs font-black text-slate-800 dark:text-slate-200">{currentUserData?.name ?? '?'}</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">{currentUserData?.role ?? '?'}</span>
             </div>
           </div>
         </div>
@@ -1400,11 +1410,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/60 flex flex-col gap-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 font-bold text-xs">
-                    ار
+                    {currentUserData ? currentUserData.name.substring(0, 2) : '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">امیر راد</h4>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">مدیر ارشد سیستم</p>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{currentUserData?.name ?? '?'}</h4>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{currentUserData?.role ?? '?'}</p>
                   </div>
                 </div>
                 <button
