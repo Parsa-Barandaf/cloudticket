@@ -140,7 +140,7 @@ export default function CustomerPortalView({
       </AnimatePresence>
 
       {/* CUSTOMER SIDEBAR */}
-      <aside className={`fixed lg:static inset-y-0 right-0 z-40 bg-white dark:bg-slate-900 border-l border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between transition-all duration-300 ${
+      <aside className={`fixed lg:sticky lg:top-0 lg:h-screen lg:self-start inset-y-0 right-0 z-40 bg-white dark:bg-slate-900 border-l border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between transition-all duration-300 ${
         sidebarCollapsed ? 'w-20' : 'w-64'
       } ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
         
