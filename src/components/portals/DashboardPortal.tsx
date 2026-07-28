@@ -1490,20 +1490,26 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
                 {/* 2. STATISTICS CARDS (4 KPIs) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* Card 1: "تعداد محصولات" */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
+                  {/* Card 1: "تعداد محصولات" → clickable → products tab */}
+                  <div
+                    onClick={() => setActiveTab('products')}
+                    className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between cursor-pointer hover:border-brand-500/40 dark:hover:border-brand-500/40 transition-colors"
+                  >
                     <div className="space-y-1">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-semibold">تعداد محصولات</span>
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">24</span>
-                      <span className="text-[10px] text-emerald-500 block font-medium">۶ زیرسرویس اصلی فعال</span>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{products.length}</span>
+                      <span className="text-[10px] text-emerald-500 block font-medium">{products.filter(p => p.status === 'فعال').length} محصول فعال</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-500/20 text-brand-500 flex items-center justify-center">
                       <Layers className="w-6 h-6" />
                     </div>
                   </div>
 
-                  {/* Card 2: "تیکت‌های باز" */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
+                  {/* Card 2: "تیکت‌های باز" → clickable → tickets tab */}
+                  <div
+                    onClick={() => setActiveTab('tickets')}
+                    className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between cursor-pointer hover:border-amber-500/40 dark:hover:border-amber-500/40 transition-colors"
+                  >
                     <div className="space-y-1">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-semibold">تیکت‌های باز</span>
                       <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
@@ -1516,20 +1522,26 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                     </div>
                   </div>
 
-                  {/* Card 3: "مشتریان فعال" */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
+                  {/* Card 3: "مشتریان فعال" → clickable → customers tab */}
+                  <div
+                    onClick={() => setActiveTab('customers')}
+                    className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between cursor-pointer hover:border-brand-500/40 dark:hover:border-brand-500/40 transition-colors"
+                  >
                     <div className="space-y-1">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-semibold">مشتریان فعال</span>
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">86</span>
-                      <span className="text-[10px] text-brand-500 block font-medium">شرکت‌های بزرگ دولتی و خصوصی</span>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{customers.length}</span>
+                      <span className="text-[10px] text-brand-500 block font-medium">{customers.filter(c => c.status === 'فعال').length} مشتری فعال</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-500/20 text-brand-500 flex items-center justify-center">
                       <Users2 className="w-6 h-6" />
                     </div>
                   </div>
 
-                  {/* Card 4: "میانگین زمان پاسخ" */}
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
+                  {/* Card 4: "میانگین زمان پاسخ" → clickable → tickets tab */}
+                  <div
+                    onClick={() => setActiveTab('tickets')}
+                    className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between cursor-pointer hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-colors"
+                  >
                     <div className="space-y-1">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-semibold">میانگین زمان پاسخ</span>
                       <span className="text-2xl font-black text-slate-900 dark:text-white">۲ ساعت</span>
