@@ -1220,7 +1220,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
         
         {/* FIXED RIGHT SIDEBAR NAVIGATION */}
         <aside 
-          className={`md:relative fixed inset-y-0 right-0 z-30 bg-white dark:bg-slate-900 border-l border-slate-200/60 dark:border-slate-800/60 pt-20 pb-6 transform transition-all duration-300 ease-in-out md:translate-x-0 md:pt-6 ${
+          className={`md:sticky md:top-0 md:h-screen fixed inset-y-0 right-0 z-30 bg-white dark:bg-slate-900 border-l border-slate-200/60 dark:border-slate-800/60 pt-20 pb-6 transform transition-all duration-300 ease-in-out md:translate-x-0 md:pt-6 flex flex-col ${
             sidebarCollapsed ? 'md:w-20 md:px-2.5' : 'md:w-64 md:px-4'
           } w-64 px-4 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
           id="sidebar-navigation"
@@ -1234,21 +1234,22 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
             {sidebarCollapsed ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
 
-          {/* Logo / Brand Area */}
-          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center mb-8' : 'gap-3 mb-8 px-2'}`}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            {!sidebarCollapsed && (
-              <div className="text-right">
-                <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری مدیریت مشتریان</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">پشتیبانی و امور مشتریان</span>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {/* Logo / Brand Area */}
+            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center mb-8' : 'gap-3 mb-8 px-2'}`}>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
+                <Sparkles className="w-5 h-5" />
               </div>
-            )}
-          </div>
+              {!sidebarCollapsed && (
+                <div className="text-right">
+                  <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری مدیریت مشتریان</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">پشتیبانی و امور مشتریان</span>
+                </div>
+              )}
+            </div>
 
-          {/* Navigation Items (All 8 requested tabs + active states) */}
-          <nav className="space-y-1">
+            {/* Navigation Items (All 8 requested tabs + active states) */}
+            <nav className="space-y-1">
             <button
               onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center transition-all duration-200 ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'} rounded-xl text-xs font-semibold ${
@@ -1391,9 +1392,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               {!sidebarCollapsed && <span className="whitespace-nowrap">تنظیمات</span>}
             </button>
           </nav>
+          </div>
 
           {/* SIDEBAR FOOTER: USER PROFILE MINI CARD (Requested) */}
-          <div className="absolute bottom-6 left-4 right-4 text-right">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 text-right sticky bottom-7">
             {!sidebarCollapsed ? (
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/60 flex flex-col gap-3">
                 <div className="flex items-center gap-2.5">
