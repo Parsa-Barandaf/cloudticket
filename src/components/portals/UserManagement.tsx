@@ -196,6 +196,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
 
   // Row Action Toggle State
   const [activeRowActionId, setActiveRowActionId] = useState<string | null>(null);
+  const [menuFixedStyle, setMenuFixedStyle] = useState<Record<string, string> | undefined>(undefined);
 
   // Profile Modal State
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -865,8 +866,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                 </button>
               </div>
             ) : userTypeTab === 'employees' ? (
-              /* ─── Employees Table (with team column + customer badge) ─── */
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs overflow-hidden">
+              <>
+              {/* ─── Employees Table (with team column + customer badge) ─── */}
+              {activeRowActionId !== null && <div className="fixed inset-0 z-[9998] cursor-default" onClick={() => { setActiveRowActionId(null); setMenuFixedStyle(undefined); }} />}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-right border-collapse">
                     <thead>
@@ -932,9 +935,19 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                           </td>
                           <td className="p-4 font-bold text-slate-450 dark:text-slate-400 text-[11px]">{user.lastLogin}</td>
                           <td className="p-4 font-mono text-[11px] text-slate-400">{user.createdDate}</td>
-                          <td className="p-4 pl-5 text-left relative">
+                          <td className="p-4 pl-5 text-left">
                             <button
-                              onClick={(e) => { e.stopPropagation(); setActiveRowActionId(activeRowActionId === user.id ? null : user.id); }}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                const isOpen = activeRowActionId === user.id;
+                                setActiveRowActionId(isOpen ? null : user.id);
+                                if (!isOpen) {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setMenuFixedStyle({ position: 'fixed', top: `${rect.bottom + 4}px`, left: `${rect.left}px`, zIndex: '9999' });
+                                } else {
+                                  setMenuFixedStyle(undefined);
+                                }
+                              }}
                               className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
                             >
                               <MoreVertical className="w-4.5 h-4.5" />
@@ -945,23 +958,24 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                                   initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                  className="absolute left-10 top-12 w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-[40] overflow-hidden text-right py-1"
+                                  className="w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden text-right py-1"
+                                  style={menuFixedStyle}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <button onClick={() => { setSelectedUserProfile(user); setProfileModalTab('info'); setShowProfileModal(true); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setSelectedUserProfile(user); setProfileModalTab('info'); setShowProfileModal(true); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Eye className="w-4 h-4 text-slate-400" /><span>مشاهده پروفایل</span>
                                   </button>
-                                  <button onClick={() => { openEditUserDrawer(user); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { openEditUserDrawer(user); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Edit3 className="w-4 h-4 text-slate-400" /><span>ویرایش اطلاعات</span>
                                   </button>
-                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'deactivate', userId: user.id }); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'deactivate', userId: user.id }); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <UserX className="w-4 h-4 text-slate-400" /><span>{user.status === 'فعال' ? 'غیرفعال‌سازی حساب' : 'فعال‌سازی مجدد'}</span>
                                   </button>
-                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'reset-pass', userId: user.id }); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'reset-pass', userId: user.id }); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Key className="w-4 h-4 text-slate-400" /><span>بازنشانی رمز عبور</span>
                                   </button>
                                   <div className="border-t border-slate-100 dark:border-slate-700/60 my-1" />
-                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'delete', userId: user.id }); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-[11px] font-black text-rose-600 dark:text-rose-400 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'delete', userId: user.id }); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-[11px] font-black text-rose-600 dark:text-rose-400 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Trash2 className="w-4 h-4" /><span>حذف دائمی کاربر</span>
                                   </button>
                                 </motion.div>
@@ -974,9 +988,12 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   </table>
                 </div>
               </div>
+            </>
             ) : (
               /* ─── Customers Table (no team column, no badge) ─── */
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs overflow-hidden">
+              <>
+              {activeRowActionId !== null && <div className="fixed inset-0 z-[9998] cursor-default" onClick={() => { setActiveRowActionId(null); setMenuFixedStyle(undefined); }} />}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-right border-collapse">
                     <thead>
@@ -1027,9 +1044,19 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                           </td>
                           <td className="p-4 font-bold text-slate-450 dark:text-slate-400 text-[11px]">{user.lastLogin}</td>
                           <td className="p-4 font-mono text-[11px] text-slate-400">{user.createdDate}</td>
-                          <td className="p-4 pl-5 text-left relative">
+                          <td className="p-4 pl-5 text-left">
                             <button
-                              onClick={(e) => { e.stopPropagation(); setActiveRowActionId(activeRowActionId === user.id ? null : user.id); }}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                const isOpen = activeRowActionId === user.id;
+                                setActiveRowActionId(isOpen ? null : user.id);
+                                if (!isOpen) {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setMenuFixedStyle({ position: 'fixed', top: `${rect.bottom + 4}px`, left: `${rect.left}px`, zIndex: '9999' });
+                                } else {
+                                  setMenuFixedStyle(undefined);
+                                }
+                              }}
                               className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
                             >
                               <MoreVertical className="w-4.5 h-4.5" />
@@ -1040,23 +1067,24 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                                   initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                  className="absolute left-10 top-12 w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-[40] overflow-hidden text-right py-1"
+                                  className="w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden text-right py-1"
+                                  style={menuFixedStyle}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <button onClick={() => { setSelectedUserProfile(user); setProfileModalTab('info'); setShowProfileModal(true); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setSelectedUserProfile(user); setProfileModalTab('info'); setShowProfileModal(true); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Eye className="w-4 h-4 text-slate-400" /><span>مشاهده پروفایل</span>
                                   </button>
-                                  <button onClick={() => { openEditUserDrawer(user); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { openEditUserDrawer(user); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Edit3 className="w-4 h-4 text-slate-400" /><span>ویرایش اطلاعات</span>
                                   </button>
-                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'deactivate', userId: user.id }); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'deactivate', userId: user.id }); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <UserX className="w-4 h-4 text-slate-400" /><span>{user.status === 'فعال' ? 'غیرفعال‌سازی حساب' : 'فعال‌سازی مجدد'}</span>
                                   </button>
-                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'reset-pass', userId: user.id }); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'reset-pass', userId: user.id }); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-[11px] font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Key className="w-4 h-4 text-slate-400" /><span>بازنشانی رمز عبور</span>
                                   </button>
                                   <div className="border-t border-slate-100 dark:border-slate-700/60 my-1" />
-                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'delete', userId: user.id }); setActiveRowActionId(null); }} className="w-full px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-[11px] font-black text-rose-600 dark:text-rose-400 flex items-center gap-2 cursor-pointer transition-colors">
+                                  <button onClick={() => { setShowConfirmModal({ show: true, type: 'delete', userId: user.id }); setActiveRowActionId(null); setMenuFixedStyle(undefined); }} className="w-full px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-[11px] font-black text-rose-600 dark:text-rose-400 flex items-center gap-2 cursor-pointer transition-colors">
                                     <Trash2 className="w-4 h-4" /><span>حذف دائمی کاربر</span>
                                   </button>
                                 </motion.div>
@@ -1069,6 +1097,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   </table>
                 </div>
               </div>
+            </>
             )}
           </motion.div>
         )}
