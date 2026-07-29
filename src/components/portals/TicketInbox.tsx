@@ -86,7 +86,7 @@ export default function TicketInboxView({
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // 2. QUICK FILTERS & ACTIVE CHIPS
-  const [activeQuickFilter, setActiveQuickFilter] = useState<'all' | 'my' | 'critical' | 'unanswered' | 'today' | 'week'>('all');
+  const [activeQuickFilter, setActiveQuickFilter] = useState<'all' | 'my' | 'critical' | 'unanswered' | 'today' | 'week' | 'open' | 'waiting' | 'resolved'>('all');
 
   // 3. SELECTION & BULK ACTIONS STATES
   const [selectedTicketIds, setSelectedTicketIds] = useState<string[]>([]);
@@ -152,9 +152,9 @@ export default function TicketInboxView({
 
   // 8. DATA DYNAMICS
   // Compute standard KPIs
-  const totalOpenTickets = tickets.filter(t => t.status !== 'بسته شده').length + 39; // add offset to match "46" requested
-  const totalWaitingResponse = tickets.filter(t => t.status === 'منتظر پاسخ مشتری').length + 15; // match "19"
-  const totalResolved = 382 + tickets.filter(t => t.status === 'بسته شده').length;
+  const totalOpenTickets = tickets.filter(t => t.status !== 'بسته شده').length;
+  const totalWaitingResponse = tickets.filter(t => t.status === 'منتظر پاسخ مشتری').length;
+  const totalResolved = tickets.filter(t => t.status === 'بسته شده').length;
 
   // Sync main search input with parent search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,6 +197,12 @@ export default function TicketInboxView({
       matchesQuick = t.date.includes('دقیقه') || t.date.includes('ساعت') || t.date.includes('هم‌اکنون');
     } else if (activeQuickFilter === 'week') {
       matchesQuick = !t.date.includes('دیروز') && !t.date.includes('هفته پیش');
+    } else if (activeQuickFilter === 'open') {
+      matchesQuick = t.status !== 'بسته شده';
+    } else if (activeQuickFilter === 'waiting') {
+      matchesQuick = t.status === 'منتظر پاسخ مشتری';
+    } else if (activeQuickFilter === 'resolved') {
+      matchesQuick = t.status === 'بسته شده';
     }
 
     return matchesSearch && matchesStatus && matchesPriority && matchesProduct && matchesCustomer && matchesAgent && matchesQuick;
@@ -517,7 +523,14 @@ export default function TicketInboxView({
       {/* 2. TICKET KPI CARDS ROW */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         {/* KPI 1: Active Open Tickets */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs hover:border-brand-500/30 transition-all duration-200">
+        <button
+          onClick={() => { setActiveQuickFilter(activeQuickFilter === 'open' ? 'all' : 'open'); setTicketStatusFilter('همه'); setCurrentPage(1); }}
+          className={`rounded-2xl border p-5 flex items-center justify-between shadow-xs transition-all duration-200 cursor-pointer text-right ${
+            activeQuickFilter === 'open'
+              ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-700'
+              : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/30'
+          }`}
+        >
           <div className="space-y-1">
             <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز</span>
             <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalOpenTickets}</h4>
@@ -526,10 +539,17 @@ export default function TicketInboxView({
           <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
             <Inbox className="w-5 h-5" />
           </div>
-        </div>
+        </button>
 
         {/* KPI 2: Waiting response */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs hover:border-brand-500/30 transition-all duration-200">
+        <button
+          onClick={() => { setActiveQuickFilter(activeQuickFilter === 'waiting' ? 'all' : 'waiting'); setTicketStatusFilter('همه'); setCurrentPage(1); }}
+          className={`rounded-2xl border p-5 flex items-center justify-between shadow-xs transition-all duration-200 cursor-pointer text-right ${
+            activeQuickFilter === 'waiting'
+              ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700'
+              : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/30'
+          }`}
+        >
           <div className="space-y-1">
             <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">در انتظار پاسخ</span>
             <h4 className="text-2xl font-black text-amber-500 font-mono leading-none">{totalWaitingResponse}</h4>
@@ -538,10 +558,17 @@ export default function TicketInboxView({
           <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
           </div>
-        </div>
+        </button>
 
         {/* KPI 3: Resolved */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs hover:border-brand-500/30 transition-all duration-200">
+        <button
+          onClick={() => { setActiveQuickFilter(activeQuickFilter === 'resolved' ? 'all' : 'resolved'); setTicketStatusFilter('همه'); setCurrentPage(1); }}
+          className={`rounded-2xl border p-5 flex items-center justify-between shadow-xs transition-all duration-200 cursor-pointer text-right ${
+            activeQuickFilter === 'resolved'
+              ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-700'
+              : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/30'
+          }`}
+        >
           <div className="space-y-1">
             <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">حل شده</span>
             <h4 className="text-2xl font-black text-emerald-500 font-mono leading-none">{totalResolved}</h4>
@@ -550,7 +577,7 @@ export default function TicketInboxView({
           <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0">
             <CheckCircle className="w-5 h-5" />
           </div>
-        </div>
+        </button>
 
         {/* KPI 4: Avg Response Time */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs hover:border-brand-500/30 transition-all duration-200">
@@ -734,7 +761,7 @@ export default function TicketInboxView({
           return (
             <button
               key={c.id}
-              onClick={() => { setActiveQuickFilter(c.id as any); setCurrentPage(1); }}
+              onClick={() => { setActiveQuickFilter(c.id as 'all' | 'my' | 'critical' | 'unanswered' | 'today' | 'week'); setCurrentPage(1); }}
               className={`flex items-center gap-2.5 px-4.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 isActive 
                   ? 'bg-brand-600 text-white shadow-md shadow-brand-500/10 border border-transparent'
