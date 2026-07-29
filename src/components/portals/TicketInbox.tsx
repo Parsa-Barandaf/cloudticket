@@ -686,9 +686,6 @@ export default function TicketInboxView({
                   >
                     <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">همه محصولات</option>
                     {products.map(p => <option className="dark:bg-slate-800 dark:text-slate-200" key={p.id} value={p.name}>{p.name}</option>)}
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="پنل کاربری">پنل کاربری</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="API وب‌هوک">API وب‌هوک</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="API استعلام سریع">API استعلام سریع</option>
                   </select>
                 </div>
 
@@ -702,9 +699,6 @@ export default function TicketInboxView({
                   >
                     <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">همه مشتریان</option>
                     {customers.map(c => <option className="dark:bg-slate-800 dark:text-slate-200" key={c.id} value={c.name}>{c.name}</option>)}
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="صنایع فولاد الوند">صنایع فولاد الوند</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="فروشگاه آنلاین آفرین">فروشگاه آنلاین آفرین</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="شتاب‌دهنده دانا">شتاب‌دهنده دانا</option>
                   </select>
                 </div>
 
