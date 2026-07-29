@@ -47,7 +47,7 @@ import {
 } from 'lucide-react';
 import type { Ticket, Customer, Product } from '../../types';
 import { gql } from '../../api/graphql';
-import { UPDATE_TICKET_STATUS, UPDATE_TICKET, CREATE_TICKET_MESSAGE, GET_TICKET, UPDATE_TICKET_MESSAGE, DELETE_TICKET_MESSAGE } from '../../api/queries';
+import { UPDATE_TICKET_STATUS, UPDATE_TICKET, CREATE_TICKET_MESSAGE, GET_TICKET, UPDATE_TICKET_MESSAGE, DELETE_TICKET_MESSAGE, DELETE_TICKET } from '../../api/queries';
 import { formatTimeAgo } from '../../lib/utils';
 
 interface TicketDetailsWorkspaceProps {
@@ -110,6 +110,7 @@ export default function TicketDetailsWorkspace({
 
   // Textarea reference for focusing
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const auditLogRef = useRef<HTMLDivElement>(null);
 
   // Focus composer helper
   const handleFocusComposer = (tab: 'reply' | 'note') => {
@@ -307,12 +308,6 @@ export default function TicketDetailsWorkspace({
       });
   };
 
-  // Related Tickets simulation dataset
-  const relatedTickets = [
-    { id: 'TKT-1021', title: 'کاهش شدید سرعت پاسخگویی متد استعلام کالا', status: 'بسته شده' },
-    { id: 'TKT-1014', title: 'درخواست آپدیت پکیج امنیتی کلاینت لینوکس ', status: 'حل شده' },
-  ];
-
   // Helper info card components
   const customerInfo = customers.find(c => c.name === currentTicket.customer) || {
     name: currentTicket.customer,
@@ -347,30 +342,6 @@ export default function TicketDetailsWorkspace({
             <ArrowRight className="w-4 h-4" />
             <span>بازگشت به صندوق تیکت‌ها</span>
           </button>
-
-          {/* SIMULATOR SWITCHES FOR SHOWING EXCELLENCE */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setIsLoadingSkeleton(true);
-                setTimeout(() => setIsLoadingSkeleton(false), 1200);
-              }}
-              className="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-              title="تست اسکلتون لودینگ"
-            >
-              <RefreshCw className="w-3.5 h-3.5 animate-spin-slow" />
-              <span>شبیه‌سازی اسکلت لودینگ</span>
-            </button>
-            <button
-              onClick={() => {
-                showCustomerToast('بروزرسانی زنده: تیکت با موفقیت همگام‌سازی شد.', 'success');
-              }}
-              className="p-2 text-slate-400 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-              title="بروزرسانی دستی"
-            >
-              <Activity className="w-4.5 h-4.5 text-slate-400" />
-            </button>
-          </div>
         </div>
 
         {/* Ticket Title & Status Row */}
@@ -433,7 +404,7 @@ export default function TicketDetailsWorkspace({
                   setShowTransferDropdown(false);
                   setActiveMoreMenu(false);
                 }}
-                className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <span>تغییر وضعیت</span>
                 <ChevronLeft className="w-3.5 h-3.5 rotate-270" />
@@ -464,46 +435,6 @@ export default function TicketDetailsWorkspace({
               </AnimatePresence>
             </div>
 
-            {/* Transfer dropdown trigger */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setShowTransferDropdown(!showTransferDropdown);
-                  setShowStatusDropdown(false);
-                  setShowAgentDropdown(false);
-                  setActiveMoreMenu(false);
-                }}
-                className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
-                <span>انتقال به دپارتمان</span>
-              </button>
-
-              <AnimatePresence>
-                {showTransferDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute left-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-1.5 z-50 text-right"
-                  >
-                    {['تیم هسته مرکزی امنیت', 'پشتیبانی فنی زیرساخت', 'واحد توسعه محصول ', 'تیم مدیریت لایسنس'].map((dept) => (
-                      <button
-                        key={dept}
-                        onClick={() => {
-                          showCustomerToast(`پرونده با موفقیت به «${dept}» ارجاع و منتقل گردید.`, 'success');
-                          setShowTransferDropdown(false);
-                        }}
-                        className="w-full text-right text-xs font-semibold px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"
-                      >
-                        {dept}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
             {/* Assign Agent dropdown */}
             <div className="relative">
               <button
@@ -513,7 +444,7 @@ export default function TicketDetailsWorkspace({
                   setShowTransferDropdown(false);
                   setActiveMoreMenu(false);
                 }}
-                className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 <span>تخصیص کارشناس</span>
@@ -564,8 +495,12 @@ export default function TicketDetailsWorkspace({
 
             {/* Close Ticket Button */}
             <button
-              onClick={() => handleUpdateTicketStatus('بسته شده')}
-              className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-black transition-all cursor-pointer"
+              onClick={currentTicket.status === 'بسته شده' ? undefined : () => handleUpdateTicketStatus('بسته شده')}
+              className={`px-4 py-2.5 border rounded-xl text-xs font-black transition-all ${
+                currentTicket.status === 'بسته شده'
+                  ? 'bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-600 border-slate-200 dark:border-slate-700 cursor-not-allowed'
+                  : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-500/20 cursor-pointer'
+              }`}
             >
               بستن تیکت
             </button>
@@ -604,27 +539,24 @@ export default function TicketDetailsWorkspace({
                     </button>
                     <button
                       onClick={() => {
-                        showCustomerToast('تمامی فایل‌های ضمیمه این پرونده فشرده شده و برای دانلود آماده گردید.', 'success');
+                        if (auditLogRef.current) auditLogRef.current.scrollIntoView({ behavior: 'smooth' });
                         setActiveMoreMenu(false);
                       }}
                       className="w-full text-right text-xs font-bold px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-between"
                     >
-                      <span>دانلود یکجای فایل‌ها</span>
-                      <Download className="w-4 h-4 text-slate-400" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        showCustomerToast('تاریخچه لاگ‌های ممیزی (Audit Log) این پرونده ثبت و بازنشانی شد.', 'success');
-                        setActiveMoreMenu(false);
-                      }}
-                      className="w-full text-right text-xs font-bold px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-between"
-                    >
-                      <span>مشاهده کامل تاریخچه تغییرات</span>
+                      <span>مشاهده تاریخچه تغییرات</span>
                       <History className="w-4 h-4 text-slate-400" />
                     </button>
                     <button
-                      onClick={() => {
-                        showCustomerToast('درخواست حذف پرونده ارسال شد. پس از تایید مدیریت کل، اقدام خواهد شد.', 'error');
+                      onClick={async () => {
+                        try {
+                          await gql(DELETE_TICKET, { id: currentTicket.id });
+                          setTickets(tickets.filter(t => t.id !== currentTicket.id));
+                          showCustomerToast('تیکت با موفقیت حذف شد.', 'success');
+                          onBack();
+                        } catch (err) {
+                          showCustomerToast('خطا در حذف تیکت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
+                        }
                         setActiveMoreMenu(false);
                       }}
                       className="w-full text-right text-xs font-bold px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-500 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between"
@@ -640,36 +572,7 @@ export default function TicketDetailsWorkspace({
         </div>
       </div>
 
-      {/* 2. LOADING SKELETON STATE SIMULATION */}
-      {isLoadingSkeleton ? (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          <div className="xl:col-span-4 space-y-4">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 space-y-4">
-              <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded-lg w-1/3 animate-pulse" />
-              <div className="h-20 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-              <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-            </div>
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 space-y-3">
-              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-lg w-1/2 animate-pulse" />
-              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-lg w-1/4 animate-pulse" />
-            </div>
-          </div>
-          <div className="xl:col-span-5 space-y-4">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 space-y-4">
-              <div className="h-32 bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
-              <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-            </div>
-          </div>
-          <div className="xl:col-span-3 space-y-4">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 space-y-4">
-              <div className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-              <div className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-              <div className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* 3. MAIN WORKSPACE: UNIFIED CHAT LAYOUT */
+        {/* 3. MAIN WORKSPACE: UNIFIED CHAT LAYOUT */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
           
           {/* UNIFIED CHAT COLUMN: Message list with integrated bottom composer (Takes 8 cols on XL) */}
@@ -1128,41 +1031,44 @@ export default function TicketDetailsWorkspace({
               </div>
             </div>
 
-            {/* SLA METRICS PANEL WITH ANIMATED PROGRESS */}
+            {/* SLA METRICS PANEL */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs p-5 space-y-4">
               <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-emerald-500" />
-                <span>رعایت تفاهم‌نامه SLA لایسنس</span>
+                <span>وضعیت SLA</span>
               </h3>
 
               <div className="space-y-4 text-xs">
-                {/* 1. First Response SLA */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-slate-400">ضرب‌الاجل نخستین پاسخ:</span>
-                    <span className="text-emerald-500 font-black">رعایت شد (۱۵ دقیقه)</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '100%' }} />
-                  </div>
-                </div>
-
-                {/* 2. Total Resolution SLA */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-slate-400">مهلت حل و فصل نهایی:</span>
-                    <span className="text-amber-500 font-black">۴ ساعت باقی‌مانده</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-amber-500 rounded-full animate-pulse" style={{ width: '65%' }} />
-                  </div>
-                </div>
-
-                <div className="p-3 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border border-emerald-500/10 rounded-2xl">
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold leading-relaxed">
-                    تعهد طلایی: کارشناسان  متعهد به پاسخگویی زیر ۲ ساعت و رفع خطاهای سطح بحرانی حداکثر طی ۶ ساعت کاری محلی هستند.
-                  </p>
-                </div>
+                {(() => {
+                  const hasReply = threads.some(m => m.sender === 'agent');
+                  const isClosed = currentTicket.status === 'بسته شده';
+                  return (
+                    <>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-[11px] font-bold">
+                          <span className="text-slate-400">پاسخگویی اولیه:</span>
+                          <span className={`${hasReply ? 'text-emerald-500' : 'text-amber-500'} font-black`}>
+                            {hasReply ? 'پاسخ داده شد' : 'در انتظار پاسخ'}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${hasReply ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: hasReply ? '100%' : '30%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-[11px] font-bold">
+                          <span className="text-slate-400">وضعیت نهایی:</span>
+                          <span className={`${isClosed ? 'text-emerald-500' : 'text-brand-500'} font-black`}>
+                            {isClosed ? 'بسته شده' : currentTicket.status}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-brand-500'}`} style={{ width: isClosed ? '100%' : '50%' }} />
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -1234,83 +1140,38 @@ export default function TicketDetailsWorkspace({
               </div>
             </div>
 
-            {/* RELATED TICKETS */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs p-5 space-y-4">
-              <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-slate-400" />
-                <span>تیکت‌های مرتبط سازمان</span>
-              </h3>
-
-              <div className="space-y-3">
-                {relatedTickets.map((t, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-slate-50 dark:bg-slate-950/20 border border-slate-150 dark:border-slate-800/60 rounded-2xl space-y-2 text-right"
-                  >
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-mono font-black text-slate-400">#{t.id}</span>
-                      <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded-md">
-                        {t.status}
-                      </span>
-                    </div>
-                    <p className="text-[10.5px] font-bold text-slate-700 dark:text-slate-300 truncate">
-                      {t.title}
-                    </p>
-                    <button
-                      onClick={() => {
-                        const targetTicket = tickets.find(x => x.id === t.id);
-                        if (targetTicket) {
-                          setCurrentTicket(targetTicket);
-                          showCustomerToast(`پرونده #${t.id} بارگذاری شد.`, 'success');
-                        } else {
-                          showCustomerToast('این تیکت آرشیو شده است و دسترسی به آن محدود می‌باشد.', 'error');
-                        }
-                      }}
-                      className="text-[9.5px] font-black text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>مشاهده پرونده</span>
-                      <ChevronLeft className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* AUDIT LOG TIMELINE */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs p-5 space-y-4">
+            <div ref={auditLogRef} className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs p-5 space-y-4">
               <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-slate-400" />
-                <span>مراحل زمانی ممیزی تیکت</span>
+                <span>مراحل زمانی تیکت</span>
               </h3>
 
-              <div className="relative border-r-2 border-slate-100 dark:border-slate-800 mr-2.5 space-y-5 pr-4 text-right">
+              <div className="relative border-r-2 border-slate-100 dark:border-slate-800 mr-2.5 space-y-5 pr-4 text-right max-h-64 overflow-y-auto">
                 <div className="relative">
                   <div className="absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
-                  <span className="text-[9px] font-mono text-slate-400 block font-bold">دیروز - ۱۸:۳۰</span>
-                  <span className="text-[10.5px] font-extrabold text-slate-800 dark:text-slate-200 block">ثبت اولیه تیکت توسط مشتری</span>
+                  <span className="text-[11px] font-mono text-slate-400 block font-bold">{currentTicket.date || ''}</span>
+                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">ثبت اولیه تیکت</span>
                 </div>
-                <div className="relative">
-                  <div className="absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full bg-brand-500 border-2 border-white dark:border-slate-900 animate-pulse" />
-                  <span className="text-[9px] font-mono text-slate-400 block font-bold">امروز - ۰۹:۰۰</span>
-                  <span className="text-[10.5px] font-extrabold text-slate-800 dark:text-slate-200 block">ارجاع پرونده به کارشناس مسئول</span>
-                </div>
-                <div className="relative">
-                  <div className="absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-white dark:border-slate-900" />
-                  <span className="text-[9px] font-mono text-slate-400 block font-bold">امروز - ۰۹:۱۵</span>
-                  <span className="text-[10.5px] font-extrabold text-slate-800 dark:text-slate-200 block">ارسال پاسخ اول پشتیبان رسمی</span>
-                </div>
-                <div className="relative">
-                  <div className="absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white dark:border-slate-900" />
-                  <span className="text-[9px] font-mono text-slate-400 block font-bold">امروز - ۱۰:۰۵</span>
-                  <span className="text-[10.5px] font-extrabold text-slate-800 dark:text-slate-200 block">افزودن یادداشت خصوصی و داخلی</span>
-                </div>
+                {threads.map((msg, idx) => {
+                  const isAgent = msg.sender === 'agent';
+                  const isNote = msg.sender === 'internal_note';
+                  const color = isNote ? 'bg-amber-500' : isAgent ? 'bg-brand-500' : 'bg-indigo-500';
+                  const label = isNote ? 'افزودن یادداشت داخلی' : isAgent ? 'پاسخ کارشناس پشتیبانی' : 'پاسخ مشتری';
+                  return (
+                    <div key={idx} className="relative">
+                      <div className={`absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full ${color} border-2 border-white dark:border-slate-900`} />
+                      <span className="text-[11px] font-mono text-slate-400 block font-bold">{msg.time || ''}</span>
+                      <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">{label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
           </div>
 
         </div>
-      )}
 
       {/* EDIT INTERNAL NOTE MODAL OVERLAY */}
       <AnimatePresence>
