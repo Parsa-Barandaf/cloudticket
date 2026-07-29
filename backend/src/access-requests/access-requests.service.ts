@@ -1,10 +1,14 @@
 import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { ActivitiesService } from '../activities/activities.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AccessRequestsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activitiesService: ActivitiesService,
+  ) {}
 
   async create(data: { name: string; companyName: string; email: string; phone: string; industry?: string }) {
     const existingUser = await this.prisma.user.findUnique({ where: { email: data.email } });
@@ -57,6 +61,12 @@ export class AccessRequestsService {
     await this.prisma.user.update({
       where: { id: user.id },
       data: { customerId: customer.id },
+    });
+
+    await this.activitiesService.create({
+      type: 'customer',
+      title: 'مشتری جدید تأیید شد',
+      subtitle: `«${request.companyName}» از طریق درخواست دسترسی به سامانه پیوست.`,
     });
 
     return this.prisma.accessRequest.update({ where: { id }, data: { status: 'APPROVED' } });

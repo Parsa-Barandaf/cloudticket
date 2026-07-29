@@ -220,7 +220,8 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const { products: apiProducts, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { customers: apiCustomers, loading: customersLoading, refetch: refetchCustomers } = useCustomers();
   const { users: apiUsers } = useUsers();
-  const { activities, refetch: refetchActivities } = useActivities(10);
+  const { activities, loading: activitiesLoading, error: activitiesError, refetch: refetchActivities } = useActivities(10);
+  useEffect(() => { if (activeTab === 'dashboard') refetchActivities(); }, [activeTab, refetchActivities]);
   useEffect(() => { if (apiTickets.length) setTickets(apiTickets); }, [apiTickets]);
   useEffect(() => { if (apiProducts.length) setProducts(apiProducts); }, [apiProducts]);
   useEffect(() => { if (apiCustomers.length) setCustomers(apiCustomers); }, [apiCustomers]);
@@ -911,6 +912,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
       setPendingRequests(pendingRequests.filter(r => r.id !== req.id));
       showCustomerToast(`درخواست "${req.companyName}" تأیید و حساب کاربری ایجاد شد.`, 'success');
       refetchCustomers();
+      refetchActivities();
     } catch (err) {
       showCustomerToast('خطا در تأیید درخواست: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
     }
@@ -1599,7 +1601,24 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                       {/* Left vertical timeline pipe */}
                       <div className="absolute right-3.5 top-1 bottom-1 w-[1.5px] bg-slate-100 dark:bg-slate-800" />
 
-                      {activities.map((act) => (
+                      {activitiesError ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                          <AlertTriangle className="w-8 h-8 text-amber-500 mb-2" />
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500">خطا در بارگذاری فعالیت‌ها</p>
+                        </div>
+                      ) : activitiesLoading ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                          <Loader2 className="w-8 h-8 text-slate-300 dark:text-slate-600 animate-spin mb-2" />
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500">در حال بارگذاری...</p>
+                        </div>
+                      ) : activities.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                          <Activity className="w-10 h-10 text-slate-300 dark:text-slate-600 mb-3" />
+                          <p className="text-xs font-bold text-slate-400 dark:text-slate-500">هنوز فعالیتی ثبت نشده است</p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">فعالیت‌هایی مانند ثبت تیکت، افزودن محصول و ایجاد مشتری در این بخش نمایش داده می‌شود.</p>
+                        </div>
+                      ) : (
+                        activities.map((act) => (
                         <div key={act.id} className="flex gap-4 relative z-10 text-right">
                           <div className={`w-7.5 h-7.5 rounded-full flex items-center justify-center shrink-0 ${
                             act.type === 'ticket' ? 'bg-blue-500/10 text-blue-500' :
@@ -1621,7 +1640,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-normal">{act.subtitle}</p>
                           </div>
                         </div>
-                      ))}
+                      )))}
                     </div>
                   </div>
                 </div>

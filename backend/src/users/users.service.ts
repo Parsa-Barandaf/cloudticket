@@ -1,11 +1,15 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { ActivitiesService } from '../activities/activities.service';
 import { CreateUserInput, UpdateUserInput } from '../common/dto/user.input';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activitiesService: ActivitiesService,
+  ) {}
 
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({ where: { email } });
@@ -42,7 +46,7 @@ export class UsersService {
       if (customer) customerId = customer.id;
     }
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: input.email,
         password: hashed,
@@ -58,6 +62,14 @@ export class UsersService {
       },
       include: { department: true, customRole: true },
     });
+
+    await this.activitiesService.create({
+      type: 'customer',
+      title: 'کاربر جدید اضافه شد',
+      subtitle: `${input.name} به سامانه اضافه شد.`,
+    });
+
+    return user;
   }
 
   async update(input: UpdateUserInput) {

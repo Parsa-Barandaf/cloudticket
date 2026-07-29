@@ -1,6 +1,6 @@
 // ── Activities ──
 export const GET_ACTIVITIES = `
-  query Activities($limit: Int) {
+  query Activities($limit: Float) {
     activities(limit: $limit) {
       id type title subtitle createdAt
     }

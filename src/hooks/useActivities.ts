@@ -15,8 +15,11 @@ export function useActivities(limit = 20) {
     setError(null);
     try {
       const data = await gql<{ activities: ApiActivity[] }>(GET_ACTIVITIES, { limit });
-      setActivities(data.activities.map(mapActivity));
+      if (Array.isArray(data?.activities)) {
+        setActivities(data.activities.map(mapActivity));
+      }
     } catch (e) {
+      console.error('Failed to fetch activities:', e);
       setError((e as Error).message);
     } finally {
       setLoading(false);

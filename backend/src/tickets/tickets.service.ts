@@ -70,11 +70,22 @@ export class TicketsService {
     if (data.status === 'RESOLVED') updateData.resolvedAt = new Date();
     if (data.status === 'CLOSED') updateData.closedAt = new Date();
 
-    return this.prisma.ticket.update({
+    const updated = await this.prisma.ticket.update({
       where: { id: data.id },
       data: updateData,
       include: { customer: { include: { user: true } }, product: true, assignedTo: true, messages: { orderBy: { createdAt: 'asc' } } },
     });
+
+    if (data.status) {
+      const statusLabels: Record<string, string> = { OPEN: 'باز', INVESTIGATING: 'در حال بررسی', AWAITING_CUSTOMER: 'منتظر پاسخ مشتری', RESOLVED: 'حل شده', CLOSED: 'بسته شده' };
+      await this.activitiesService.create({
+        type: 'ticket',
+        title: 'وضعیت تیکت تغییر کرد',
+        subtitle: `تیکت #${updated.ticketNumber} به وضعیت «${statusLabels[data.status] || data.status}» تغییر یافت.`,
+      });
+    }
+
+    return updated;
   }
 
   async updateStatus(id: string, status: TicketStatus) {
