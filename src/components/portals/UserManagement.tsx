@@ -666,7 +666,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">کل کاربران پلتفرم</span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white">۱۴۸</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{apiUsers.length.toLocaleString('fa-IR')}</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <Users className="w-5.5 h-5.5" />
@@ -675,8 +675,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">کاربران فعال و آنلاین</span>
-            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">۱۲۷</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">کاربران فعال</span>
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{apiUsers.filter(u => u.active).length.toLocaleString('fa-IR')}</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <UserCheck className="w-5.5 h-5.5" />
@@ -686,7 +686,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">تیم‌های پشتیبانی تخصصی</span>
-            <span className="text-2xl font-black text-purple-600 dark:text-purple-400">۸</span>
+            <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{departments.length.toLocaleString('fa-IR')}</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
             <Users2 className="w-5.5 h-5.5" />
@@ -696,7 +696,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش‌های سفارشی تعریف شده</span>
-            <span className="text-2xl font-black text-amber-600 dark:text-amber-400">۱۲</span>
+            <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{apiRoles.length.toLocaleString('fa-IR')}</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <Shield className="w-5.5 h-5.5" />
