@@ -34,7 +34,7 @@ export class AccessRequestsService {
       data: { email: request.email, password: hashed, name: request.name, role: 'ADMIN', isCustomer: true, phone: request.phone, company: request.companyName },
     });
 
-    await this.prisma.customer.create({
+    const customer = await this.prisma.customer.create({
       data: {
         industry: industry || request.industry || 'سایر',
         commercialName: request.companyName,
@@ -42,6 +42,11 @@ export class AccessRequestsService {
         userId: user.id,
         status: 'ACTIVE',
       },
+    });
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { customerId: customer.id },
     });
 
     return this.prisma.accessRequest.update({ where: { id }, data: { status: 'APPROVED' } });

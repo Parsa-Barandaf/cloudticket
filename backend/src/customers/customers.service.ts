@@ -89,6 +89,7 @@ export class CustomersService {
       ...(ticketIds.length ? [this.prisma.ticket.deleteMany({ where: { id: { in: ticketIds } } })] : []),
       ...(connectionIds.length ? [this.prisma.productCustomerConnection.deleteMany({ where: { id: { in: connectionIds } } })] : []),
       this.prisma.customer.delete({ where: { id } }),
+      this.prisma.user.deleteMany({ where: { id: customer.userId } }),
     ]);
 
     return true;

@@ -89,7 +89,10 @@ model User {
   customRole   CustomRole? @relation(fields: [customRoleId], references: [id])
 
   assignedTickets Ticket[] @relation("AssignedAgent")
-  customerProfile Customer?
+
+  customerId String?
+  customer   Customer? @relation("CustomerEmployees", fields: [customerId], references: [id], onDelete: Cascade)
+  customerProfile Customer? @relation("CustomerOwner")
 }
 
 model Customer {
@@ -109,7 +112,9 @@ model Customer {
   updatedAt             DateTime     @updatedAt
 
   userId String  @unique
-  user   User    @relation(fields: [userId], references: [id])
+  user   User    @relation("CustomerOwner", fields: [userId], references: [id])
+
+  employees User[] @relation("CustomerEmployees")
 
   tickets     Ticket[]
   connections ProductCustomerConnection[]

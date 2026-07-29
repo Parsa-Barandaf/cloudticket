@@ -35,6 +35,13 @@ export class UsersService {
       throw new BadRequestException('برای کاربر مشتری، نام شرکت الزامی است.');
     }
     const hashed = await bcrypt.hash(input.password, 10);
+
+    let customerId = input.customerId;
+    if (!customerId && input.company) {
+      const customer = await this.prisma.customer.findFirst({ where: { commercialName: input.company } });
+      if (customer) customerId = customer.id;
+    }
+
     return this.prisma.user.create({
       data: {
         email: input.email,
@@ -44,6 +51,7 @@ export class UsersService {
         company: input.company,
         isCustomer: input.isCustomer ?? false,
         active: input.active ?? true,
+        ...(customerId && { customer: { connect: { id: customerId } } }),
         ...(input.departmentId && { department: { connect: { id: input.departmentId } } }),
         ...(input.customRoleId && { customRole: { connect: { id: input.customRoleId } } }),
       },

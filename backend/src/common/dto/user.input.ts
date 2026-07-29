@@ -26,6 +26,9 @@ export class CreateUserInput {
   @Field({ nullable: true })
   customRoleId?: string;
 
+  @Field({ nullable: true })
+  customerId?: string;
+
   @Field({ defaultValue: true })
   active: boolean;
 }

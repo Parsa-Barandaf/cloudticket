@@ -20,6 +20,14 @@ enum AccessRequestStatus {
   REJECTED
 }
 
+type Activity {
+  createdAt: DateTime!
+  id: String!
+  subtitle: String!
+  title: String!
+  type: String!
+}
+
 input ApproveAccessRequestInput {
   id: String!
   industry: String
@@ -95,6 +103,7 @@ input CreateUserInput {
   active: Boolean! = true
   company: String
   customRoleId: String
+  customerId: String
   departmentId: String
   email: String!
   isCustomer: Boolean! = false
@@ -238,6 +247,7 @@ enum ProductStatus {
 
 type Query {
   accessRequests: [AccessRequest!]!
+  activities(limit: Float): [Activity!]!
   customRole(id: String!): CustomRole
   customRoles: [CustomRole!]!
   customer(id: String!): Customer

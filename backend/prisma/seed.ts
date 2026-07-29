@@ -58,6 +58,11 @@ async function main() {
     },
   });
 
+  await prisma.user.update({
+    where: { id: custUser.id },
+    data: { customerId: cust1.id },
+  });
+
   const products = await Promise.all([
     prisma.product.upsert({
       where: { id: 'prod-csp' },
