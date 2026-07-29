@@ -1117,18 +1117,18 @@ export default function CustomerWorkspaceView({
                     <div>
                       <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">نوع اولویت‌دهی تیکت‌های سازمان (SLA)</label>
                       <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
-                        <option value="critical">طلایی (حداکثر ۱ ساعت مهلت پاسخگویی)</option>
-                        <option value="high">نقره‌ای (حداکثر ۲ ساعت مهلت پاسخگویی)</option>
-                        <option value="normal">عادی (حداکثر ۸ ساعت مهلت پاسخگویی)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="critical">طلایی (حداکثر ۱ ساعت مهلت پاسخگویی)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="high">نقره‌ای (حداکثر ۲ ساعت مهلت پاسخگویی)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="normal">عادی (حداکثر ۸ ساعت مهلت پاسخگویی)</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">روش ارتباطی پیش‌فرض اعلان‌ها</label>
                       <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
-                        <option value="both">پیامک و ایمیل همزمان</option>
-                        <option value="email">فقط ایمیل کارپوشه</option>
-                        <option value="sms">فقط پیامک نمایندگان</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="both">پیامک و ایمیل همزمان</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="email">فقط ایمیل کارپوشه</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="sms">فقط پیامک نمایندگان</option>
                       </select>
                     </div>
 
@@ -1272,9 +1272,9 @@ export default function CustomerWorkspaceView({
                   onChange={(e) => setNewUserRole(e.target.value)}
                   className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer"
                 >
-                  <option value="کاربر">کاربر (User)</option>
-                  <option value="مدیر">مدیر دپارتمان (Manager)</option>
-                  <option value="مشاهده‌گر">فقط مشاهده‌گر (Observer)</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="کاربر">کاربر (User)</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="مدیر">مدیر دپارتمان (Manager)</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="مشاهده‌گر">فقط مشاهده‌گر (Observer)</option>
                 </select>
               </div>
 
@@ -1329,9 +1329,9 @@ export default function CustomerWorkspaceView({
                   className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer"
                   required
                 >
-                  <option value="">-- انتخاب محصول جدید --</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="">-- انتخاب محصول جدید --</option>
                   {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.version})</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" key={p.id} value={p.id}>{p.name} ({p.version})</option>
                   ))}
                 </select>
               </div>

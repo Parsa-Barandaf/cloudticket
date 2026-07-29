@@ -1090,16 +1090,16 @@ export default function SupportAgentPortalView({
                       onChange={e => setInboxFilter(e.target.value)}
                       className="bg-transparent text-slate-900 dark:text-white font-extrabold text-xs outline-none cursor-pointer pr-1"
                     >
-                      <option value="صف کاری من" className="dark:bg-slate-900">صف کاری من ({filterCounts.myQueue})</option>
-                      <option value="نیازمند اقدام" className="dark:bg-slate-900">نیازمند اقدام ({filterCounts.needsAction})</option>
-                      <option value="منتظر پاسخ مشتری" className="dark:bg-slate-900">منتظر پاسخ مشتری ({filterCounts.waitingCustomer})</option>
-                      <option value="بحرانی" className="dark:bg-slate-900">بحرانی ({filterCounts.urgent})</option>
-                      <option value="بدون پاسخ" className="dark:bg-slate-900">بدون پاسخ ({filterCounts.unanswered})</option>
-                      <option value="امروز" className="dark:bg-slate-900">امروز ({filterCounts.today})</option>
-                      <option value="بروزرسانی اخیر" className="dark:bg-slate-900">بروزرسانی اخیر ({filterCounts.recentUpdated})</option>
-                      <option value="SLA در خطر" className="dark:bg-slate-900">SLA در خطر 🔥 ({filterCounts.slaRisk})</option>
-                      <option value="سنجاق‌شده" className="dark:bg-slate-900">سنجاق‌شده 📌 ({filterCounts.pinned})</option>
-                      <option value="همه" className="dark:bg-slate-900">همه تیکت‌ها ({filterCounts.all})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="صف کاری من">صف کاری من ({filterCounts.myQueue})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="نیازمند اقدام">نیازمند اقدام ({filterCounts.needsAction})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="منتظر پاسخ مشتری">منتظر پاسخ مشتری ({filterCounts.waitingCustomer})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بحرانی">بحرانی ({filterCounts.urgent})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بدون پاسخ">بدون پاسخ ({filterCounts.unanswered})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="امروز">امروز ({filterCounts.today})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بروزرسانی اخیر">بروزرسانی اخیر ({filterCounts.recentUpdated})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="SLA در خطر">SLA در خطر 🔥 ({filterCounts.slaRisk})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="سنجاق‌شده">سنجاق‌شده 📌 ({filterCounts.pinned})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">همه تیکت‌ها ({filterCounts.all})</option>
                     </select>
                   </div>
 
@@ -1122,10 +1122,10 @@ export default function SupportAgentPortalView({
                       defaultValue=""
                       className="bg-transparent text-slate-900 dark:text-white font-extrabold text-xs outline-none cursor-pointer pr-1"
                     >
-                      <option value="" disabled className="dark:bg-slate-900">فیلترهای شخصی ذخیره‌شده...</option>
-                      <option value="golden" className="dark:bg-slate-900">تیکت‌های مشتریان طلایی (۲)</option>
-                      <option value="ssl" className="dark:bg-slate-900">خطاهای امنیت و SSL (۱)</option>
-                      <option value="new" className="dark:bg-slate-900">+ تعریف فیلتر جدید</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="" disabled>فیلترهای شخصی ذخیره‌شده...</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="golden">تیکت‌های مشتریان طلایی (۲)</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="ssl">خطاهای امنیت و SSL (۱)</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="new">+ تعریف فیلتر جدید</option>
                     </select>
                   </div>
 
@@ -1204,10 +1204,10 @@ export default function SupportAgentPortalView({
                             onChange={e => setInboxSortBy(e.target.value as any)}
                             className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
                           >
-                            <option value="newest">جدیدترین</option>
-                            <option value="oldest">قدیمی‌ترین</option>
-                            <option value="priority">اولویت</option>
-                            <option value="sla">ریسک SLA</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="newest">جدیدترین</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="oldest">قدیمی‌ترین</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="priority">اولویت</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="sla">ریسک SLA</option>
                           </select>
                         </div>
 
@@ -1975,9 +1975,9 @@ export default function SupportAgentPortalView({
                     انتخاب دپارتمان یا پشتیبان مقصد
                   </label>
                   <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold">
-                    <option value="1">تیم امنیت شبکه و SSL (علی علوی)</option>
-                    <option value="2">تیم زیرساخت ابری و سرورها (زهرا موسوی)</option>
-                    <option value="3">امور مالی و لایسنسینگ (مریم اکبری)</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="1">تیم امنیت شبکه و SSL (علی علوی)</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="2">تیم زیرساخت ابری و سرورها (زهرا موسوی)</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="3">امور مالی و لایسنسینگ (مریم اکبری)</option>
                   </select>
                 </div>
 
@@ -2126,9 +2126,9 @@ export default function SupportAgentPortalView({
                     onChange={e => setNewTicketFields(f => ({ ...f, customerId: e.target.value }))}
                     className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold"
                   >
-                    <option value="">انتخاب مشتری...</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="">انتخاب مشتری...</option>
                     {customersList.map(c => (
-                      <option key={c.id} value={c.id}>{c.name} ({c.industry})</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={c.id} value={c.id}>{c.name} ({c.industry})</option>
                     ))}
                   </select>
                 </div>
@@ -2143,9 +2143,9 @@ export default function SupportAgentPortalView({
                     onChange={e => setNewTicketFields(f => ({ ...f, productId: e.target.value }))}
                     className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold"
                   >
-                    <option value="">انتخاب محصول...</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="">انتخاب محصول...</option>
                     {productsList.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 </div>
@@ -2174,10 +2174,10 @@ export default function SupportAgentPortalView({
                       onChange={e => setNewTicketFields(f => ({ ...f, priority: e.target.value }))}
                       className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold"
                     >
-                      <option value="بحرانی">بحرانی (SLA زیر ۱ ساعت)</option>
-                      <option value="بالا">بالا (SLA ۴ ساعت)</option>
-                      <option value="متوسط">متوسط</option>
-                      <option value="پایین">پایین</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بحرانی">بحرانی (SLA زیر ۱ ساعت)</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بالا">بالا (SLA ۴ ساعت)</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="متوسط">متوسط</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="پایین">پایین</option>
                     </select>
                   </div>
                   <div>
@@ -2185,9 +2185,9 @@ export default function SupportAgentPortalView({
                       تخصیص به پشتیبان
                     </label>
                     <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold">
-                      <option value="me">امیرحسین رضایی (من)</option>
-                      <option value="alavi">علی علوی</option>
-                      <option value="mousavi">زهرا موسوی</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="me">امیرحسین رضایی (من)</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="alavi">علی علوی</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="mousavi">زهرا موسوی</option>
                     </select>
                   </div>
                 </div>

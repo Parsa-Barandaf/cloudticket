@@ -620,11 +620,11 @@ export default function TicketInboxView({
                   onChange={(e) => { setTicketStatusFilter(e.target.value); setCurrentPage(1); }}
                   className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                 >
-                  <option value="همه">وضعیت: همه</option>
-                  <option value="باز">باز</option>
-                  <option value="در حال بررسی">در حال بررسی</option>
-                  <option value="منتظر پاسخ مشتری">منتظر پاسخ مشتری</option>
-                  <option value="بسته شده">بسته شده</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="باز">باز</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="در حال بررسی">در حال بررسی</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="منتظر پاسخ مشتری">منتظر پاسخ مشتری</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="بسته شده">بسته شده</option>
                 </select>
               </div>
 
@@ -635,11 +635,11 @@ export default function TicketInboxView({
                   onChange={(e) => { setTicketPriorityFilter(e.target.value); setCurrentPage(1); }}
                   className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                 >
-                  <option value="همه">اولویت: همه</option>
-                  <option value="کم">کم</option>
-                  <option value="متوسط">متوسط</option>
-                  <option value="زیاد">زیاد</option>
-                  <option value="بحرانی">بحرانی</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">اولویت: همه</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="کم">کم</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="متوسط">متوسط</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="زیاد">زیاد</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="بحرانی">بحرانی</option>
                 </select>
               </div>
             </div>
@@ -684,11 +684,11 @@ export default function TicketInboxView({
                     onChange={(e) => { setSelectedProductFilter(e.target.value); setCurrentPage(1); }}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 cursor-pointer font-bold"
                   >
-                    <option value="همه">همه محصولات</option>
-                    {products.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-                    <option value="پنل کاربری">پنل کاربری</option>
-                    <option value="API وب‌هوک">API وب‌هوک</option>
-                    <option value="API استعلام سریع">API استعلام سریع</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">همه محصولات</option>
+                    {products.map(p => <option className="dark:bg-slate-800 dark:text-slate-200" key={p.id} value={p.name}>{p.name}</option>)}
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="پنل کاربری">پنل کاربری</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="API وب‌هوک">API وب‌هوک</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="API استعلام سریع">API استعلام سریع</option>
                   </select>
                 </div>
 
@@ -700,11 +700,11 @@ export default function TicketInboxView({
                     onChange={(e) => { setSelectedCustomerFilter(e.target.value); setCurrentPage(1); }}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 cursor-pointer font-bold"
                   >
-                    <option value="همه">همه مشتریان</option>
-                    {customers.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                    <option value="صنایع فولاد الوند">صنایع فولاد الوند</option>
-                    <option value="فروشگاه آنلاین آفرین">فروشگاه آنلاین آفرین</option>
-                    <option value="شتاب‌دهنده دانا">شتاب‌دهنده دانا</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">همه مشتریان</option>
+                    {customers.map(c => <option className="dark:bg-slate-800 dark:text-slate-200" key={c.id} value={c.name}>{c.name}</option>)}
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="صنایع فولاد الوند">صنایع فولاد الوند</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="فروشگاه آنلاین آفرین">فروشگاه آنلاین آفرین</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="شتاب‌دهنده دانا">شتاب‌دهنده دانا</option>
                   </select>
                 </div>
 
@@ -716,8 +716,8 @@ export default function TicketInboxView({
                     onChange={(e) => { setSelectedAgentFilter(e.target.value); setCurrentPage(1); }}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 cursor-pointer font-bold"
                   >
-                    <option value="همه">همه کارشناسان</option>
-                    {agentsList.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">همه کارشناسان</option>
+                    {agentsList.map(a => <option className="dark:bg-slate-800 dark:text-slate-200" key={a.id} value={a.name}>{a.name}</option>)}
                   </select>
                 </div>
 
@@ -1245,9 +1245,9 @@ export default function TicketInboxView({
                     onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
                     className="text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 px-2 py-1 outline-none cursor-pointer font-bold"
                   >
-                    <option value={5}>۵ تیکت</option>
-                    <option value={10}>۱۰ تیکت</option>
-                    <option value={20}>۲۰ تیکت</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value={5}>۵ تیکت</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value={10}>۱۰ تیکت</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value={20}>۲۰ تیکت</option>
                   </select>
                 </div>
 

@@ -1751,10 +1751,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                           onChange={(e) => { setProductStatusFilter(e.target.value); setProductPage(1); }}
                           className="w-full text-[11px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         >
-                          <option value="همه">وضعیت: همه</option>
-                          <option value="فعال">فعال</option>
-                          <option value="غیرفعال">غیرفعال</option>
-                          <option value="منقضی شده">منقضی شده</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="فعال">فعال</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="غیرفعال">غیرفعال</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="منقضی شده">منقضی شده</option>
                         </select>
                       </div>
 
@@ -1765,13 +1765,13 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                           onChange={(e) => { setProductVersionFilter(e.target.value); setProductPage(1); }}
                           className="w-full text-[11px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         >
-                          <option value="همه">نسخه: همه</option>
-                          <option value="v2.4.1">v2.4.1</option>
-                          <option value="v3.1.2">v3.1.2</option>
-                          <option value="v5.0.1">v5.0.1</option>
-                          <option value="v1.0.4">v1.0.4</option>
-                          <option value="v2.0.0">v2.0.0</option>
-                          <option value="v1.5.0">v1.5.0</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">نسخه: همه</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="v2.4.1">v2.4.1</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="v3.1.2">v3.1.2</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="v5.0.1">v5.0.1</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="v1.0.4">v1.0.4</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="v2.0.0">v2.0.0</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="v1.5.0">v1.5.0</option>
                         </select>
                       </div>
 
@@ -1782,10 +1782,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                           onChange={(e) => { setProductDateFilter(e.target.value); setProductPage(1); }}
                           className="w-full text-[11px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         >
-                          <option value="همه">تاریخ ایجاد: همه</option>
-                          <option value="۱۴۰۲">امسال (۱۴۰۲)</option>
-                          <option value="۱۴۰۱">سال گذشته (۱۴۰۱)</option>
-                          <option value="۱۴۰۰">دو سال قبل (۱۴۰۰)</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">تاریخ ایجاد: همه</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="۱۴۰۲">امسال (۱۴۰۲)</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="۱۴۰۱">سال گذشته (۱۴۰۱)</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="۱۴۰۰">دو سال قبل (۱۴۰۰)</option>
                         </select>
                       </div>
 
@@ -2126,9 +2126,9 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             onChange={(e) => { setProductItemsPerPage(Number(e.target.value)); setProductPage(1); }}
                             className="text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
                           >
-                            <option value={2}>۲ تایی</option>
-                            <option value={5}>۵ تایی</option>
-                            <option value={10}>۱۰ تایی</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value={2}>۲ تایی</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value={5}>۵ تایی</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value={10}>۱۰ تایی</option>
                           </select>
                         </div>
 
@@ -2303,12 +2303,12 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                 onChange={(e) => setDrawerCategory(e.target.value)}
                                 className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 outline-none focus:border-brand-500 cursor-pointer text-slate-700 dark:text-slate-300 font-bold disabled:opacity-60 disabled:cursor-not-allowed"
                               >
-                                <option value="امنیتی">🛡️ امنیتی</option>
-                                <option value="احراز هویت">🔑 احراز هویت</option>
-                                <option value="زیرساخت">⚙️ زیرساخت</option>
-                                <option value="مالی">💳 مالی</option>
-                                <option value="ارتباطات">💬 ارتباطات</option>
-                                <option value="وب‌سرویس">🌐 وب‌سرویس</option>
+                                <option className="dark:bg-slate-800 dark:text-slate-200" value="امنیتی">🛡️ امنیتی</option>
+                                <option className="dark:bg-slate-800 dark:text-slate-200" value="احراز هویت">🔑 احراز هویت</option>
+                                <option className="dark:bg-slate-800 dark:text-slate-200" value="زیرساخت">⚙️ زیرساخت</option>
+                                <option className="dark:bg-slate-800 dark:text-slate-200" value="مالی">💳 مالی</option>
+                                <option className="dark:bg-slate-800 dark:text-slate-200" value="ارتباطات">💬 ارتباطات</option>
+                                <option className="dark:bg-slate-800 dark:text-slate-200" value="وب‌سرویس">🌐 وب‌سرویس</option>
                               </select>
                             </div>
                           </div>
@@ -3270,9 +3270,9 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                               onChange={(e) => setAssignCustomerName(e.target.value)}
                               className="w-full text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3.5 py-3 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                             >
-                              <option value="">-- انتخاب سازمان هدف --</option>
+                              <option className="dark:bg-slate-800 dark:text-slate-200" value="">-- انتخاب سازمان هدف --</option>
                               {customers.map(c => (
-                                <option key={c.id} value={c.name}>{c.name} ({c.industry})</option>
+                                <option className="dark:bg-slate-800 dark:text-slate-200" key={c.id} value={c.name}>{c.name} ({c.industry})</option>
                               ))}
                             </select>
                           </div>
@@ -3285,9 +3285,9 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                               onChange={(e) => setAssignSubscriptionType(e.target.value)}
                               className="w-full text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3.5 py-3 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                             >
-                              <option value="Enterprise">سازمانی طلایی (Enterprise)</option>
-                              <option value="Premium">پریمیوم نقره‌ای (Premium)</option>
-                              <option value="Standard">استاندارد برنزی (Standard)</option>
+                              <option className="dark:bg-slate-800 dark:text-slate-200" value="Enterprise">سازمانی طلایی (Enterprise)</option>
+                              <option className="dark:bg-slate-800 dark:text-slate-200" value="Premium">پریمیوم نقره‌ای (Premium)</option>
+                              <option className="dark:bg-slate-800 dark:text-slate-200" value="Standard">استاندارد برنزی (Standard)</option>
                             </select>
                           </div>
 
@@ -3551,10 +3551,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             }}
                             className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/50 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                           >
-                            <option value="همه">وضعیت: همه</option>
-                            <option value="فعال">فعال</option>
-                            <option value="غیرفعال">غیرفعال</option>
-                            <option value="در انتظار">در انتظار</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="فعال">فعال</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="غیرفعال">غیرفعال</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="در انتظار">در انتظار</option>
                           </select>
                         </div>
 
@@ -3569,10 +3569,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             }}
                             className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/50 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                           >
-                            <option value="همه">محصول: همه</option>
-                            <option value="Cloud Security">Cloud Security</option>
-                            <option value="Identity Protection">Identity Protection</option>
-                            <option value="Elastic Compute">Elastic Compute</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">محصول: همه</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="Cloud Security">Cloud Security</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="Identity Protection">Identity Protection</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="Elastic Compute">Elastic Compute</option>
                           </select>
                         </div>
 
@@ -3587,10 +3587,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             }}
                             className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/50 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                           >
-                            <option value="همه">عضویت: همه</option>
-                            <option value="۱۴۰۳">۱۴۰۳</option>
-                            <option value="۱۴۰۲">۱۴۰۲</option>
-                            <option value="۱۴۰۱">۱۴۰۱</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">عضویت: همه</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="۱۴۰۳">۱۴۰۳</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="۱۴۰۲">۱۴۰۲</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="۱۴۰۱">۱۴۰۱</option>
                           </select>
                         </div>
 
@@ -3605,10 +3605,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             }}
                             className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/50 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                           >
-                            <option value="همه">سطح: همه</option>
-                            <option value="Enterprise">Enterprise</option>
-                            <option value="Business">Business</option>
-                            <option value="Standard">Standard</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">سطح: همه</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="Enterprise">Enterprise</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="Business">Business</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value="Standard">Standard</option>
                           </select>
                         </div>
                       </div>
@@ -4180,19 +4180,19 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">مهلت پاسخگویی SLA (تیکت‌های بحرانی)</label>
                       <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
-                        <option value="1">حداکثر ۱ ساعت</option>
-                        <option value="2">حداکثر ۲ ساعت</option>
-                        <option value="4">حداکثر ۴ ساعت</option>
-                        <option value="8">حداکثر ۸ ساعت</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="1">حداکثر ۱ ساعت</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="2">حداکثر ۲ ساعت</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="4">حداکثر ۴ ساعت</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="8">حداکثر ۸ ساعت</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">کنترل تخصیص هوشمند تیکت‌ها</label>
                       <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
-                        <option value="auto">تخصیص اتوماتیک بر اساس حجم کار پشتیبان</option>
-                        <option value="round-robin">تخصیص چرخشی (Round-Robin)</option>
-                        <option value="manual">تخصیص دستی توسط سوپروایزر</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="auto">تخصیص اتوماتیک بر اساس حجم کار پشتیبان</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="round-robin">تخصیص چرخشی (Round-Robin)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="manual">تخصیص دستی توسط سوپروایزر</option>
                       </select>
                     </div>
                   </div>
@@ -4354,9 +4354,9 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                   onChange={(e) => setNewTicketCustomer(e.target.value)}
                   className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 cursor-pointer"
                 >
-                  <option value="">انتخاب مشتری...</option>
+                  <option className="dark:bg-slate-800 dark:text-slate-200" value="">انتخاب مشتری...</option>
                   {customers.map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" key={c.id} value={c.name}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -4370,7 +4370,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 outline-none focus:border-brand-500 cursor-pointer text-slate-600 dark:text-slate-300 font-bold"
                   >
                     {products.map(p => (
-                      <option key={p.id} value={p.name}>{p.name}</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={p.id} value={p.name}>{p.name}</option>
                     ))}
                   </select>
                 </div>
@@ -4382,10 +4382,10 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                     onChange={(e) => setNewTicketPriority(e.target.value as Ticket['priority'])}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 outline-none focus:border-brand-500 cursor-pointer text-slate-600 dark:text-slate-300 font-bold"
                   >
-                    <option value="بحرانی">🚨 بحرانی</option>
-                    <option value="بالا">⚠️ بالا</option>
-                    <option value="متوسط">⚡ متوسط</option>
-                    <option value="پایین">💤 پایین</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="بحرانی">🚨 بحرانی</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="بالا">⚠️ بالا</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="متوسط">⚡ متوسط</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="پایین">💤 پایین</option>
                   </select>
                 </div>
               </div>
@@ -4453,11 +4453,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                     onChange={(e) => setNewProductCategory(e.target.value)}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 outline-none focus:border-brand-500 cursor-pointer text-slate-600 dark:text-slate-300 font-bold"
                   >
-                    <option value="وب‌سرویس">وب‌سرویس</option>
-                    <option value="امنیتی">امنیتی</option>
-                    <option value="ارتباطات">ارتباطات</option>
-                    <option value="زیرساخت">زیرساخت</option>
-                    <option value="مالی">مالی</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="وب‌سرویس">وب‌سرویس</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="امنیتی">امنیتی</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="ارتباطات">ارتباطات</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="زیرساخت">زیرساخت</option>
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="مالی">مالی</option>
                   </select>
                 </div>
 
@@ -4616,9 +4616,9 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                         onChange={(e) => setBusinessType(e.target.value as 'Enterprise' | 'Business' | 'Standard')}
                         className="w-full text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/50 px-3.5 py-2.5 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer font-bold"
                       >
-                        <option value="Enterprise">Enterprise (شرکت‌های طلایی بزرگ)</option>
-                        <option value="Business">Business (شرکت‌های نقره‌ای رشد‌یافته)</option>
-                        <option value="Standard">Standard (برنزی نوپا)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="Enterprise">Enterprise (شرکت‌های طلایی بزرگ)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="Business">Business (شرکت‌های نقره‌ای رشد‌یافته)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="Standard">Standard (برنزی نوپا)</option>
                       </select>
                     </div>
 
@@ -4709,9 +4709,9 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                         onChange={(e) => setBusinessStatus(e.target.value as 'فعال' | 'غیرفعال' | 'در انتظار')}
                         className="w-full text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/50 px-3.5 py-2.5 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                       >
-                        <option value="فعال">🟢 فعال (امکان استفاده کامل از سرویس‌ها)</option>
-                        <option value="غیرفعال">🔴 غیرفعال (مسدود شدن لایسنس و توکن‌ها)</option>
-                        <option value="در انتظار">🟡 در انتظار (در حال پردازش اداری و پرداخت)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="فعال">🟢 فعال (امکان استفاده کامل از سرویس‌ها)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="غیرفعال">🔴 غیرفعال (مسدود شدن لایسنس و توکن‌ها)</option>
+                        <option className="dark:bg-slate-800 dark:text-slate-200" value="در انتظار">🟡 در انتظار (در حال پردازش اداری و پرداخت)</option>
                       </select>
                     </div>
                   </div>
