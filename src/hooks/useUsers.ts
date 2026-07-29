@@ -21,13 +21,13 @@ export function useUsers() {
     }
   }, []);
 
-  const createUser = useCallback(async (input: { email: string; password: string; name: string; phone?: string; company?: string; isCustomer?: boolean; departmentId?: string; customRoleId?: string; active?: boolean }) => {
+  const createUser = useCallback(async (input: { email: string; password: string; name: string; phone?: string; company?: string; isCustomer?: boolean; departmentId?: string; customRoleId?: string; role?: string; active?: boolean }) => {
     const data = await gql<{ createUser: ApiUser }>(CREATE_USER, { input });
     setUsers(prev => [data.createUser, ...prev]);
     return data.createUser;
   }, []);
 
-  const updateUser = useCallback(async (input: { id: string; name?: string; email?: string; phone?: string; company?: string; isCustomer?: boolean; departmentId?: string; customRoleId?: string; active?: boolean }) => {
+  const updateUser = useCallback(async (input: { id: string; name?: string; email?: string; phone?: string; company?: string; isCustomer?: boolean; departmentId?: string; customRoleId?: string; role?: string; active?: boolean }) => {
     const data = await gql<{ updateUser: ApiUser }>(UPDATE_USER, { input });
     setUsers(prev => prev.map(u => u.id === input.id ? data.updateUser : u));
     return data.updateUser;

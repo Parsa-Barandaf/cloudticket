@@ -29,6 +29,9 @@ export class CreateUserInput {
   @Field({ nullable: true })
   customerId?: string;
 
+  @Field({ nullable: true })
+  role?: string;
+
   @Field({ defaultValue: true })
   active: boolean;
 }
@@ -58,6 +61,9 @@ export class UpdateUserInput {
 
   @Field({ nullable: true })
   customRoleId?: string;
+
+  @Field({ nullable: true })
+  role?: string;
 
   @Field({ nullable: true })
   active?: boolean;

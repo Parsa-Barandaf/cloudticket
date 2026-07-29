@@ -110,6 +110,7 @@ input CreateUserInput {
   name: String!
   password: String!
   phone: String
+  role: String
 }
 
 type CustomRole {
@@ -392,6 +393,7 @@ input UpdateUserInput {
   isCustomer: Boolean
   name: String
   phone: String
+  role: String
 }
 
 type User {

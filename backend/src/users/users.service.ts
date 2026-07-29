@@ -50,6 +50,7 @@ export class UsersService {
         phone: input.phone,
         company: input.company,
         isCustomer: input.isCustomer ?? false,
+        ...(input.role && { role: input.role as any }),
         active: input.active ?? true,
         ...(customerId && { customer: { connect: { id: customerId } } }),
         ...(input.departmentId && { department: { connect: { id: input.departmentId } } }),
@@ -75,6 +76,7 @@ export class UsersService {
         ...(input.phone !== undefined && { phone: input.phone }),
         ...(input.company !== undefined && { company: input.company }),
         ...(input.isCustomer !== undefined && { isCustomer: input.isCustomer }),
+        ...(input.role !== undefined && { role: input.role as any }),
         ...(input.active !== undefined && { active: input.active }),
         ...(input.departmentId !== undefined && {
           department: input.departmentId ? { connect: { id: input.departmentId } } : { disconnect: true },
