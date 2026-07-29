@@ -94,6 +94,7 @@ export default function TicketInboxView({
 
   // 4. ROW ACTIONS ACTIVE OVERLAY MENU ID
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [menuFixedStyle, setMenuFixedStyle] = useState<Record<string, string> | undefined>(undefined);
 
   // 5. LOADING / ERROR STATES SIMULATION
   const [isLoading, setIsLoading] = useState(false);
@@ -988,11 +989,18 @@ export default function TicketInboxView({
                         </td>
 
                         {/* Actions menu */}
-                        <td className="p-4 pl-6 text-left relative whitespace-nowrap">
+                        <td className="p-4 pl-6 text-left whitespace-nowrap">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveMenuId(activeMenuId === t.id ? null : t.id);
+                              const isOpen = activeMenuId === t.id;
+                              setActiveMenuId(isOpen ? null : t.id);
+                              if (!isOpen) {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setMenuFixedStyle({ position: 'fixed', top: `${rect.bottom + 4}px`, left: `${rect.left}px`, zIndex: '9999' });
+                              } else {
+                                setMenuFixedStyle(undefined);
+                              }
                             }}
                             className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg text-slate-450 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                           >
@@ -1002,11 +1010,14 @@ export default function TicketInboxView({
                           {/* DROPDOWN MENU */}
                           <AnimatePresence>
                             {activeMenuId === t.id && (
+                              <>
+                              {activeMenuId !== null && <div className="fixed inset-0 z-[9998] cursor-default" onClick={() => { setActiveMenuId(null); setMenuFixedStyle(undefined); }} />}
                               <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                className="absolute left-6 top-12 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200/60 dark:border-slate-700 py-1.5 z-50 text-right"
+                                className="w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200/60 dark:border-slate-700 py-1.5 text-right"
+                                style={menuFixedStyle}
                               >
                                 <button
                                   onClick={() => setSelectedTicketForDetail(t)}
@@ -1079,6 +1090,7 @@ export default function TicketInboxView({
                                   بستن رسمی تیکت
                                 </button>
                               </motion.div>
+                            </>
                             )}
                           </AnimatePresence>
                         </td>

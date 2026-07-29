@@ -272,6 +272,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [productErrorState, setProductErrorState] = useState(false);
   const [productFeedback, setProductFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [activeRowActionId, setActiveRowActionId] = useState<string | null>(null);
+  const [menuFixedStyle, setMenuFixedStyle] = useState<Record<string, string> | undefined>(undefined);
 
   // Pagination states
   const [productPage, setProductPage] = useState(1);
@@ -1949,12 +1950,19 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                 </td>
 
                                 {/* Operations menu */}
-                                <td className="p-4 pl-6 text-left relative">
+                                <td className="p-4 pl-6 text-left">
                                   <div className="inline-block text-right">
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setActiveRowActionId(activeRowActionId === p.id ? null : p.id);
+                                        const isOpen = activeRowActionId === p.id;
+                                        setActiveRowActionId(isOpen ? null : p.id);
+                                        if (!isOpen) {
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          setMenuFixedStyle({ position: 'fixed', top: `${rect.bottom + 4}px`, left: `${rect.left}px`, zIndex: '9999' });
+                                        } else {
+                                          setMenuFixedStyle(undefined);
+                                        }
                                       }}
                                       className="p-1.5 rounded-lg border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-500 dark:text-slate-400 cursor-pointer transition-colors"
                                       title="عملیات مدیریت محصول"
@@ -1968,20 +1976,22 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                         <>
                                           {/* Screen overlay to click close */}
                                           <div 
-                                            className="fixed inset-0 z-10 cursor-default" 
-                                            onClick={() => setActiveRowActionId(null)}
+                                            className="fixed inset-0 z-[9998] cursor-default" 
+                                            onClick={() => { setActiveRowActionId(null); setMenuFixedStyle(undefined); }}
                                           />
                                           <motion.div
                                             initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                             animate={{ opacity: 1, scale: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95, y: -5 }}
                                             transition={{ duration: 0.12 }}
-                                            className="absolute left-6 mt-1.5 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xl z-20 overflow-hidden py-1 text-right"
+                                            className="w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden py-1 text-right"
+                                            style={menuFixedStyle}
                                           >
                                             <button
                                               type="button"
                                               onClick={() => {
                                                 setActiveRowActionId(null);
+                                                setMenuFixedStyle(undefined);
                                                 handleOpenProductDetails(p);
                                               }}
                                               className="w-full px-3.5 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
@@ -2003,6 +2013,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                               type="button"
                                               onClick={() => {
                                                 setActiveRowActionId(null);
+                                                setMenuFixedStyle(undefined);
                                                 showFeedback(`بخش مدیریت مشتریان محصول "${p.name}" فراخوانی شد.`);
                                               }}
                                               className="w-full px-3.5 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
@@ -2015,6 +2026,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                               type="button"
                                               onClick={() => {
                                                 setActiveRowActionId(null);
+                                                setMenuFixedStyle(undefined);
                                                 setTicketSearch(p.name);
                                                 setTicketPriorityFilter('همه');
                                                 setTicketStatusFilter('همه');
@@ -3783,9 +3795,18 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                   </td>
 
                                   {/* Action Popover Menu */}
-                                  <td className="p-4 pl-6 text-left relative">
+                                  <td className="p-4 pl-6 text-left">
                                     <button
-                                      onClick={() => setActiveRowActionId(activeRowActionId === c.id ? null : c.id)}
+                                      onClick={(e) => {
+                                        const isOpen = activeRowActionId === c.id;
+                                        setActiveRowActionId(isOpen ? null : c.id);
+                                        if (!isOpen) {
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          setMenuFixedStyle({ position: 'fixed', top: `${rect.bottom + 4}px`, left: `${rect.left}px`, zIndex: '9999' });
+                                        } else {
+                                          setMenuFixedStyle(undefined);
+                                        }
+                                      }}
                                       className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                                     >
                                       <MoreHorizontal className="w-4 h-4" />
@@ -3794,16 +3815,19 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                     {activeRowActionId === c.id && (
                                       <>
                                         {/* Transparent backdrop overlay */}
-                                        <div className="fixed inset-0 z-30" onClick={() => setActiveRowActionId(null)} />
+                                        <div className="fixed inset-0 z-[9998] cursor-default" onClick={() => { setActiveRowActionId(null); setMenuFixedStyle(undefined); }} />
                                         
                                         {/* Dropdown Menu block */}
-                                        <div className="absolute left-6 mt-1.5 w-48 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-40 p-1.5 flex flex-col gap-0.5 text-right font-medium">
+                                        <div className="w-48 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-1.5 flex flex-col gap-0.5 text-right font-medium"
+                                          style={menuFixedStyle}
+                                        >
                                           <button
                                             onClick={() => {
                                               setSelectedCustomerWorkspace(c);
                                               setCustomerWorkspaceTab('overview');
                                               setActiveTab('customer-details');
                                               setActiveRowActionId(null);
+                                              setMenuFixedStyle(undefined);
                                               showWorkspaceToast(`کارپوشه مدیریتی ${c.name} با موفقیت بارگذاری شد.`, 'success');
                                             }}
                                             className="w-full text-right text-[11px] font-black px-3 py-2 rounded-xl text-brand-650 dark:text-brand-400 hover:bg-brand-500/5 dark:hover:bg-brand-500/10 flex items-center gap-2 cursor-pointer border-b border-slate-100 dark:border-slate-800 pb-2"
@@ -3818,6 +3842,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                               setProfileTab('general');
                                               setShowCustomerProfile(true);
                                               setActiveRowActionId(null);
+                                              setMenuFixedStyle(undefined);
                                             }}
                                             className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
@@ -3832,6 +3857,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                               const prd = products[0];
                                               handleOpenProductDetails(prd);
                                               setActiveRowActionId(null);
+                                              setMenuFixedStyle(undefined);
                                             }}
                                             className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
@@ -3845,6 +3871,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                               setActiveTab('tickets');
                                               setTicketSearch(c.name);
                                               setActiveRowActionId(null);
+                                              setMenuFixedStyle(undefined);
                                             }}
                                             className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
@@ -3856,6 +3883,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                             onClick={() => {
                                               showCustomerToast(`در حال بارگذاری لیست کاربران شرکت ${c.name}...`, 'success');
                                               setActiveRowActionId(null);
+                                              setMenuFixedStyle(undefined);
                                             }}
                                             className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
