@@ -167,7 +167,7 @@ export default function CustomerWorkspaceView({
   const [orgCommercialName, setOrgCommercialName] = useState(c.commercialName || c.name);
   const [orgPhone, setOrgPhone] = useState(c.phone || '۰۲۱-۸۸۲۲۳۳۹۹');
   const [orgWebsite, setOrgWebsite] = useState(c.website || 'www.ariasecurity.ir');
-  const [orgAddress, setOrgAddress] = useState(c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری سحاب');
+  const [orgAddress, setOrgAddress] = useState(c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری ');
 
   // Filter tickets matching active customer
   const matchesTickets = tickets.filter(t => t.customerId === c.id);
@@ -534,7 +534,7 @@ export default function CustomerWorkspaceView({
                       <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">آدرس دفتر مرکزی سازمان</span>
                       <div className="flex items-start gap-2 text-slate-600 dark:text-slate-300">
                         <MapPin className="w-4.5 h-4.5 text-slate-400 shrink-0 mt-0.5" />
-                        <span className="font-bold leading-relaxed">{c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری سحاب'}</span>
+                        <span className="font-bold leading-relaxed">{c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری '}</span>
                       </div>
                     </div>
                   </div>
@@ -1073,7 +1073,7 @@ export default function CustomerWorkspaceView({
                 className="space-y-4"
               >
                 <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2 border-b border-slate-100 dark:border-slate-800">
-                  تاریخچه رخدادها و وقایع سازمان در پلتفرم سحاب
+                  تاریخچه رخدادها و وقایع سازمان در پلتفرم 
                 </h3>
 
                 <div className="relative pr-6 border-r-2 border-slate-150 dark:border-slate-800 space-y-6 py-2">
@@ -1082,7 +1082,7 @@ export default function CustomerWorkspaceView({
                     { title: 'خطای ورود چندعاملی به حساب مدیریتی', subtitle: 'لاگ ورود ناموفق از آی‌پی ۹۴.۱۲.۸۸.۱۹', time: '۱۰ دقیقه پیش', bg: 'bg-amber-500' },
                     { title: 'ورود موفق به میز کار کاربری', subtitle: 'توسط مهندس حسام نوری', time: '۱ ساعت پیش', bg: 'bg-emerald-500' },
                     { title: 'بروزرسانی نسخه کلید دسترسی Cloud Security', subtitle: 'بروزرسانی به نسخه نهایی v2.4.1 توسط واحد توسعه', time: 'دیروز', bg: 'bg-indigo-500' },
-                    { title: 'تغییر آدرس پستی سازمان در سیستم', subtitle: 'توسط واحد بازرگانی سحاب', time: '۲ روز پیش', bg: 'bg-slate-400' }
+                    { title: 'تغییر آدرس پستی سازمان در سیستم', subtitle: 'توسط واحد بازرگانی ', time: '۲ روز پیش', bg: 'bg-slate-400' }
                   ].map((act, index) => (
                     <div key={index} className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       {/* Visual dot on timeline */}
@@ -1322,7 +1322,7 @@ export default function CustomerWorkspaceView({
 
             <form onSubmit={handleAddProduct} className="space-y-4 text-right">
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">انتخاب محصول پلتفرم سحاب <span className="text-rose-500">*</span></label>
+                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">انتخاب محصول پلتفرم  <span className="text-rose-500">*</span></label>
                 <select 
                   value={newProductId}
                   onChange={(e) => setNewProductId(e.target.value)}

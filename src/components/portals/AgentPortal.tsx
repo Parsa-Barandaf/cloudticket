@@ -237,9 +237,9 @@ export default function SupportAgentPortalView({
 
   // Saved Replies List
   const savedReplies = [
-    { id: 'SR-1', title: 'تایید دریافت و بررسی اولیه', text: 'با سلام و احترام، درخواست شما توسط تیم پشتیبانی فنی سحاب دریافت شد و در حال بررسی است.', category: 'عمومی' },
+    { id: 'SR-1', title: 'تایید دریافت و بررسی اولیه', text: 'با سلام و احترام، درخواست شما توسط تیم پشتیبانی فنی  دریافت شد و در حال بررسی است.', category: 'عمومی' },
     { id: 'SR-2', title: 'درخواست فایل لاگ سیستم', text: 'لطفاً فایل‌های گزارش (Log) مربوط به آخرین زمان بروز خطا را جهت بررسی دقیق‌تر ارسال نمایید.', category: 'فنی' },
-    { id: 'SR-3', title: 'اعلام رفع کامل مشکل', text: 'با سلام، مشکل گزارش‌شده با موفقیت در هسته مرکزی سحاب برطرف گردید. لطفاً مجدداً بررسی فرمایید.', category: 'عمومی' },
+    { id: 'SR-3', title: 'اعلام رفع کامل مشکل', text: 'با سلام، مشکل گزارش‌شده با موفقیت در هسته مرکزی  برطرف گردید. لطفاً مجدداً بررسی فرمایید.', category: 'عمومی' },
     { id: 'SR-4', title: 'ارسال مستندات لایسنس', text: 'مستندات و کلید لایسنس جدید صادر شده و در بخش کارپوشه سازمان شما فعال گردید.', category: 'مالی' }
   ];
 
@@ -248,14 +248,14 @@ export default function SupportAgentPortalView({
     { id: 'KB-101', title: 'راهنمای رفع خطای لایسنس پلتفرم ابری', category: 'لایسنسینگ', readTime: '۲ دقیقه' },
     { id: 'KB-102', title: 'چک‌لیست کانفیگ اولیه وب‌هوک‌ها و امنیت', category: 'شبکه و امنیت', readTime: '۵ دقیقه' },
     { id: 'KB-103', title: 'دستورالعمل بازیابی کلمه عبور ارشد دسترسی', category: 'کاربران', readTime: '۳ دقیقه' },
-    { id: 'KB-104', title: 'نحوه فعال‌سازی SSL در CDN سحاب', category: 'شبکه و CDN', readTime: '۴ دقیقه' }
+    { id: 'KB-104', title: 'نحوه فعال‌سازی SSL در CDN ', category: 'شبکه و CDN', readTime: '۴ دقیقه' }
   ];
 
   // Team Activity Items
   const teamActivities = [
     { id: 'ACT-1', agent: 'علی رضایی', action: 'پاسخ داد به', ticketId: 'TKT-1019', time: '۲ دقیقه پیش', avatarColor: 'bg-blue-500' },
     { id: 'ACT-2', agent: 'سارا موسوی', action: 'تیکت را حل کرد', ticketId: 'TKT-1008', time: '۱۲ دقیقه پیش', avatarColor: 'bg-emerald-500' },
-    { id: 'ACT-3', agent: 'سیستم سحاب', action: 'تیکت جدید ایجاد شد', ticketId: 'TKT-1025', time: '۲۵ دقیقه پیش', avatarColor: 'bg-brand-500' },
+    { id: 'ACT-3', agent: 'سیستم ', action: 'تیکت جدید ایجاد شد', ticketId: 'TKT-1025', time: '۲۵ دقیقه پیش', avatarColor: 'bg-brand-500' },
     { id: 'ACT-4', agent: 'هشدار SLA', action: 'تیکت نزدیک به اتمام زمان', ticketId: 'TKT-1011', time: '۴۰ دقیقه پیش', avatarColor: 'bg-rose-500' }
   ];
 
@@ -1040,7 +1040,7 @@ export default function SupportAgentPortalView({
                           امشب ساعت ۲۴:۰۰
                         </span>
                         <p className="font-bold leading-relaxed text-[11px]">
-                          بروزرسانی زیرساخت ابری سحاب به مدت ۱۵ دقیقه صورت می‌گیرد.
+                          بروزرسانی زیرساخت ابری  به مدت ۱۵ دقیقه صورت می‌گیرد.
                         </p>
                       </div>
 
@@ -1863,7 +1863,7 @@ export default function SupportAgentPortalView({
                   </div>
                   <div>
                     <h2 className="text-base font-black text-slate-900 dark:text-white">امیرحسین رضایی</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">کارشناس ارشد پشتیبانی فنی سحاب • شیفت صبح</p>
+                    <p className="text-xs text-slate-500 mt-0.5">کارشناس ارشد پشتیبانی فنی  • شیفت صبح</p>
                     <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold text-[10px]">
                       وضعیت: {agentStatus}
                     </span>

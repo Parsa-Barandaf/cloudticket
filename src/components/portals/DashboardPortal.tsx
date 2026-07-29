@@ -247,7 +247,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     { id: 'NTF-1', title: 'افزایش زمان پاسخگویی API', description: 'زمان استعلام متد کالا به بیش از ۵ ثانیه رسیده است.', time: '۱۰ دقیقه پیش', type: 'sla', read: false },
-    { id: 'NTF-2', title: 'ثبت شرکت طلایی جدید', description: 'پتروشیمی سپهر پارس به جمع مشتریان سحاب اضافه شد.', time: '۲ ساعت پیش', type: 'update', read: false },
+    { id: 'NTF-2', title: 'ثبت شرکت طلایی جدید', description: 'پتروشیمی سپهر پارس به جمع مشتریان  اضافه شد.', time: '۲ ساعت پیش', type: 'update', read: false },
     { id: 'NTF-3', title: 'هشدار امنیتی سامانه ورود', description: 'تلاش مشکوک برای ورود از آی‌پی خارجی مسدود گردید.', time: '۴ ساعت پیش', type: 'alert', read: true }
   ]);
 
@@ -407,7 +407,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   // Form Field States
   const [newTicketTitle, setNewTicketTitle] = useState('');
   const [newTicketCustomer, setNewTicketCustomer] = useState('');
-  const [newTicketProduct, setNewTicketProduct] = useState('پنل کاربری سحاب');
+  const [newTicketProduct, setNewTicketProduct] = useState('پنل کاربری ');
   const [newTicketPriority, setNewTicketPriority] = useState<'بحرانی' | 'بالا' | 'متوسط' | 'پایین'>('متوسط');
 
   const [newProductName, setNewProductName] = useState('');
@@ -1065,7 +1065,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               {activeTab === 'users' && 'تیم پشتیبانی و کاربران'}
               {activeTab === 'reports' && 'گزارش‌ها و تحلیل عملکرد'}
               {activeTab === 'notifications' && 'مرکز اعلان‌های سیستم'}
-              {activeTab === 'settings' && 'تنظیمات پیکربندی سحاب'}
+              {activeTab === 'settings' && 'تنظیمات پیکربندی '}
             </h1>
           </div>
         </div>
@@ -2575,7 +2575,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                             <span>توضیحات و اهداف سیستم</span>
                           </h3>
                           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                            {(selectedDetailProduct || products[0]).description || 'توضیحاتی برای این محصول ثبت نشده است. این پلتفرم یکی از ابزارهای استراتژیک در زیرساخت‌های ابری سحاب می‌باشد که با نظارت ۲۴ ساعته امنیت کلاینت‌ها را تضمین می‌کند.'}
+                            {(selectedDetailProduct || products[0]).description || 'توضیحاتی برای این محصول ثبت نشده است. این پلتفرم یکی از ابزارهای استراتژیک در زیرساخت‌های ابری  می‌باشد که با نظارت ۲۴ ساعته امنیت کلاینت‌ها را تضمین می‌کند.'}
                           </p>
 
                           <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-3">
@@ -3424,7 +3424,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                       <h2 className="text-base font-black text-slate-900 dark:text-white">مدیریت مشتریان سازمانی</h2>
                     </div>
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                      مشاهده، مدیریت پروانه‌ها، کاربران و تیکت‌های پشتیبانی شرکت‌های تابعه و مشتریان بزرگ سحاب
+                      مشاهده، مدیریت پروانه‌ها، کاربران و تیکت‌های پشتیبانی شرکت‌های تابعه و مشتریان بزرگ 
                     </p>
                   </div>
 
@@ -3929,7 +3929,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                                   <HelpCircle className="w-12 h-12 mx-auto mb-3 opacity-40 text-slate-400" />
                                   <div className="text-sm font-black text-slate-800 dark:text-slate-300">مشتری سازمانی یافت نشد</div>
                                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed max-w-sm mx-auto font-bold">
-                                    با فیلترهای اعمال شده فعلی موردی در سیستم سحاب ثبت نشده است. لطفاً واژه‌ی جستجو را تغییر دهید یا دکمه زیر را کلیک کنید.
+                                    با فیلترهای اعمال شده فعلی موردی در سیستم  ثبت نشده است. لطفاً واژه‌ی جستجو را تغییر دهید یا دکمه زیر را کلیک کنید.
                                   </p>
                                   <div className="pt-4 flex justify-center">
                                     <button
@@ -4136,7 +4136,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               >
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs space-y-6 text-right">
                   <h3 className="text-sm font-black text-slate-950 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
-                    تنظیمات کلی سامانه پشتیبانی سحاب
+                    تنظیمات کلی سامانه پشتیبانی 
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -4883,7 +4883,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                           <div className="pt-2 space-y-1 text-xs border-t border-slate-100 dark:border-slate-800/40">
                             <span className="text-slate-400 block font-bold">آدرس پستی:</span>
                             <p className="font-bold text-slate-700 dark:text-slate-300 leading-relaxed">
-                              {selectedCustomerProfile.address || 'تهران، خیابان ولیعصر، بالاتر از میدان ونک، برج فناوری سحاب، طبقه چهارم'}
+                              {selectedCustomerProfile.address || 'تهران، خیابان ولیعصر، بالاتر از میدان ونک، برج فناوری ، طبقه چهارم'}
                             </p>
                           </div>
                         </div>
@@ -5071,7 +5071,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                         {[
                           { time: '۱۴۰۳/۰۴/۱۸ - ۱۱:۳۲', user: 'سرپرست سیستم (مهران راد)', text: 'تولید لایسنس کلید پروانه برای Identity Protection به مدت ۱۲ ماه.' },
                           { time: '۱۴۰۳/۰۲/۰۵ - ۰۹:۱۵', user: 'رابط فنی سازمان', text: 'ثبت اولین درخواست درگاه API و تایید امضای دیپ کلاینت.' },
-                          { time: '۱۴۰۲/۱۰/۱۲ - ۱۴:۴۵', user: 'سیستم سحاب', text: 'ایجاد هویت مشتری سازمانی با کد CST-101 و انتساب رابط فنی.' }
+                          { time: '۱۴۰۲/۱۰/۱۲ - ۱۴:۴۵', user: 'سیستم ', text: 'ایجاد هویت مشتری سازمانی با کد CST-101 و انتساب رابط فنی.' }
                         ].map((evt, idx) => (
                           <div key={idx} className="relative">
                             <div className="absolute -right-[25px] top-1 w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 border-2 border-white dark:border-slate-900" />
@@ -5091,7 +5091,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
                 {/* Profile Modal Footer */}
                 <div className="p-5 border-t border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between shrink-0 text-xs font-bold text-slate-400">
-                  <span>سیستم مدیریت مشتریان سازمانی سحاب • نسخه ۲.۶.۰</span>
+                  <span>سیستم مدیریت مشتریان سازمانی  • نسخه ۲.۶.۰</span>
                   <button
                     onClick={() => setShowCustomerProfile(false)}
                     className="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-black cursor-pointer transition-colors"

@@ -101,7 +101,7 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
     {
       id: 'NTF-902',
       title: 'هشدار بحرانی: لایسنس در حال انقضا',
-      description: 'لایسنس پلتفرم ابری Cloud Security Platform برای مشتری «سحاب» ۳ روز دیگر منقضی می‌شود.',
+      description: 'لایسنس پلتفرم ابری Cloud Security Platform برای مشتری «» ۳ روز دیگر منقضی می‌شود.',
       time: '۴۵ دقیقه پیش',
       relativeGroup: 'new',
       type: 'licenses',
@@ -111,7 +111,7 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
       linkedObject: { type: 'لایسنس', id: 'LIC-88392', name: 'Cloud Security Platform' },
       authorName: 'سیستم لایسنس',
       authorAvatarBg: 'bg-rose-600',
-      detailedContent: 'اقدام پیشنهادی: ارسال صورتحساب تمدید به مدیریت مالی سحاب یا تمدید اتوماتیک با کد تخفیف سازمانی.'
+      detailedContent: 'اقدام پیشنهادی: ارسال صورتحساب تمدید به مدیریت مالی  یا تمدید اتوماتیک با کد تخفیف سازمانی.'
     },
     {
       id: 'NTF-903',
@@ -168,7 +168,7 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
       read: true,
       archived: false,
       linkedObject: { type: 'تیکت', id: 'TKT-1029', name: 'اختلال در API بانک ملت' },
-      authorName: 'موتور SLA سحاب',
+      authorName: 'موتور SLA ',
       authorAvatarBg: 'bg-red-600'
     },
     {
@@ -207,7 +207,7 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
     { id: 'ACT-2', actor: 'آرش کریمی', actorRole: 'مدیر ارشد امنیت', avatarBg: 'bg-indigo-600', action: 'کلید فعال‌سازی جدید برای محصول صادر کرد:', target: 'Cloud Security Platform', time: '۲۵ دقیقه پیش', category: 'licenses', badgeColor: 'bg-blue-500/10 text-blue-600' },
     { id: 'ACT-3', actor: 'سارا صادقی', actorRole: 'مدیر فروش', avatarBg: 'bg-emerald-600', action: 'مشخصات شرکت مشتری را بروزرسانی کرد:', target: 'فروشگاه آنلاین آفرین', time: '۱ ساعت پیش', category: 'users', badgeColor: 'bg-emerald-500/10 text-emerald-600' },
     { id: 'ACT-4', actor: 'علیرضا مجیدی', actorRole: 'مدیر کل', avatarBg: 'bg-purple-600', action: 'نقش دسترسی دسته‌جمعی جدید تعریف کرد:', target: 'مدیر ارشد پشتیبانی (RBAC)', time: '۳ ساعت پیش', category: 'system', badgeColor: 'bg-purple-500/10 text-purple-600' },
-    { id: 'ACT-5', actor: 'سیستم خودمختار سحاب', actorRole: 'Bot', avatarBg: 'bg-rose-600', action: 'هشدار انقضای لایسنس ارسال کرد به:', target: 'هلدینگ عمران مهر', time: '۵ ساعت پیش', category: 'licenses', badgeColor: 'bg-rose-500/10 text-rose-600' },
+    { id: 'ACT-5', actor: 'سیستم خودمختار ', actorRole: 'Bot', avatarBg: 'bg-rose-600', action: 'هشدار انقضای لایسنس ارسال کرد به:', target: 'هلدینگ عمران مهر', time: '۵ ساعت پیش', category: 'licenses', badgeColor: 'bg-rose-500/10 text-rose-600' },
     { id: 'ACT-6', actor: 'مریم اکبری', actorRole: 'پشتیبانی فنی', avatarBg: 'bg-pink-600', action: 'فایل پیکربندی جدید را آپلود کرد در:', target: 'تیکت #TK-1022', time: 'دیروز', category: 'tickets', badgeColor: 'bg-indigo-500/10 text-indigo-600' }
   ]);
 
@@ -232,7 +232,7 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
   const [showMentionAutocomplete, setShowMentionAutocomplete] = useState<boolean>(false);
   const [mentionSearchText, setMentionSearchText] = useState<string>('');
   const [savedNotes, setSavedNotes] = useState<Array<{ id: string; text: string; author: string; time: string }>>([
-    { id: '1', text: 'با @آرش کریمی جهت بررسی لاگ‌های SSL گره‌های سحاب هماهنگ شد.', author: 'امیرحسین رضایی', time: '۱۰ دقیقه پیش' },
+    { id: '1', text: 'با @آرش کریمی جهت بررسی لاگ‌های SSL گره‌های  هماهنگ شد.', author: 'امیرحسین رضایی', time: '۱۰ دقیقه پیش' },
     { id: '2', text: 'لطفاً @سارا صادقی وضعیت فاکتور تمدید شرکت آفرین را پیگیری نمایند.', author: 'علیرضا مجیدی', time: '۱ ساعت پیش' }
   ]);
 
@@ -355,7 +355,7 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
       priority: type === 'alert' ? 'critical' : 'important',
       read: false,
       archived: false,
-      authorName: 'سیستم زنده سحاب',
+      authorName: 'سیستم زنده ',
       authorAvatarBg: 'bg-brand-600'
     };
     setNotifications([newNotif, ...notifications]);

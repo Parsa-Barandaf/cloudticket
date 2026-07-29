@@ -616,7 +616,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
               <span>مدیریت کاربران و دسترسی‌ها (RBAC)</span>
             </h1>
             <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">
-              پیکربندی هوشمند دسترسی‌ها، نقش‌ها، تیم‌های پشتیبانی و ممیزی کاربران سازمان در سیستم ابری سحاب
+              پیکربندی هوشمند دسترسی‌ها، نقش‌ها، تیم‌های پشتیبانی و ممیزی کاربران سازمان در سیستم ابری 
             </p>
           </div>
 
@@ -1148,7 +1148,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                         const newName = prompt('نام نقش سفارشی جدید خود را وارد کنید:');
                         if (newName) {
                           try {
-                            const newRole = await createRole({ name: newName, description: 'نقش سفارشی تعریف شده جهت سطوح دسترسی اختصاصی کاربران پلتفرم سحاب.', permissions: '{}' });
+                            const newRole = await createRole({ name: newName, description: 'نقش سفارشی تعریف شده جهت سطوح دسترسی اختصاصی کاربران پلتفرم .', permissions: '{}' });
                             setSelectedRoleForMatrix(newRole.id);
                             showCustomerToast(`نقش سفارشی «${newName}» با موفقیت ایجاد گردید.`, 'success');
                           } catch (e) {
@@ -1375,7 +1375,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
             {/* KPI header for teams */}
             <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
               <div className="space-y-1">
-                <h3 className="text-xs font-black text-slate-900 dark:text-white">تیم‌های کاری و دپارتمان‌های پشتیبانی سحاب</h3>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white">تیم‌های کاری و دپارتمان‌های پشتیبانی </h3>
                 <p className="text-[10px] text-slate-400">تخصیص هوشمند تیکت‌ها بر مبنای مهارت‌های دپارتمان‌ها و محصولات مشخص شده انجام می‌گیرد.</p>
               </div>
 
@@ -1506,7 +1506,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     <h3 className="text-xs font-black text-slate-900 dark:text-white">
                       {userDrawerMode === 'create' ? 'افزودن کاربر جدید به سامانه' : 'ویرایش جزئیات کاربری'}
                     </h3>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">تعیین سطوح دسترسی و پست‌های سازمانی سحاب</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">تعیین سطوح دسترسی و پست‌های سازمانی </p>
                   </div>
                 </div>
               </div>
@@ -1940,7 +1940,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                         { act: 'ثبت پاسخ تیکت TKT-1025 (رفع قطعی گره پردیس)', time: '۱۰ دقیقه پیش' },
                         { act: 'ممیزی پیوست لاگ مانیتورینگ متصل شده', time: '۱ ساعت پیش' },
                         { act: 'تغییر وضعیت تیکت TKT-1022 به «در حال بررسی»', time: 'دیروز' },
-                        { act: 'ورود موفق به سامانه پشتیبانی سحاب', time: 'دیروز' }
+                        { act: 'ورود موفق به سامانه پشتیبانی ', time: 'دیروز' }
                       ].map((item, idx) => (
                         <div key={idx} className="relative">
                           <span className="absolute -right-[23px] top-1.5 w-2 h-2 rounded-full bg-brand-500" />
@@ -2168,7 +2168,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                      'ارسال لینک بازنشانی گذرواژه امن'}
                   </h3>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed font-bold">
-                    {showConfirmModal.type === 'delete' ? 'این عملیات غیر قابل بازگشت بوده و کلیه اطلاعات کاربری و دسترسی‌های وی از پایگاه داده سحاب حذف خواهد شد.' :
+                    {showConfirmModal.type === 'delete' ? 'این عملیات غیر قابل بازگشت بوده و کلیه اطلاعات کاربری و دسترسی‌های وی از پایگاه داده  حذف خواهد شد.' :
                      showConfirmModal.type === 'deleteDepartment' ? `این دپارتمان ${showConfirmModal.extra?.userCount || 0} کاربر دارد. پس از حذف، کاربران به دپارتمان پیش‌فرض منتقل می‌شوند.` :
                      showConfirmModal.type === 'deleteRole' ? `این نقش ${showConfirmModal.extra?.userCount || 0} کاربر دارد. ${
                        showConfirmModal.extra?.userCount ? 'لطفاً یک نقش جایگزین برای این کاربران انتخاب کنید.' : 'آیا از حذف این نقش اطمینان دارید؟'

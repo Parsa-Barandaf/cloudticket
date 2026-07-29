@@ -111,7 +111,7 @@ export default function TicketInboxView({
   const [conversationThreads, setConversationThreads] = useState<{ [ticketId: string]: any[] }>({
     'TKT-1025': [
       { sender: 'customer', name: 'مهندس آرش کریمی', role: 'رابط فنی آریا امنیت', message: 'سلام و احترام، متاسفانه از صبح امروز گره‌های شماره ۳ و ۴ مانیتورینگ ابری در محدوده پارک فناوری پردیس به صورت متناوب قطع و وصل می‌شوند. این مسئله باعث بروز خطاهای کاذب در داشبورد امنیتی ما شده است. لطفاً اولویت بررسی را روی بحرانی قرار دهید.', time: '۱۰:۳۰ - امروز', avatarColor: 'bg-indigo-500' },
-      { sender: 'agent', name: 'امیرحسین رضایی', role: 'کارشناس ارشد پشتیبانی سحاب', message: 'سلام جناب مهندس کریمی گرامی. درخواست شما بررسی شد. پایش بلادرنگ لاگ‌ها نشان می‌دهد یک لود بالانسر در لایه شبکه پردیس وجود دارد که ترافیک گره‌ها را مسدود می‌کند. هم‌اکنون تیم زیرساخت در حال هماهنگی برای حل این مشکل است.', time: '۱۰:۴۵ - امروز', avatarColor: 'bg-brand-600' }
+      { sender: 'agent', name: 'امیرحسین رضایی', role: 'کارشناس ارشد پشتیبانی ', message: 'سلام جناب مهندس کریمی گرامی. درخواست شما بررسی شد. پایش بلادرنگ لاگ‌ها نشان می‌دهد یک لود بالانسر در لایه شبکه پردیس وجود دارد که ترافیک گره‌ها را مسدود می‌کند. هم‌اکنون تیم زیرساخت در حال هماهنگی برای حل این مشکل است.', time: '۱۰:۴۵ - امروز', avatarColor: 'bg-brand-600' }
     ],
     'TKT-1026': [
       { sender: 'customer', name: 'خانم الهام سلیمی', role: 'رابط فناوری نوین', message: 'با سلام، لایسنس تستی که برای سیستم هویت چندعاملی برای ما فعال کرده بودید ارور انقضای کلید موقت می‌دهد، در صورتی که تاریخ معتبر آن تا پایان ماه جاری اعلام شده بود. فایل تنظیمات را پیوست کردم.', time: 'دیروز - ۱۶:۲۰', avatarColor: 'bg-emerald-500' }
@@ -322,7 +322,7 @@ export default function TicketInboxView({
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      showCustomerToast('بلادرنگ: اطلاعات تیکت‌ها با هسته مرکزی سحاب همگام شد.', 'success');
+      showCustomerToast('بلادرنگ: اطلاعات تیکت‌ها با هسته مرکزی  همگام شد.', 'success');
     }, 850);
   };
 
@@ -348,7 +348,7 @@ export default function TicketInboxView({
         const newMsg = {
           sender: 'agent',
           name: 'امیرحسین رضایی',
-          role: 'کارشناس ارشد پشتیبانی سحاب',
+          role: 'کارشناس ارشد پشتیبانی ',
           message: replyText,
           time: 'هم‌اکنون',
           avatarColor: 'bg-brand-600'
@@ -468,7 +468,7 @@ export default function TicketInboxView({
           <button
             onClick={() => {
               setNewTicketCustomer('');
-              setNewTicketProduct('پنل کاربری سحاب');
+              setNewTicketProduct('پنل کاربری ');
               setShowTicketModal(true);
             }}
             className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-5 py-2.5 rounded-xl shadow-md shadow-brand-500/15 transition-all flex items-center gap-2 cursor-pointer"
@@ -490,7 +490,7 @@ export default function TicketInboxView({
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div className="space-y-1.5 flex-1">
-            <h4 className="text-xs font-black text-rose-800 dark:text-rose-400">خطای موقت در ارتباط با API صادرکننده لایسنس سحاب</h4>
+            <h4 className="text-xs font-black text-rose-800 dark:text-rose-400">خطای موقت در ارتباط با API صادرکننده لایسنس </h4>
             <p className="text-[11px] text-rose-700/80 dark:text-rose-450 leading-relaxed font-bold">
               مجموعه داده‌های پشتیبانی با تاخیر مواجه شدند. لطفاً اتصال شبکه خود را بررسی کرده و مجدداً تلاش کنید. همچنین می‌توانید با زدن دکمه زیر مشکل را ریست نمایید.
             </p>
@@ -1253,7 +1253,7 @@ export default function TicketInboxView({
               <button
                 onClick={() => {
                   setNewTicketCustomer('');
-                  setNewTicketProduct('پنل کاربری سحاب');
+                  setNewTicketProduct('پنل کاربری ');
                   setShowTicketModal(true);
                 }}
                 className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black rounded-xl shadow-md shadow-brand-500/15 transition-all cursor-pointer"

@@ -161,7 +161,7 @@ function AppContent() {
               <a href="#terms" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">شرایط و قوانین خدمات</a>
             </div>
             <div>
-              <span>نسخه سامانه: ۱.۴.۰ • توسعه یافته در ایران با فناوری بومی سحاب</span>
+              <span>نسخه سامانه: ۱.۴.۰ • توسعه یافته در ایران با فناوری بومی </span>
             </div>
           </footer>
 

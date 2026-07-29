@@ -385,7 +385,7 @@ export default function CustomerPortalView({
             <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
                 <h3 className="text-base font-black text-slate-900 dark:text-white">ارسال تیکت جدید به پشتیبانی فنی</h3>
-                <p className="text-xs text-slate-400 mt-1">کارشناسان ارشد سحاب به صورت ۲۴ ساعته بر اساس SLA طلایی پاسخگوی شما خواهند بود.</p>
+                <p className="text-xs text-slate-400 mt-1">کارشناسان ارشد  به صورت ۲۴ ساعته بر اساس SLA طلایی پاسخگوی شما خواهند بود.</p>
               </div>
 
               <form onSubmit={handleCreateTicket} className="space-y-4 text-xs">
@@ -503,7 +503,7 @@ export default function CustomerPortalView({
           {activeTab === 'docs' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { title: 'راهنمای نصب و پیکربندی اولیه SDK سحاب', category: 'توسعه‌دهندگان', icon: BookOpen },
+                { title: 'راهنمای نصب و پیکربندی اولیه SDK ', category: 'توسعه‌دهندگان', icon: BookOpen },
                 { title: 'دستورالعمل تنظیمات SSL و امنیت دامنه سازمانی', category: 'شبکه و امنیت', icon: Shield },
                 { title: 'نحوه اتصال به سرویس هویت یکپارچه SSO', category: 'احراز هویت', icon: Key }
               ].map((doc, idx) => (
@@ -523,7 +523,7 @@ export default function CustomerPortalView({
           {activeTab === 'profile' && (
             <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 text-xs">
               <h3 className="text-sm font-black text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
-                مشخصات سازمان ثبت شده در پلتفرم سحاب
+                مشخصات سازمان ثبت شده در پلتفرم 
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

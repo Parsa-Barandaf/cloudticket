@@ -212,7 +212,7 @@ export default function TicketDetailsWorkspace({
     const newMsg = {
       sender: composerTab === 'reply' ? 'agent' : 'internal_note',
       name: senderName,
-      role: composerTab === 'reply' ? 'کارشناس ارشد پشتیبانی سحاب' : 'یادداشت داخلی تیم سحاب',
+      role: composerTab === 'reply' ? 'کارشناس ارشد پشتیبانی ' : 'یادداشت داخلی تیم ',
       message: replyText,
       time: 'هم‌اکنون',
       avatarColor: composerTab === 'reply' ? 'bg-brand-600' : 'bg-amber-600 text-amber-50',
@@ -310,7 +310,7 @@ export default function TicketDetailsWorkspace({
   // Related Tickets simulation dataset
   const relatedTickets = [
     { id: 'TKT-1021', title: 'کاهش شدید سرعت پاسخگویی متد استعلام کالا', status: 'بسته شده' },
-    { id: 'TKT-1014', title: 'درخواست آپدیت پکیج امنیتی کلاینت لینوکس سحاب', status: 'حل شده' },
+    { id: 'TKT-1014', title: 'درخواست آپدیت پکیج امنیتی کلاینت لینوکس ', status: 'حل شده' },
   ];
 
   // Helper info card components
@@ -487,7 +487,7 @@ export default function TicketDetailsWorkspace({
                     exit={{ opacity: 0, y: 10 }}
                     className="absolute left-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-1.5 z-50 text-right"
                   >
-                    {['تیم هسته مرکزی امنیت', 'پشتیبانی فنی زیرساخت', 'واحد توسعه محصول سحاب', 'تیم مدیریت لایسنس'].map((dept) => (
+                    {['تیم هسته مرکزی امنیت', 'پشتیبانی فنی زیرساخت', 'واحد توسعه محصول ', 'تیم مدیریت لایسنس'].map((dept) => (
                       <button
                         key={dept}
                         onClick={() => {
@@ -1048,7 +1048,7 @@ export default function TicketDetailsWorkspace({
                         <div className="space-y-2">
                           <FileArchive className="w-12 h-12 text-purple-500 mx-auto" />
                           <span className="text-xs font-black text-slate-800 dark:text-white block">{previewFile.name}</span>
-                          <span className="text-[10px] text-slate-400 block font-semibold">بسته فایل پشتیبان تنظیمات سرور لینوکس سحاب</span>
+                          <span className="text-[10px] text-slate-400 block font-semibold">بسته فایل پشتیبان تنظیمات سرور لینوکس </span>
                         </div>
                       ) : (
                         <div className="space-y-2">
@@ -1158,7 +1158,7 @@ export default function TicketDetailsWorkspace({
 
                 <div className="p-3 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border border-emerald-500/10 rounded-2xl">
                   <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold leading-relaxed">
-                    تعهد طلایی: کارشناسان سحاب متعهد به پاسخگویی زیر ۲ ساعت و رفع خطاهای سطح بحرانی حداکثر طی ۶ ساعت کاری محلی هستند.
+                    تعهد طلایی: کارشناسان  متعهد به پاسخگویی زیر ۲ ساعت و رفع خطاهای سطح بحرانی حداکثر طی ۶ ساعت کاری محلی هستند.
                   </p>
                 </div>
               </div>
