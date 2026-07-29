@@ -527,7 +527,7 @@ export default function TicketDetailsWorkspace({
                     exit={{ opacity: 0, y: 10 }}
                     className="absolute left-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-1.5 z-50 text-right"
                   >
-                    {agentsList.map((ag) => (
+                    {agentsList.length ? agentsList.map((ag) => (
                       <button
                         key={ag.id}
                         onClick={() => handleUpdateTicketAgent(ag)}
@@ -537,7 +537,9 @@ export default function TicketDetailsWorkspace({
                       >
                         {ag.name}
                       </button>
-                    ))}
+                    )) : (
+                      <div className="text-slate-500 text-[10px] px-4 py-3 text-center">کارشناسی برای این محصول تخصیص داده نشده است</div>
+                    )}
                     <button
                       onClick={() => {
                         setShowAgentDropdown(false);

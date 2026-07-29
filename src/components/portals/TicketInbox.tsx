@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -41,6 +41,7 @@ import type { Ticket, Product, Customer } from '../../types';
 import { gql } from '../../api/graphql';
 import { UPDATE_TICKET_STATUS, UPDATE_TICKET, DELETE_TICKETS, CREATE_TICKET_MESSAGE } from '../../api/queries';
 import { useUsers } from '../../hooks/useUsers';
+import { useDepartments } from '../../hooks/useDepartments';
 import TicketDetailsWorkspace from './TicketDetailsWorkspace';
 
 interface TicketInboxViewProps {
@@ -129,7 +130,16 @@ export default function TicketInboxView({
 
   // Agents list from real API users
   const { users: apiUsers } = useUsers();
-  const agentsList = apiUsers.filter(u => u.role === 'ADMIN' || u.role === 'AGENT');
+  const { departments } = useDepartments();
+  const agentsList = apiUsers.filter(u => !u.isCustomer && (u.role === 'ADMIN' || u.role === 'AGENT'));
+
+  // Filter agents whose department covers a given product name
+  const getAgentsForProduct = useCallback((productName: string) => {
+    const deptIds = departments
+      .filter(d => d.assignedProducts.includes(productName))
+      .map(d => d.id);
+    return agentsList.filter(u => !u.departmentId || deptIds.includes(u.departmentId));
+  }, [agentsList, departments]);
 
   // Handle outside clicks to close menus
   useEffect(() => {
@@ -415,7 +425,7 @@ export default function TicketInboxView({
         showCustomerToast={showCustomerToast}
         conversationThreads={conversationThreads}
         setConversationThreads={setConversationThreads}
-        agentsList={agentsList}
+        agentsList={selectedTicketForDetail ? getAgentsForProduct(selectedTicketForDetail.product) : agentsList}
       />
     );
   }
@@ -792,15 +802,26 @@ export default function TicketInboxView({
                 </button>
                 {showBulkAgentDropdown && (
                   <div className="absolute bottom-11 right-0 w-56 bg-slate-800 border border-slate-750 rounded-xl py-1 shadow-2xl z-50 text-right max-h-48 overflow-y-auto">
-                    {agentsList.map(ag => (
-                      <button
-                        key={ag.id}
-                        onClick={() => handleBulkAgentAssign(ag.id, ag.name)}
-                        className="w-full text-right text-slate-300 hover:text-white hover:bg-slate-750 px-4 py-2 text-xs"
-                      >
-                        {ag.name}
-                      </button>
-                    ))}
+                    {(() => {
+                      const selectedProducts = [...new Set(selectedTicketIds.map(id => tickets.find(t => t.id === id)?.product).filter(Boolean))] as string[];
+                      const bulkAssignable = selectedProducts.length
+                        ? agentsList.filter(u => selectedProducts.some(p => {
+                            const deptIds = departments.filter(d => d.assignedProducts.includes(p)).map(d => d.id);
+                            return !u.departmentId || deptIds.includes(u.departmentId);
+                          }))
+                        : agentsList;
+                      return bulkAssignable.length ? bulkAssignable.map(ag => (
+                        <button
+                          key={ag.id}
+                          onClick={() => handleBulkAgentAssign(ag.id, ag.name)}
+                          className="w-full text-right text-slate-300 hover:text-white hover:bg-slate-750 px-4 py-2 text-xs"
+                        >
+                          {ag.name}
+                        </button>
+                      )) : (
+                        <div className="text-slate-500 text-[10px] px-4 py-3 text-center">کارشناسی برای این محصول تخصیص داده نشده است</div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
