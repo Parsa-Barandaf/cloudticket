@@ -69,6 +69,8 @@ input CreateCustomerInput {
 
 input CreateDepartmentInput {
   assignedProducts: [String!]! = []
+  color: String
+  icon: String
   lead: String!
   name: String!
 }
@@ -169,7 +171,9 @@ input DeleteTicketsInput {
 
 type Department {
   assignedProducts: [String!]!
+  color: String!
   createdAt: DateTime!
+  icon: String!
   id: String!
   lead: String!
   name: String!
@@ -353,6 +357,8 @@ input UpdateCustomerInput {
 
 input UpdateDepartmentInput {
   assignedProducts: [String!]
+  color: String
+  icon: String
   id: String!
   lead: String
   name: String

@@ -37,7 +37,15 @@ import {
   Lock,
   ChevronDown,
   Sparkles,
-  Info
+  Info,
+  Headphones,
+  Globe,
+  Server,
+  Cpu,
+  HardDrive,
+  Wifi,
+  Zap,
+  Settings,
 } from 'lucide-react';
 
 interface UserItem {
@@ -70,6 +78,8 @@ interface TeamItem {
   name: string;
   membersCount: number;
   lead: string;
+  icon: string;
+  color: string;
   assignedProducts: string[];
 }
 
@@ -162,6 +172,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
       name: d.name,
       membersCount: apiUsers.filter(u => u.departmentId === d.id).length,
       lead: d.lead,
+      icon: d.icon,
+      color: d.color,
       assignedProducts: d.assignedProducts,
     }));
   }, [departments, apiUsers]);
@@ -218,6 +230,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const [editingDepartmentId, setEditingDepartmentId] = useState<string>('');
   const [teamName, setTeamName] = useState('');
   const [teamLead, setTeamLead] = useState('');
+  const [teamIcon, setTeamIcon] = useState('Users2');
+  const [teamColor, setTeamColor] = useState('indigo');
   const [teamProducts, setTeamProducts] = useState<string[]>(['Cloud Security Platform']);
 
   // Reset Row actions on click outside
@@ -493,11 +507,11 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
 
     try {
       if (teamModalMode === 'create') {
-        await createDepartment({ name: teamName, lead: teamLead, assignedProducts: teamProducts });
+        await createDepartment({ name: teamName, lead: teamLead, icon: teamIcon, color: teamColor, assignedProducts: teamProducts });
         showCustomerToast(`تیم پشتیبانی جدید «${teamName}» با موفقیت تشکیل شد.`, 'success');
       } else {
         if (!editingDepartmentId) return;
-        await updateDepartment({ id: editingDepartmentId, name: teamName, lead: teamLead, assignedProducts: teamProducts });
+        await updateDepartment({ id: editingDepartmentId, name: teamName, lead: teamLead, icon: teamIcon, color: teamColor, assignedProducts: teamProducts });
         showCustomerToast(`تنظیمات تیم پشتیبانی «${teamName}» با موفقیت بروزرسانی شد.`, 'success');
       }
       setShowTeamModal(false);
@@ -512,6 +526,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     setEditingDepartmentId('');
     setTeamName('');
     setTeamLead('');
+    setTeamIcon('Users2');
+    setTeamColor('indigo');
     setTeamProducts(['Cloud Security Platform']);
     setShowTeamModal(true);
   };
@@ -522,6 +538,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     setEditingDepartmentId(team.id);
     setTeamName(team.name);
     setTeamLead(team.lead);
+    setTeamIcon(team.icon);
+    setTeamColor(team.color);
     setTeamProducts(team.assignedProducts);
     setShowTeamModal(true);
   };
@@ -1380,12 +1398,30 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
-                          <Users2 className="w-4.5 h-4.5" />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${
+                          team.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400' :
+                          team.color === 'blue' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400' :
+                          team.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' :
+                          team.color === 'amber' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400' :
+                          team.color === 'rose' ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400' :
+                          team.color === 'violet' ? 'bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400' :
+                          team.color === 'cyan' ? 'bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600 dark:text-cyan-400' :
+                          team.color === 'orange' ? 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400' :
+                          'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400'
+                        }`}>
+                          {team.icon === 'Shield' ? <Shield className="w-4.5 h-4.5" /> :
+                           team.icon === 'Headphones' ? <Headphones className="w-4.5 h-4.5" /> :
+                           team.icon === 'Server' ? <Server className="w-4.5 h-4.5" /> :
+                           team.icon === 'Globe' ? <Globe className="w-4.5 h-4.5" /> :
+                           team.icon === 'Cpu' ? <Cpu className="w-4.5 h-4.5" /> :
+                           team.icon === 'HardDrive' ? <HardDrive className="w-4.5 h-4.5" /> :
+                           team.icon === 'Wifi' ? <Wifi className="w-4.5 h-4.5" /> :
+                           team.icon === 'Zap' ? <Zap className="w-4.5 h-4.5" /> :
+                           team.icon === 'Settings' ? <Settings className="w-4.5 h-4.5" /> :
+                           <Users2 className="w-4.5 h-4.5" />}
                         </div>
                         <h4 className="text-xs font-black text-slate-900 dark:text-white">{team.name}</h4>
                       </div>
-                      <span className="text-[9px] font-mono font-bold text-slate-400">{team.id}</span>
                     </div>
 
                     <div className="space-y-2 text-xs pt-1">
@@ -1394,7 +1430,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                         <span className="text-slate-800 dark:text-slate-200 font-black">{team.lead}</span>
                       </div>
                       <div className="flex items-center justify-between text-slate-400 font-bold">
-                        <span>تعداد مهندسان فعال:</span>
+                        <span>تعداد افراد تیم:</span>
                         <span className="text-brand-600 dark:text-brand-400 font-black font-mono">{team.membersCount} نفر</span>
                       </div>
                     </div>
@@ -1406,7 +1442,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                         {team.assignedProducts.map((p, idx) => (
                           <span
                             key={idx}
-                            className="text-[9px] font-bold bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md"
+                            className="text-xs font-bold bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md"
                           >
                             {p}
                           </span>
@@ -1986,6 +2022,64 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     placeholder="مثال: مهندس علی علوی"
                     className="w-full text-xs font-bold px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300"
                   />
+                </div>
+
+                {/* Icon & Color Pickers */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">آیکون تیم</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { key: 'Users2', icon: '👥' },
+                        { key: 'Shield', icon: '🛡' },
+                        { key: 'Headphones', icon: '🎧' },
+                        { key: 'Server', icon: '🖥' },
+                        { key: 'Globe', icon: '🌐' },
+                        { key: 'Cpu', icon: '⚙' },
+                        { key: 'HardDrive', icon: '💾' },
+                        { key: 'Wifi', icon: '📡' },
+                        { key: 'Zap', icon: '⚡' },
+                        { key: 'Settings', icon: '🔧' },
+                      ].map(ic => (
+                        <button
+                          key={ic.key}
+                          type="button"
+                          onClick={() => setTeamIcon(ic.key)}
+                          className={`w-8 h-8 rounded-lg text-sm flex items-center justify-center border cursor-pointer transition-all ${
+                            teamIcon === ic.key
+                              ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 text-brand-600'
+                              : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/40 text-slate-500 hover:border-slate-300'
+                          }`}
+                        >
+                          {ic.icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">رنگ تیم</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { key: 'indigo', class: 'bg-indigo-500' },
+                        { key: 'blue', class: 'bg-blue-500' },
+                        { key: 'emerald', class: 'bg-emerald-500' },
+                        { key: 'amber', class: 'bg-amber-500' },
+                        { key: 'rose', class: 'bg-rose-500' },
+                        { key: 'violet', class: 'bg-violet-500' },
+                        { key: 'cyan', class: 'bg-cyan-500' },
+                        { key: 'orange', class: 'bg-orange-500' },
+                      ].map(clr => (
+                        <button
+                          key={clr.key}
+                          type="button"
+                          onClick={() => setTeamColor(clr.key)}
+                          className={`w-8 h-8 rounded-lg ${clr.class} cursor-pointer transition-all ring-offset-2 dark:ring-offset-slate-900 ${
+                            teamColor === clr.key ? 'ring-2 ring-slate-700 dark:ring-white' : 'ring-0'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Assigned Products (from real API) */}

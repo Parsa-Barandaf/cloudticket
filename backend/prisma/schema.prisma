@@ -50,6 +50,8 @@ model Department {
   id               String   @id @default(cuid())
   name             String
   lead             String
+  icon             String   @default("Users2")
+  color            String   @default("indigo")
   assignedProducts String[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

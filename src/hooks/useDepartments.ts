@@ -21,13 +21,13 @@ export function useDepartments() {
     }
   }, []);
 
-  const createDepartment = useCallback(async (input: { name: string; lead: string; assignedProducts: string[] }) => {
+  const createDepartment = useCallback(async (input: { name: string; lead: string; icon?: string; color?: string; assignedProducts: string[] }) => {
     const data = await gql<{ createDepartment: ApiDepartment }>(CREATE_DEPARTMENT, { input });
     setDepartments(prev => [data.createDepartment, ...prev]);
     return data.createDepartment;
   }, []);
 
-  const updateDepartment = useCallback(async (input: { id: string; name?: string; lead?: string; assignedProducts?: string[] }) => {
+  const updateDepartment = useCallback(async (input: { id: string; name?: string; lead?: string; icon?: string; color?: string; assignedProducts?: string[] }) => {
     const data = await gql<{ updateDepartment: ApiDepartment }>(UPDATE_DEPARTMENT, { input });
     setDepartments(prev => prev.map(d => d.id === input.id ? data.updateDepartment : d));
     return data.updateDepartment;

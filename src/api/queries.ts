@@ -311,14 +311,14 @@ export const DELETE_USER = `
 // ── Departments ──
 export const GET_DEPARTMENTS = `
   query Departments {
-    departments { id name lead assignedProducts createdAt updatedAt }
+    departments { id name lead icon color assignedProducts createdAt updatedAt }
   }
 `;
 
 export const CREATE_DEPARTMENT = `
   mutation CreateDepartment($input: CreateDepartmentInput!) {
     createDepartment(input: $input) {
-      id name lead assignedProducts createdAt updatedAt
+      id name lead icon color assignedProducts createdAt updatedAt
     }
   }
 `;
@@ -326,7 +326,7 @@ export const CREATE_DEPARTMENT = `
 export const UPDATE_DEPARTMENT = `
   mutation UpdateDepartment($input: UpdateDepartmentInput!) {
     updateDepartment(input: $input) {
-      id name lead assignedProducts createdAt updatedAt
+      id name lead icon color assignedProducts createdAt updatedAt
     }
   }
 `;

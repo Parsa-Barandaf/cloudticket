@@ -19,6 +19,8 @@ export class DepartmentsService {
       data: {
         name: input.name,
         lead: input.lead,
+        icon: input.icon ?? 'Users2',
+        color: input.color ?? 'indigo',
         assignedProducts: input.assignedProducts ?? [],
       },
     });
@@ -30,6 +32,8 @@ export class DepartmentsService {
       data: {
         ...(input.name !== undefined && { name: input.name }),
         ...(input.lead !== undefined && { lead: input.lead }),
+        ...(input.icon !== undefined && { icon: input.icon }),
+        ...(input.color !== undefined && { color: input.color }),
         ...(input.assignedProducts !== undefined && { assignedProducts: input.assignedProducts }),
       },
     });

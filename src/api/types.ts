@@ -26,6 +26,8 @@ export interface ApiDepartment {
   id: string;
   name: string;
   lead: string;
+  icon: string;
+  color: string;
   assignedProducts: string[];
   createdAt: string;
   updatedAt: string;

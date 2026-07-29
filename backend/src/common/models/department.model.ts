@@ -14,6 +14,12 @@ export class Department {
   @Field(() => [String])
   assignedProducts: string[];
 
+  @Field({ defaultValue: 'Users2' })
+  icon: string;
+
+  @Field({ defaultValue: 'indigo' })
+  color: string;
+
   @Field()
   createdAt: Date;
 

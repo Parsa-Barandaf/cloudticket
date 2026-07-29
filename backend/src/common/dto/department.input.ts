@@ -8,6 +8,12 @@ export class CreateDepartmentInput {
   @Field()
   lead: string;
 
+  @Field({ nullable: true })
+  icon?: string;
+
+  @Field({ nullable: true })
+  color?: string;
+
   @Field(() => [String], { defaultValue: [] })
   assignedProducts: string[];
 }
@@ -22,6 +28,12 @@ export class UpdateDepartmentInput {
 
   @Field({ nullable: true })
   lead?: string;
+
+  @Field({ nullable: true })
+  icon?: string;
+
+  @Field({ nullable: true })
+  color?: string;
 
   @Field(() => [String], { nullable: true })
   assignedProducts?: string[];
