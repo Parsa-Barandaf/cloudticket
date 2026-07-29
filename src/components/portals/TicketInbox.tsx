@@ -827,12 +827,21 @@ export default function TicketInboxView({
               </div>
 
               {/* Close Bulk */}
-              <button
-                onClick={handleBulkClose}
-                className="px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-emerald-400 hover:text-emerald-300 rounded-xl transition-all cursor-pointer"
-              >
-                بستن تیکت‌ها
-              </button>
+              {(() => {
+                const allClosed = selectedTicketIds.every(id => tickets.find(t => t.id === id)?.status === 'بسته شده');
+                return (
+                  <button
+                    onClick={allClosed ? undefined : handleBulkClose}
+                    className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                      allClosed
+                        ? 'bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-600 cursor-not-allowed'
+                        : 'bg-slate-800 hover:bg-slate-750 text-emerald-400 hover:text-emerald-300'
+                    }`}
+                  >
+                    بستن تیکت‌ها
+                  </button>
+                );
+              })()}
 
               {/* Delete Bulk */}
               <button
