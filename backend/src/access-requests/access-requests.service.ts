@@ -7,8 +7,18 @@ export class AccessRequestsService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: { name: string; companyName: string; email: string; phone: string; industry?: string }) {
-    const existing = await this.prisma.accessRequest.findFirst({ where: { email: data.email, status: 'PENDING' } });
-    if (existing) throw new ConflictException('A pending request already exists for this email');
+    const existingUser = await this.prisma.user.findUnique({ where: { email: data.email } });
+    if (existingUser) throw new ConflictException('این ایمیل قبلاً ثبت‌نام شده است');
+
+    const existingRequest = await this.prisma.accessRequest.findFirst({
+      where: { email: data.email, status: { in: ['PENDING', 'APPROVED'] } },
+    });
+    if (existingRequest) {
+      if (existingRequest.status === 'PENDING') {
+        throw new ConflictException('درخواست ثبت‌نام با این ایمیل در انتظار تأیید است');
+      }
+      throw new ConflictException('درخواست ثبت‌نام با این ایمیل قبلاً تأیید شده است');
+    }
 
     return this.prisma.accessRequest.create({ data });
   }
