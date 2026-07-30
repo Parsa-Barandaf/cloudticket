@@ -1195,7 +1195,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                           </p>
 
                           <div className="flex items-center justify-between gap-4 pt-2.5 border-t border-dashed border-slate-150 dark:border-slate-800/60">
-                            <span className="text-[9px] text-slate-400 font-black">شناسه نقش: {role.id}</span>
+                            <span className="text-[9px] font-mono text-slate-400 font-black">#{role.id.substring(0, 7).toUpperCase()}</span>
                             
                             <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                               <button
