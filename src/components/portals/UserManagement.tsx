@@ -146,6 +146,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<string>('');
   const [matrixSearchQuery, setMatrixSearchQuery] = useState<string>('');
   const [pendingPortalType, setPendingPortalType] = useState<'support' | 'management' | null>(null);
+  const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleDesc, setNewRoleDesc] = useState('');
 
   // Map API roles to local RoleItem format (with parsed permissions)
   const roles = useMemo(() => {
@@ -1150,18 +1153,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       <span>نقش‌های سیستمی</span>
                     </h3>
                     <button
-                      onClick={async () => {
-                        const newName = prompt('نام نقش سفارشی جدید خود را وارد کنید:');
-                        if (newName) {
-                          const newDesc = prompt('توضیحات این نقش را وارد کنید:');
-                          try {
-                            const newRole = await createRole({ name: newName, description: newDesc || '', permissions: '{}' });
-                            setSelectedRoleForMatrix(newRole.id);
-                            showCustomerToast(`نقش سفارشی «${newName}» با موفقیت ایجاد گردید.`, 'success');
-                          } catch (e) {
-                            showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
-                          }
-                        }
+                      onClick={() => {
+                        setNewRoleName('');
+                        setNewRoleDesc('');
+                        setShowCreateRoleModal(true);
                       }}
                       className="text-[10px] bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-black px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
@@ -2304,6 +2299,80 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                 >
                   <Check className="w-4 h-4" />
                   تایید تغییر پرتال
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CREATE NEW ROLE MODAL */}
+      <AnimatePresence>
+        {showCreateRoleModal && (
+          <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 w-full max-w-md shadow-2xl text-right"
+            >
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/20 flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-brand-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">ایجاد نقش سفارشی جدید</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">برای سامانه یک نقش جدید با دسترسی‌های اختصاصی تعریف کنید.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-5">
+                <div className="space-y-1.5">
+                  <label className="text-[10.5px] font-black text-slate-700 dark:text-slate-300">نام نقش</label>
+                  <input
+                    type="text"
+                    value={newRoleName}
+                    onChange={e => setNewRoleName(e.target.value)}
+                    placeholder="مثال: پشتیبان سطح یک"
+                    className="w-full text-xs font-bold px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10.5px] font-black text-slate-700 dark:text-slate-300">توضیحات نقش</label>
+                  <textarea
+                    value={newRoleDesc}
+                    onChange={e => setNewRoleDesc(e.target.value)}
+                    placeholder="مثال: دسترسی به تیکت‌های عمومی، پاسخ و ارجاع به کارشناس ارشد"
+                    rows={3}
+                    className="w-full text-xs font-bold px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={() => setShowCreateRoleModal(false)}
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-black rounded-xl cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!newRoleName.trim()) return;
+                    try {
+                      const newRole = await createRole({ name: newRoleName.trim(), description: newRoleDesc.trim() || '', permissions: '{}' });
+                      setSelectedRoleForMatrix(newRole.id);
+                      setShowCreateRoleModal(false);
+                      showCustomerToast(`نقش سفارشی «${newRoleName.trim()}» با موفقیت ایجاد گردید.`, 'success');
+                    } catch (e) {
+                      showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
+                    }
+                  }}
+                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black rounded-xl cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  ایجاد نقش
                 </button>
               </div>
             </motion.div>
