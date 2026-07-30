@@ -1153,8 +1153,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       onClick={async () => {
                         const newName = prompt('نام نقش سفارشی جدید خود را وارد کنید:');
                         if (newName) {
+                          const newDesc = prompt('توضیحات این نقش را وارد کنید:');
                           try {
-                            const newRole = await createRole({ name: newName, description: 'نقش سفارشی تعریف شده جهت سطوح دسترسی اختصاصی کاربران پلتفرم .', permissions: '{}' });
+                            const newRole = await createRole({ name: newName, description: newDesc || '', permissions: '{}' });
                             setSelectedRoleForMatrix(newRole.id);
                             showCustomerToast(`نقش سفارشی «${newName}» با موفقیت ایجاد گردید.`, 'success');
                           } catch (e) {
@@ -1185,7 +1186,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                             <span className={`text-xs font-black ${isSelected ? 'text-brand-600 dark:text-brand-400' : 'text-slate-800 dark:text-slate-200'}`}>
                               {role.name}
                             </span>
-                            <span className="text-[10px] bg-slate-100 dark:bg-slate-800/80 text-slate-500 font-mono font-bold px-2.5 py-0.5 rounded-full">
+                            <span className="text-xs bg-slate-100 dark:bg-slate-800/80 text-slate-500 font-mono font-black px-2.5 py-0.5 rounded-full">
                               {role.userCount} کاربر
                             </span>
                           </div>
@@ -1195,7 +1196,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                           </p>
 
                           <div className="flex items-center justify-between gap-4 pt-2.5 border-t border-dashed border-slate-150 dark:border-slate-800/60">
-                            <span className="text-[9px] font-mono text-slate-400 font-black">#{role.id.substring(0, 7).toUpperCase()}</span>
+                            <span className="text-xs font-mono text-slate-400 font-black">#{role.id.substring(0, 7).toUpperCase()}</span>
                             
                             <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                               <button
