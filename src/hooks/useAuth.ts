@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { gql } from '../api/graphql';
-import { LOGIN_MUTATION } from '../api/queries';
+import { LOGIN_MUTATION, GET_CURRENT_USER } from '../api/queries';
+import type { ApiUser } from '../api/types';
 import type { PortalRole } from '../types';
 
 interface LoginResult {
@@ -47,8 +48,30 @@ export function useAuth() {
 
   const logout = useCallback(() => {
     localStorage.removeItem('cmp_access_token');
-    localStorage.setItem('cmp_logged_in', 'false');
+    localStorage.removeItem('cmp_user_email');
+    localStorage.removeItem('cmp_portal_role');
+    localStorage.removeItem('cmp_logged_in');
   }, []);
 
-  return { login, logout, loading, error };
+  const getCurrentUser = useCallback(async (): Promise<{ email: string; role: PortalRole } | null> => {
+    try {
+      const data = await gql<{ me: ApiUser }>(GET_CURRENT_USER);
+      const user = data.me;
+      let portalRole: PortalRole;
+      if (user.portalType === 'support') {
+        portalRole = 'agent';
+      } else if (user.portalType === 'management') {
+        portalRole = 'admin';
+      } else {
+        portalRole = user.role.toLowerCase() as PortalRole;
+      }
+      localStorage.setItem('cmp_portal_role', portalRole);
+      localStorage.setItem('cmp_user_email', user.email);
+      return { email: user.email, role: portalRole };
+    } catch {
+      return null;
+    }
+  }, []);
+
+  return { login, logout, loading, error, getCurrentUser };
 }

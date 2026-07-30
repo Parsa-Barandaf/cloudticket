@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sun, Moon, Sparkles } from 'lucide-react';
 import type { AuthScreen, PortalRole, Ticket, Product, Customer } from './types';
 import { useTheme } from './hooks/useTheme';
+import { useAuth } from './hooks/useAuth';
 import { useTickets } from './hooks/useTickets';
 import { useProducts } from './hooks/useProducts';
 import { useCustomers } from './hooks/useCustomers';
@@ -16,8 +17,9 @@ import SupportAgentPortalView from './components/portals/AgentPortal';
 function AppContent() {
   const [screen, setScreen] = useState<AuthScreen>(() => {
     const saved = localStorage.getItem('cmp_logged_in');
-    if (saved === 'false') return 'login';
-    return 'dashboard';
+    const token = localStorage.getItem('cmp_access_token');
+    if (saved === 'true' && token) return 'dashboard';
+    return 'login';
   });
   const { isDark, toggleTheme } = useTheme(true);
   const [userEmail, setUserEmail] = useState<string>(() => {
@@ -29,6 +31,26 @@ function AppContent() {
   const { tickets: realTickets } = useTickets();
   const { products: realProducts } = useProducts();
   const { customers: realCustomers } = useCustomers();
+  const { getCurrentUser, logout } = useAuth();
+
+  useEffect(() => {
+    const token = localStorage.getItem('cmp_access_token');
+    if (!token) return;
+    getCurrentUser().then(result => {
+      if (result) {
+        setUserEmail(result.email);
+        setPortalRole(result.role);
+        localStorage.setItem('cmp_logged_in', 'true');
+        setScreen('dashboard');
+      } else {
+        localStorage.removeItem('cmp_access_token');
+        localStorage.removeItem('cmp_user_email');
+        localStorage.removeItem('cmp_portal_role');
+        localStorage.removeItem('cmp_logged_in');
+        setScreen('login');
+      }
+    });
+  }, [getCurrentUser]);
 
   const handleLoginSuccess = (email: string, role?: PortalRole) => {
     const mail = email || 'admin@example.com';
@@ -42,8 +64,7 @@ function AppContent() {
   };
 
   const handleLogout = () => {
-    localStorage.setItem('cmp_logged_in', 'false');
-    localStorage.removeItem('cmp_access_token');
+    logout();
     setScreen('login');
   };
 

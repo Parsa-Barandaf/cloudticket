@@ -18,6 +18,7 @@ export interface ApiUser {
   isCustomer: boolean;
   departmentId?: string;
   customRoleId?: string;
+  portalType?: string;
   createdAt: string;
   updatedAt: string;
 }

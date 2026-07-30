@@ -26,6 +26,14 @@ export const REGISTER_MUTATION = `
   }
 `;
 
+export const GET_CURRENT_USER = `
+  query Me {
+    me {
+      id email name role customRoleId portalType
+    }
+  }
+`;
+
 export const UPDATE_TICKET_STATUS = `
   mutation UpdateTicketStatus($input: UpdateTicketStatusInput!) {
     updateTicketStatus(input: $input) {
