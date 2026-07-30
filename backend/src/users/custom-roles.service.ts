@@ -19,6 +19,7 @@ export class CustomRolesService {
       data: {
         name: input.name,
         description: input.description,
+        portalType: input.portalType ?? 'support',
         permissions: input.permissions,
       },
     });
@@ -30,6 +31,7 @@ export class CustomRolesService {
       data: {
         ...(input.name !== undefined && { name: input.name }),
         ...(input.description !== undefined && { description: input.description }),
+        ...(input.portalType !== undefined && { portalType: input.portalType }),
         ...(input.permissions !== undefined && { permissions: input.permissions }),
       },
     });

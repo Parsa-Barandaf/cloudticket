@@ -37,6 +37,7 @@ export interface ApiCustomRole {
   id: string;
   name: string;
   description?: string;
+  portalType?: string;
   permissions: string;
   createdAt: string;
   updatedAt: string;

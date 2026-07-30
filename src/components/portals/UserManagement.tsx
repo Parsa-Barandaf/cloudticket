@@ -70,6 +70,7 @@ interface RoleItem {
   name: string;
   userCount: number;
   description: string;
+  portalType: string;
   permissions: { [key: string]: string[] }; // category: string[] of permission types
 }
 
@@ -144,6 +145,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   // Active role selected for Matrix editing
   const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<string>('');
   const [matrixSearchQuery, setMatrixSearchQuery] = useState<string>('');
+  const [pendingPortalType, setPendingPortalType] = useState<'support' | 'management' | null>(null);
 
   // Map API roles to local RoleItem format (with parsed permissions)
   const roles = useMemo(() => {
@@ -152,6 +154,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
       name: r.name,
       userCount: apiUsers.filter(u => u.customRoleId === r.id).length,
       description: r.description || '',
+      portalType: r.portalType || 'support',
       permissions: (() => {
         try { return JSON.parse(r.permissions); } catch { return {}; }
       })(),
@@ -443,7 +446,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const handleSelectAllMatrix = async () => {
     if (!currentRoleMatrix) return;
     const allTypes = ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'];
-    const categories = ['Dashboard', 'Products', 'Customers', 'Tickets', 'Users', 'Reports', 'Settings'];
+    const isSupport = currentRoleMatrix.portalType === 'support';
+    const categories = isSupport
+      ? ['Tickets']
+      : ['Dashboard', 'Products', 'Customers', 'Tickets', 'Users', 'Reports', 'Settings'];
     const newPerms: { [key: string]: string[] } = {};
     categories.forEach(cat => { newPerms[cat] = allTypes; });
     try {
@@ -1264,6 +1270,41 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     </div>
                   </div>
 
+                  {/* Portal Type Selector */}
+                  <div className="flex items-center gap-3 py-1">
+                    <span className="text-[11px] font-black text-slate-600 dark:text-slate-300">نوع پرتال:</span>
+                    <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5">
+                      <button
+                        onClick={() => {
+                          if (!selectedRoleForMatrix || currentRoleMatrix?.portalType === 'support') return;
+                          setPendingPortalType('support');
+                        }}
+                        className={`px-3.5 py-1.5 text-[10px] font-black rounded-xl transition-all cursor-pointer ${
+                          currentRoleMatrix?.portalType === 'support'
+                            ? 'bg-brand-600 text-white shadow-xs'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <Headphones className="w-3.5 h-3.5 inline-block ml-1" />
+                        پشتیبانی
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!selectedRoleForMatrix || currentRoleMatrix?.portalType === 'management') return;
+                          setPendingPortalType('management');
+                        }}
+                        className={`px-3.5 py-1.5 text-[10px] font-black rounded-xl transition-all cursor-pointer ${
+                          currentRoleMatrix?.portalType === 'management'
+                            ? 'bg-brand-600 text-white shadow-xs'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <Settings className="w-3.5 h-3.5 inline-block ml-1" />
+                        مدیریت
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Search Permissions inside Matrix */}
                   <div className="relative">
                     <Search className="absolute right-3 top-2 w-3.5 h-3.5 text-slate-400" />
@@ -1300,7 +1341,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                           { key: 'Users', name: 'کاربران و سازمان (Users)', desc: 'مدیریت کاربران، نقش‌های RBAC و تیم‌ها' },
                           { key: 'Reports', name: 'گزارش‌دهی و آمار (Reports)', desc: 'دریافت خروجی گزارش‌های عملکردی و مالی' },
                           { key: 'Settings', name: 'تنظیمات کلی سامانه (Settings)', desc: 'پیکربندی گره‌ها، وب‌هوک و امنیت پیشرفته' }
-                        ].filter(item => 
+                        ].filter(item => {
+                          if (currentRoleMatrix?.portalType === 'support') return item.key === 'Tickets';
+                          return true;
+                        }).filter(item => 
                           item.name.toLowerCase().includes(matrixSearchQuery.toLowerCase()) || 
                           item.key.toLowerCase().includes(matrixSearchQuery.toLowerCase())
                         ).map((category) => {
@@ -2211,6 +2255,54 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   }`}
                 >
                   تایید و اعمال نهایی
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PORTAL TYPE CHANGE CONFIRMATION */}
+      <AnimatePresence>
+        {pendingPortalType && (
+          <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 w-full max-w-md shadow-2xl text-right"
+            >
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/20 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">تغییر نوع پرتال نقش</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">نقش: {currentRoleMatrix?.name}</p>
+                </div>
+              </div>
+
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 leading-relaxed mb-5">
+                با این تغییر، نقش <b className="text-slate-800 dark:text-slate-200">«{currentRoleMatrix?.name}»</b> به پرتال <b className="text-brand-600 dark:text-brand-400">{pendingPortalType === 'support' ? 'پشتیبانی' : 'مدیریت'}</b> منتقل می‌شود و کاربران این نقش به پنل مربوطه با دسترسی‌های تعریف شده وارد خواهند شد.
+              </p>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={() => setPendingPortalType(null)}
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-black rounded-xl cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!selectedRoleForMatrix || !pendingPortalType) return;
+                    await updateRole({ id: selectedRoleForMatrix, portalType: pendingPortalType });
+                    setPendingPortalType(null);
+                  }}
+                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black rounded-xl cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  تایید تغییر پرتال
                 </button>
               </div>
             </motion.div>

@@ -54,6 +54,7 @@ input CreateCustomRoleInput {
   description: String
   name: String!
   permissions: String! = "{}"
+  portalType: String = "support"
 }
 
 input CreateCustomerInput {
@@ -121,6 +122,7 @@ type CustomRole {
   id: String!
   name: String!
   permissions: String!
+  portalType: String!
   updatedAt: DateTime!
 }
 
@@ -342,6 +344,7 @@ input UpdateCustomRoleInput {
   id: String!
   name: String
   permissions: String
+  portalType: String
 }
 
 input UpdateCustomerInput {

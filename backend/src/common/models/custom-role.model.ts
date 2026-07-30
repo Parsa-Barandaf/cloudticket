@@ -11,6 +11,9 @@ export class CustomRole {
   @Field({ nullable: true })
   description?: string;
 
+  @Field()
+  portalType: string;
+
   @Field(() => String)
   permissions: string;
 

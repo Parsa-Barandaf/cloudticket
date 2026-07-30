@@ -8,6 +8,9 @@ export class CreateCustomRoleInput {
   @Field({ nullable: true })
   description?: string;
 
+  @Field({ nullable: true, defaultValue: 'support' })
+  portalType?: string;
+
   @Field(() => String, { defaultValue: '{}' })
   permissions: string;
 }
@@ -22,6 +25,9 @@ export class UpdateCustomRoleInput {
 
   @Field({ nullable: true })
   description?: string;
+
+  @Field({ nullable: true })
+  portalType?: string;
 
   @Field(() => String, { nullable: true })
   permissions?: string;

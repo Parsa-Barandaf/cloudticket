@@ -347,7 +347,7 @@ export const GET_CUSTOM_ROLES = `
 export const CREATE_CUSTOM_ROLE = `
   mutation CreateCustomRole($input: CreateCustomRoleInput!) {
     createCustomRole(input: $input) {
-      id name description permissions createdAt updatedAt
+      id name description portalType permissions createdAt updatedAt
     }
   }
 `;
@@ -355,7 +355,7 @@ export const CREATE_CUSTOM_ROLE = `
 export const UPDATE_CUSTOM_ROLE = `
   mutation UpdateCustomRole($input: UpdateCustomRoleInput!) {
     updateCustomRole(input: $input) {
-      id name description permissions createdAt updatedAt
+      id name description portalType permissions createdAt updatedAt
     }
   }
 `;

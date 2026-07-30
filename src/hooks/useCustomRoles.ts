@@ -21,13 +21,13 @@ export function useCustomRoles() {
     }
   }, []);
 
-  const createRole = useCallback(async (input: { name: string; description?: string; permissions?: string }) => {
+  const createRole = useCallback(async (input: { name: string; description?: string; portalType?: string; permissions?: string }) => {
     const data = await gql<{ createCustomRole: ApiCustomRole }>(CREATE_CUSTOM_ROLE, { input });
     setRoles(prev => [data.createCustomRole, ...prev]);
     return data.createCustomRole;
   }, []);
 
-  const updateRole = useCallback(async (input: { id: string; name?: string; description?: string; permissions?: string }) => {
+  const updateRole = useCallback(async (input: { id: string; name?: string; description?: string; portalType?: string; permissions?: string }) => {
     const data = await gql<{ updateCustomRole: ApiCustomRole }>(UPDATE_CUSTOM_ROLE, { input });
     setRoles(prev => prev.map(r => r.id === input.id ? data.updateCustomRole : r));
     return data.updateCustomRole;
