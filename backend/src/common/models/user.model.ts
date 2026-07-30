@@ -43,6 +43,9 @@ export class User {
   @Field({ nullable: true })
   customRoleId?: string;
 
+  @Field({ nullable: true })
+  portalType?: string;
+
   @Field()
   createdAt: Date;
 

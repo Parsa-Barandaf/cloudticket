@@ -12,7 +12,7 @@ export const LOGIN_MUTATION = `
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
       accessToken
-      user { id email name role }
+      user { id email name role customRoleId portalType }
     }
   }
 `;
@@ -21,7 +21,7 @@ export const REGISTER_MUTATION = `
   mutation Register($email: String!, $password: String!, $name: String!) {
     register(email: $email, password: $password, name: $name) {
       accessToken
-      user { id email name role }
+      user { id email name role customRoleId portalType }
     }
   }
 `;

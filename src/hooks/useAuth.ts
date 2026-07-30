@@ -5,7 +5,7 @@ import type { PortalRole } from '../types';
 
 interface LoginResult {
   accessToken: string;
-  user: { id: string; email: string; name: string; role: string };
+  user: { id: string; email: string; name: string; role: string; customRoleId?: string | null; portalType?: string | null };
 }
 
 export function useAuth() {
@@ -23,10 +23,19 @@ export function useAuth() {
       const data = await gql<{ login: LoginResult }>(LOGIN_MUTATION, { email, password });
       localStorage.setItem('cmp_access_token', data.login.accessToken);
       localStorage.setItem('cmp_user_email', data.login.user.email);
-      localStorage.setItem('cmp_portal_role', data.login.user.role.toLowerCase());
 
-      const role = data.login.user.role.toLowerCase() as PortalRole;
-      return { email: data.login.user.email, role };
+      const user = data.login.user;
+      let portalRole: PortalRole;
+      if (user.portalType === 'support') {
+        portalRole = 'agent';
+      } else if (user.portalType === 'management') {
+        portalRole = 'admin';
+      } else {
+        portalRole = user.role.toLowerCase() as PortalRole;
+      }
+      localStorage.setItem('cmp_portal_role', portalRole);
+
+      return { email: user.email, role: portalRole };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'خطا در برقراری ارتباط با سرور';
       setError(message);

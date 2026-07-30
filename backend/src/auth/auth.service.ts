@@ -34,11 +34,18 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private generateToken(user: { id: string; email: string; name: string; role: string }) {
+  private generateToken(user: { id: string; email: string; name: string; role: string; customRoleId?: string | null; customRole?: { portalType: string } | null }) {
     const payload = { sub: user.id, email: user.email };
     return {
       accessToken: this.jwtService.sign(payload),
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        customRoleId: user.customRoleId,
+        portalType: user.customRole?.portalType || null,
+      },
     };
   }
 }

@@ -12,7 +12,7 @@ export class UsersService {
   ) {}
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.prisma.user.findUnique({ where: { email }, include: { customRole: true } });
   }
 
   async findById(id: string) {
