@@ -70,7 +70,9 @@ interface RoleItem {
   name: string;
   userCount: number;
   description: string;
-  portalType: string;
+  isSystem: boolean;
+  scope: string;
+  portalType: string; // 'support' | 'management' | 'customer'
   permissions: { [key: string]: string[] }; // category: string[] of permission types
 }
 
@@ -141,7 +143,6 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
       setFormDataDepartmentId('');
       setFormDataRoleId('');
       setUserType('customer');
-      setFormDataCustomerRole('کاربر');
       setFormErrors({});
       setShowUserDrawer(true);
       onClearInitialCustomerCompany?.();
@@ -151,35 +152,41 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   // Active role selected for Matrix editing
   const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<string>('');
   const [matrixSearchQuery, setMatrixSearchQuery] = useState<string>('');
-  const [pendingPortalType, setPendingPortalType] = useState<'support' | 'management' | null>(null);
+  const [pendingPortalType, setPendingPortalType] = useState<'support' | 'management' | 'customer' | null>(null);
   const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleDesc, setNewRoleDesc] = useState('');
 
   // Map API roles to local RoleItem format
   const roles = useMemo(() => {
-    return apiRoles.map(r => ({
-      id: r.id,
-      name: r.name,
-      userCount: r._count?.userRoles ?? 0,
-      description: r.description || '',
-      portalType: (r.portals?.some(p => p.portal.key === 'support') ? 'support'
-        : r.portals?.some(p => p.portal.key === 'main') ? 'management'
-        : 'support'),
-      permissions: (() => {
-        const perms: { [key: string]: string[] } = {};
-        for (const rp of r.rolePermissions ?? []) {
-          const key = rp.permission?.key || '';
-          const [module, action] = key.split(':');
-          if (!module || !action) continue;
-          const category = module.charAt(0).toUpperCase() + module.slice(1);
-          const label = action.charAt(0).toUpperCase() + action.slice(1);
-          if (!perms[category]) perms[category] = [];
-          if (!perms[category].includes(label)) perms[category].push(label);
-        }
-        return perms;
-      })(),
-    }));
+    return apiRoles.map(r => {
+      const portalKeys = (r.portals ?? []).map(p => p.portal.key);
+      return {
+        id: r.id,
+        name: r.name,
+        userCount: r._count?.userRoles ?? 0,
+        description: r.description || '',
+        isSystem: r.isSystem,
+        scope: r.scope,
+        portalType: (portalKeys.includes('main') ? 'management'
+          : portalKeys.includes('support') ? 'support'
+          : portalKeys.includes('customer') ? 'customer'
+          : 'support'),
+        permissions: (() => {
+          const perms: { [key: string]: string[] } = {};
+          for (const rp of r.rolePermissions ?? []) {
+            const key = rp.permission?.key || '';
+            const [module, action] = key.split(':');
+            if (!module || !action) continue;
+            const category = module.charAt(0).toUpperCase() + module.slice(1);
+            const label = action.charAt(0).toUpperCase() + action.slice(1);
+            if (!perms[category]) perms[category] = [];
+            if (!perms[category].includes(label)) perms[category].push(label);
+          }
+          return perms;
+        })(),
+      };
+    });
   }, [apiRoles]);
 
   // Load permissions + portals for the matrix editor
@@ -238,7 +245,6 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const [formDataDepartmentId, setFormDataDepartmentId] = useState('');
   const [formDataRoleId, setFormDataRoleId] = useState('');
   const [userType, setUserType] = useState<'organization' | 'customer'>('organization');
-  const [formDataCustomerRole, setFormDataCustomerRole] = useState('');
   const [formDataAccessLevel, setFormDataAccessLevel] = useState('متوسط');
   const [formDataSendInvite, setFormDataSendInvite] = useState(true);
   const [formDataImmediateActive, setFormDataImmediateActive] = useState(true);
@@ -336,7 +342,6 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     setFormDataDepartmentId('');
     setFormDataRoleId('');
     setUserType('organization');
-    setFormDataCustomerRole('');
     setFormErrors({});
     setShowUserDrawer(true);
   };
@@ -352,7 +357,6 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     setFormDataDepartmentId(user.departmentId || '');
     setFormDataRoleId(user.roleId || '');
     setUserType(user.isCustomer ? 'customer' : 'organization');
-    setFormDataCustomerRole('');
     setFormErrors({});
     setShowUserDrawer(true);
   };
@@ -381,9 +385,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
           phone: formDataPhone,
           company: userType === 'customer' ? formDataCompany : '',
           isCustomer: userType === 'customer',
-          role: formDataCustomerRole === 'مدیر اصلی' ? 'ADMIN' : formDataCustomerRole === 'کاربر' ? 'CUSTOMER' : undefined,
           departmentId: userType === 'organization' ? formDataDepartmentId || undefined : undefined,
-          roleId: userType === 'organization' ? formDataRoleId || undefined : undefined,
+          roleId: formDataRoleId || undefined,
           active: formDataImmediateActive,
         });
         const newUserItem: UserItem = {
@@ -413,10 +416,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
           phone: formDataPhone,
           company: userType === 'customer' ? formDataCompany : '',
           isCustomer: userType === 'customer',
-          role: formDataCustomerRole === 'مدیر اصلی' ? 'ADMIN' : formDataCustomerRole === 'کاربر' ? 'CUSTOMER' : undefined,
           active: formDataImmediateActive,
           departmentId: userType === 'organization' ? formDataDepartmentId || undefined : undefined,
-          roleId: userType === 'organization' ? formDataRoleId || undefined : undefined,
+          roleId: formDataRoleId || undefined,
         });
         setUsers(prev => prev.map(u => u.id === selectedUserForEdit.id ? {
           ...u,
@@ -444,10 +446,31 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     return roles.find(r => r.id === selectedRoleForMatrix);
   }, [roles, selectedRoleForMatrix]);
 
+  // Portal key used for the selected role's permission matrix
+  const matrixPortalKey = currentRoleMatrix?.portalType === 'management' ? 'main'
+    : currentRoleMatrix?.portalType === 'customer' ? 'customer'
+    : 'support';
+
+  // Categories shown in the matrix, derived from the selected role's portal permissions
+  const matrixCategories = useMemo(() => {
+    const base: { key: string; name: string; desc: string }[] = [
+      { key: 'Dashboard', name: 'میز کار پویا (Dashboard)', desc: 'نمودارها، آمار SLA و جریان‌های لحظه‌ای' },
+      { key: 'Products', name: 'مدیریت محصولات (Products)', desc: 'تعریف محصول، افزودن پکیج و کدهای لایسنس' },
+      { key: 'Customers', name: 'مشتریان و سازمان‌ها (Customers)', desc: 'اطلاعات حقوقی، لایسنس مشتریان و ممیزی' },
+      { key: 'Tickets', name: 'تیکتینگ و گفتگو (Tickets)', desc: 'تبادل پیام، پاسخ رسمی و آپلود پیوست لاگ' },
+      { key: 'Users', name: 'کاربران و سازمان (Users)', desc: 'مدیریت کاربران، نقش‌های RBAC و تیم‌ها' },
+      { key: 'Reports', name: 'گزارش‌دهی و آمار (Reports)', desc: 'دریافت خروجی گزارش‌های عملکردی و مالی' },
+      { key: 'Settings', name: 'تنظیمات کلی سامانه (Settings)', desc: 'پیکربندی گره‌ها، وب‌هوک و امنیت پیشرفته' },
+      { key: 'Profile', name: 'پروفایل مشتری (Profile)', desc: 'مشاهده و ویرایش پروفایل کاربر مشتری' },
+    ];
+    const portalId = apiPortals.find(p => p.key === matrixPortalKey)?.id;
+    const modules = new Set(apiPermissions.filter(p => p.portalId === portalId).map(p => p.module));
+    return base.filter(c => modules.has(c.key));
+  }, [apiPermissions, apiPortals, matrixPortalKey]);
+
   // Helper: permission id for a matrix cell (module + action) in the role's portal
   const permIdForCell = (category: string, type: string) => {
-    const portalKey = currentRoleMatrix?.portalType === 'support' ? 'support' : 'main';
-    const portalId = apiPortals.find(p => p.key === portalKey)?.id;
+    const portalId = apiPortals.find(p => p.key === matrixPortalKey)?.id;
     const key = `${category.toLowerCase()}:${type.toLowerCase()}`;
     return apiPermissions.find(p => p.key === key && p.portalId === portalId)?.id;
   };
@@ -458,8 +481,16 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     return new Set((role?.rolePermissions ?? []).map(rp => rp.permissionId));
   }, [apiRoles, selectedRoleForMatrix]);
 
+  // Guard: system roles (Super Admin, Customer Admin) are immutable — show a toast on attempts
+  const guardImmutableRole = (): boolean => {
+    if (!currentRoleMatrix?.isSystem) return false;
+    showCustomerToast('این نقش سیستمی است و قابل تغییر یا حذف نیست.', 'error');
+    return true;
+  };
+
   const handleTogglePermission = async (category: string, type: string) => {
     if (!selectedRoleForMatrix) return;
+    if (guardImmutableRole()) return;
     const pid = permIdForCell(category, type);
     if (!pid) return;
     const next = new Set(currentRolePermissionIds);
@@ -473,8 +504,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
 
   const handleSelectAllCategoryPermissions = async (category: string) => {
     if (!selectedRoleForMatrix) return;
-    const portalKey = currentRoleMatrix?.portalType === 'support' ? 'support' : 'main';
-    const portalId = apiPortals.find(p => p.key === portalKey)?.id;
+    if (guardImmutableRole()) return;
+    const portalId = apiPortals.find(p => p.key === matrixPortalKey)?.id;
     const catPerms = apiPermissions.filter(p => p.module === category && p.portalId === portalId);
     if (catPerms.length === 0) return;
     const allSelected = catPerms.every(p => currentRolePermissionIds.has(p.id));
@@ -495,8 +526,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
 
   const handleSelectAllMatrix = async () => {
     if (!selectedRoleForMatrix) return;
-    const portalKey = currentRoleMatrix?.portalType === 'support' ? 'support' : 'main';
-    const portalId = apiPortals.find(p => p.key === portalKey)?.id;
+    if (guardImmutableRole()) return;
+    const portalId = apiPortals.find(p => p.key === matrixPortalKey)?.id;
     const allIds = apiPermissions.filter(p => p.portalId === portalId).map(p => p.id);
     try {
       await updateRole({ id: selectedRoleForMatrix, permissionIds: allIds });
@@ -508,6 +539,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
 
   const handleClearAllMatrix = async () => {
     if (!selectedRoleForMatrix) return;
+    if (guardImmutableRole()) return;
     try {
       await updateRole({ id: selectedRoleForMatrix, permissionIds: [] });
       showCustomerToast('کلیه دسترسی‌های ماتریس برای این نقش پاکسازی شد.', 'success');
@@ -517,6 +549,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   };
 
   const handleDuplicateRole = async (role: RoleItem) => {
+    if (role.isSystem) {
+      showCustomerToast('نقش‌های سیستمی قابل تکثیر نیستند.', 'error');
+      return;
+    }
     try {
       const src = apiRoles.find(r => r.id === role.id);
       const newRole = await createRole({
@@ -535,6 +571,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const handleDeleteRole = (roleId: string) => {
     const role = roles.find(r => r.id === roleId);
     if (!role) return;
+    if (role.isSystem) {
+      showCustomerToast('این نقش سیستمی است و قابل حذف نیست.', 'error');
+      return;
+    }
     if (role.userCount > 0) {
       setShowConfirmModal({
         show: true,
@@ -1249,6 +1289,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                               </button>
                               <button
                                 onClick={async () => {
+                                  if (role.isSystem) {
+                                    showCustomerToast('نقش‌های سیستمی قابل ویرایش نیستند.', 'error');
+                                    return;
+                                  }
                                   const dsc = prompt('توضیحات جدید نقش را وارد کنید:', role.description);
                                   if (dsc) {
                                     try {
@@ -1264,7 +1308,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
-                              {role.id !== 'role-super-admin' && (
+                              {!role.isSystem && (
                                 <button
                                   onClick={() => handleDeleteRole(role.id)}
                                   className="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-md text-slate-400 hover:text-rose-600 transition-colors"
@@ -1319,6 +1363,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       <button
                         onClick={() => {
                           if (!selectedRoleForMatrix || currentRoleMatrix?.portalType === 'support') return;
+                          if (guardImmutableRole()) return;
                           setPendingPortalType('support');
                         }}
                         className={`px-3.5 py-1.5 text-[10px] font-black rounded-xl transition-all cursor-pointer ${
@@ -1333,6 +1378,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       <button
                         onClick={() => {
                           if (!selectedRoleForMatrix || currentRoleMatrix?.portalType === 'management') return;
+                          if (guardImmutableRole()) return;
                           setPendingPortalType('management');
                         }}
                         className={`px-3.5 py-1.5 text-[10px] font-black rounded-xl transition-all cursor-pointer ${
@@ -1343,6 +1389,21 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       >
                         <Settings className="w-3.5 h-3.5 inline-block ml-1" />
                         مدیریت
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!selectedRoleForMatrix || currentRoleMatrix?.portalType === 'customer') return;
+                          if (guardImmutableRole()) return;
+                          setPendingPortalType('customer');
+                        }}
+                        className={`px-3.5 py-1.5 text-[10px] font-black rounded-xl transition-all cursor-pointer ${
+                          currentRoleMatrix?.portalType === 'customer'
+                            ? 'bg-brand-600 text-white shadow-xs'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <Users className="w-3.5 h-3.5 inline-block ml-1" />
+                        مشتریان
                       </button>
                     </div>
                   </div>
@@ -1375,21 +1436,11 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {[
-                          { key: 'Dashboard', name: 'میز کار پویا (Dashboard)', desc: 'نمودارها، آمار SLA و جریان‌های لحظه‌ای' },
-                          { key: 'Products', name: 'مدیریت محصولات (Products)', desc: 'تعریف محصول، افزودن پکیج و کدهای لایسنس' },
-                          { key: 'Customers', name: 'مشتریان و سازمان‌ها (Customers)', desc: 'اطلاعات حقوقی، لایسنس مشتریان و ممیزی' },
-                          { key: 'Tickets', name: 'تیکتینگ و گفتگو (Tickets)', desc: 'تبادل پیام، پاسخ رسمی و آپلود پیوست لاگ' },
-                          { key: 'Users', name: 'کاربران و سازمان (Users)', desc: 'مدیریت کاربران، نقش‌های RBAC و تیم‌ها' },
-                          { key: 'Reports', name: 'گزارش‌دهی و آمار (Reports)', desc: 'دریافت خروجی گزارش‌های عملکردی و مالی' },
-                          { key: 'Settings', name: 'تنظیمات کلی سامانه (Settings)', desc: 'پیکربندی گره‌ها، وب‌هوک و امنیت پیشرفته' }
-                        ].filter(item => {
-                          if (currentRoleMatrix?.portalType === 'support') return item.key === 'Tickets';
-                          return true;
-                        }).filter(item => 
-                          item.name.toLowerCase().includes(matrixSearchQuery.toLowerCase()) || 
-                          item.key.toLowerCase().includes(matrixSearchQuery.toLowerCase())
-                        ).map((category) => {
+                        {matrixCategories
+                          .filter(item => 
+                            item.name.toLowerCase().includes(matrixSearchQuery.toLowerCase()) || 
+                            item.key.toLowerCase().includes(matrixSearchQuery.toLowerCase())
+                          ).map((category) => {
                           const activePermissions = currentRoleMatrix?.permissions[category.key] || [];
                           
                           return (
@@ -1776,18 +1827,19 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                             </select>
                           </div>
 
-                          {/* Customer role selection (predefined) */}
+                          {/* Customer role selection (from customer-scope RBAC roles) */}
                           <div className="space-y-1 col-span-1">
                             <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش کاربری</label>
                             <select
-                              value={formDataCustomerRole}
-                              onChange={(e) => setFormDataCustomerRole(e.target.value)}
+                              value={formDataRoleId}
+                              onChange={(e) => setFormDataRoleId(e.target.value)}
                               className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                               style={{ colorScheme: 'dark' }}
                             >
                               <option className='dark:bg-slate-700' value="">انتخاب نقش</option>
-                              <option className='dark:bg-slate-700' value="مدیر اصلی">مدیر اصلی</option>
-                              <option className='dark:bg-slate-700' value="کاربر">کاربر</option>
+                              {apiRoles.filter(r => r.scope === 'customer').map(r => (
+                                <option className='dark:bg-slate-700' key={r.id} value={r.id}>{r.name}</option>
+                              ))}
                             </select>
                           </div>
                         </>
@@ -2325,7 +2377,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
               </div>
 
               <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 leading-relaxed mb-5">
-                با این تغییر، نقش <b className="text-slate-800 dark:text-slate-200">«{currentRoleMatrix?.name}»</b> به پرتال <b className="text-brand-600 dark:text-brand-400">{pendingPortalType === 'support' ? 'پشتیبانی' : 'مدیریت'}</b> منتقل می‌شود و کاربران این نقش به پنل مربوطه با دسترسی‌های تعریف شده وارد خواهند شد.
+                با این تغییر، نقش <b className="text-slate-800 dark:text-slate-200">«{currentRoleMatrix?.name}»</b> به پرتال <b className="text-brand-600 dark:text-brand-400">{pendingPortalType === 'support' ? 'پشتیبانی' : pendingPortalType === 'customer' ? 'مشتریان' : 'مدیریت'}</b> منتقل می‌شود و کاربران این نقش به پنل مربوطه با دسترسی‌های تعریف شده وارد خواهند شد.
               </p>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -2338,7 +2390,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                 <button
                   onClick={async () => {
                     if (!selectedRoleForMatrix || !pendingPortalType) return;
-                    const portalKey = pendingPortalType === 'support' ? 'support' : 'main';
+                    const portalKey = pendingPortalType === 'support' ? 'support'
+                      : pendingPortalType === 'customer' ? 'customer'
+                      : 'main';
                     const portalId = apiPortals.find(p => p.key === portalKey)?.id;
                     await updateRole({ id: selectedRoleForMatrix, portalIds: portalId ? [portalId] : [] });
                     setPendingPortalType(null);

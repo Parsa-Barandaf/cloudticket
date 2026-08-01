@@ -152,13 +152,20 @@ export class UsersService {
 
     let newRoleId: string | null = null;
 
-    if (isCustomer) {
+    if (roleId) {
+      const roleRow = await this.prisma.role.findUnique({ where: { id: roleId } });
+      if (roleRow) {
+        const scopeMatches = roleRow.scope === 'customer'
+          ? isCustomer
+          : !isCustomer;
+        if (scopeMatches) newRoleId = roleRow.id;
+      }
+    }
+
+    if (!newRoleId && isCustomer) {
       const roleName = role === 'ADMIN' ? 'Customer Admin' : 'Customer User';
       const customerRole = await this.prisma.role.findUnique({ where: { id: roleName === 'Customer Admin' ? 'role-customer-admin' : 'role-customer-user' } });
       newRoleId = customerRole?.id ?? null;
-    } else if (roleId) {
-      const roleRow = await this.prisma.role.findUnique({ where: { id: roleId } });
-      if (roleRow) newRoleId = roleRow.id;
     }
 
     for (const oldId of oldRoleIds) {

@@ -129,7 +129,7 @@ async function main() {
   const customerAdminRole = await prisma.role.upsert({
     where: { id: 'role-customer-admin' },
     update: {},
-    create: { id: 'role-customer-admin', name: 'Customer Admin', description: 'مدیر سازمان مشتری', isEditable: false, isSystem: false, scope: 'customer' },
+    create: { id: 'role-customer-admin', name: 'Customer Admin', description: 'مدیر سازمان مشتری', isEditable: false, isSystem: true, scope: 'customer' },
   });
   const customerUserRole = await prisma.role.upsert({
     where: { id: 'role-customer-user' },

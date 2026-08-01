@@ -62,7 +62,7 @@ export class RolesService {
   async updateRole(input: UpdateRoleInput) {
     const existing = await this.prisma.role.findUnique({ where: { id: input.id } });
     if (!existing) throw new NotFoundException('Role not found');
-    if (!existing.isEditable) throw new BadRequestException('This role cannot be edited');
+    if (existing.isSystem) throw new BadRequestException('System roles cannot be modified');
 
     await this.prisma.role.update({
       where: { id: input.id },
@@ -81,39 +81,45 @@ export class RolesService {
 
   /**
    * Keeps Role<->Portal and Role<->Permission consistent.
-   * Rule 1: explicit portals always win; permissions whose portal is not selected are dropped.
-   * Rule 2: if only permissions are provided (no explicit portals), their portals are auto-added.
+   * - portalIds provided (and no permissionIds): portals are set and existing
+   *   permissions outside those portals are dropped.
+   * - permissionIds provided (and no portalIds): permissions are set, portals untouched.
+   * - both provided: portals set, permissions filtered to the selected portals.
    */
   private async syncRoleAccess(roleId: string, portalIds?: string[], permissionIds?: string[]) {
-    const portalSet = new Set<string>();
-    if (portalIds?.length) portalIds.forEach(p => portalSet.add(p));
+    const portalSet = portalIds !== undefined ? new Set(portalIds) : null;
 
-    let permissionPortalMap = new Map<string, string>();
+    if (portalIds !== undefined) {
+      await this.prisma.rolePortal.deleteMany({ where: { roleId } });
+      if (portalIds.length > 0) {
+        await this.prisma.rolePortal.createMany({
+          data: portalIds.map(portalId => ({ roleId, portalId })),
+        });
+      }
+    }
+
+    let nextPermIds: string[] | null = null;
     if (permissionIds !== undefined) {
-      if (permissionIds.length > 0) {
+      nextPermIds = permissionIds;
+      if (portalSet && portalSet.size > 0) {
         const perms = await this.prisma.permission.findMany({ where: { id: { in: permissionIds } } });
-        for (const p of perms) permissionPortalMap.set(p.id, p.portalId);
+        nextPermIds = perms.filter(p => portalSet.has(p.portalId)).map(p => p.id);
       }
-      if (portalSet.size === 0) {
-        for (const portalId of permissionPortalMap.values()) portalSet.add(portalId);
-      }
-    }
-
-    await this.prisma.rolePortal.deleteMany({ where: { roleId } });
-    if (portalSet.size > 0) {
-      await this.prisma.rolePortal.createMany({
-        data: Array.from(portalSet).map(portalId => ({ roleId, portalId })),
+    } else if (portalSet) {
+      const current = await this.prisma.rolePermission.findMany({
+        where: { roleId },
+        include: { permission: true },
       });
+      nextPermIds = current
+        .filter(rp => portalSet.has(rp.permission.portalId))
+        .map(rp => rp.permissionId);
     }
 
-    if (permissionIds !== undefined) {
+    if (nextPermIds !== null) {
       await this.prisma.rolePermission.deleteMany({ where: { roleId } });
-      const kept = Array.from(permissionPortalMap.entries())
-        .filter(([, pid]) => portalSet.has(pid))
-        .map(([permissionId]) => permissionId);
-      if (kept.length > 0) {
+      if (nextPermIds.length > 0) {
         await this.prisma.rolePermission.createMany({
-          data: kept.map(permissionId => ({ roleId, permissionId })),
+          data: nextPermIds.map(permissionId => ({ roleId, permissionId })),
         });
       }
     }
@@ -122,7 +128,7 @@ export class RolesService {
   async deleteRole(id: string, reassignRoleId?: string) {
     const role = await this.prisma.role.findUnique({ where: { id } });
     if (!role) throw new NotFoundException('Role not found');
-    if (!role.isEditable) throw new BadRequestException('This role cannot be deleted');
+    if (role.isSystem) throw new BadRequestException('System roles cannot be deleted');
 
     if (reassignRoleId) {
       const target = await this.prisma.role.findUnique({ where: { id: reassignRoleId } });
@@ -151,6 +157,9 @@ export class RolesService {
 
     if (role.scope === 'customer' && !user.isCustomer) {
       throw new BadRequestException('Customer roles can only be assigned to customer users');
+    }
+    if (role.scope !== 'customer' && user.isCustomer) {
+      throw new BadRequestException('Internal roles cannot be assigned to customer users');
     }
 
     await this.prisma.userRoleAssignment.upsert({
