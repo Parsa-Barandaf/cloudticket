@@ -220,11 +220,15 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const { products: apiProducts, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { customers: apiCustomers, loading: customersLoading, refetch: refetchCustomers } = useCustomers();
   const { users: apiUsers } = useUsers();
-  const { activities, loading: activitiesLoading, error: activitiesError, refetch: refetchActivities } = useActivities(10);
+  const { activities, loading: activitiesLoading, error: activitiesError, refetch: refetchActivities } = useActivities(50);
   useEffect(() => { if (activeTab === 'dashboard') refetchActivities(); }, [activeTab, refetchActivities]);
   useEffect(() => { if (apiTickets.length) setTickets(apiTickets); }, [apiTickets]);
   useEffect(() => { if (apiProducts.length) setProducts(apiProducts); }, [apiProducts]);
   useEffect(() => { if (apiCustomers.length) setCustomers(apiCustomers); }, [apiCustomers]);
+
+  // Count selectors for dashboard "recent" sections
+  const [recentTicketsLimit, setRecentTicketsLimit] = useState(5);
+  const [recentActivitiesLimit, setRecentActivitiesLimit] = useState(5);
 
   // Access requests state
   const [pendingRequests, setPendingRequests] = useState<ApiAccessRequest[]>([]);
@@ -1527,19 +1531,32 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                         <Inbox className="w-5 h-5 text-brand-500" />
                         <h3 className="text-sm font-bold text-slate-950 dark:text-white">آخرین تیکت‌ها</h3>
                       </div>
-                      <button 
-                        onClick={() => setActiveTab('tickets')}
-                        className="text-xs text-brand-500 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>مشاهده همه</span>
-                        <ChevronLeft className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={recentTicketsLimit}
+                          onChange={(e) => setRecentTicketsLimit(Number(e.target.value))}
+                          className="text-[10px] font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                          style={{ colorScheme: 'dark' }}
+                          title="تعداد تیکت‌های نمایش داده شده"
+                        >
+                          {[5, 10, 20, 50].map(n => (
+                            <option className="dark:bg-slate-800" key={n} value={n}>آخرین {n} تیکت</option>
+                          ))}
+                        </select>
+                        <button 
+                          onClick={() => setActiveTab('tickets')}
+                          className="text-xs text-brand-500 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>مشاهده همه</span>
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-auto max-h-[420px]">
                       <table className="w-full text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-[10px] font-bold">
+                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-[10px] font-bold sticky top-0 bg-white dark:bg-slate-900">
                             <th className="p-4 pr-5">موضوع تیکت</th>
                             <th className="p-4">مشتری</th>
                             <th className="p-4">اولویت</th>
@@ -1548,7 +1565,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
-                          {tickets.slice(0, 4).map((ticket) => (
+                          {tickets.slice(0, recentTicketsLimit).map((ticket) => (
                             <tr 
                               key={ticket.id} 
                               className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 text-xs text-slate-700 dark:text-slate-300 transition-colors"
@@ -1591,13 +1608,26 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
                   {/* Column 2 (1/3 width on desktop): RECENT ACTIVITY TIMELINE */}
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs p-5 flex flex-col">
-                    <div className="flex items-center gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-                      <Activity className="w-5 h-5 text-indigo-500" />
-                      <h3 className="text-sm font-bold text-slate-950 dark:text-white">فعالیت‌های اخیر</h3>
+                    <div className="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-indigo-500" />
+                        <h3 className="text-sm font-bold text-slate-950 dark:text-white">فعالیت‌های اخیر</h3>
+                      </div>
+                      <select
+                        value={recentActivitiesLimit}
+                        onChange={(e) => setRecentActivitiesLimit(Number(e.target.value))}
+                        className="text-[10px] font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                        style={{ colorScheme: 'dark' }}
+                        title="تعداد فعالیت‌های نمایش داده شده"
+                      >
+                        {[5, 10, 20, 50].map(n => (
+                          <option className="dark:bg-slate-800" key={n} value={n}>آخرین {n} فعالیت</option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Timeline items */}
-                    <div className="flex-1 space-y-5 relative">
+                    <div className="flex-1 space-y-5 relative overflow-y-auto max-h-[420px] pr-1">
                       {/* Left vertical timeline pipe */}
                       <div className="absolute right-3.5 top-1 bottom-1 w-[1.5px] bg-slate-100 dark:bg-slate-800" />
 
@@ -1618,7 +1648,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                           <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">فعالیت‌هایی مانند ثبت تیکت، افزودن محصول و ایجاد مشتری در این بخش نمایش داده می‌شود.</p>
                         </div>
                       ) : (
-                        activities.map((act) => (
+                        activities.slice(0, recentActivitiesLimit).map((act) => (
                         <div key={act.id} className="flex gap-4 relative z-10 text-right">
                           <div className={`w-7.5 h-7.5 rounded-full flex items-center justify-center shrink-0 ${
                             act.type === 'ticket' ? 'bg-blue-500/10 text-blue-500' :

@@ -21,7 +21,7 @@ import {
   Trash2, 
   UserX, 
   Key, 
-  Check, 
+  Check,
   X, 
   Mail, 
   Phone, 
@@ -36,6 +36,8 @@ import {
   CheckCircle2,
   Lock,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Sparkles,
   Info,
   Headphones,
@@ -84,6 +86,64 @@ interface TeamItem {
   icon: string;
   color: string;
   assignedProducts: string[];
+}
+
+interface PaginationFooterProps {
+  total: number;
+  perPage: number;
+  page: number;
+  totalPages: number;
+  onPerPageChange: (n: number) => void;
+  onPageChange: (n: number) => void;
+}
+
+function PaginationFooter({ total, perPage, page, totalPages, onPerPageChange, onPageChange }: PaginationFooterProps) {
+  const start = total === 0 ? 0 : (page - 1) * perPage + 1;
+  const end = Math.min(page * perPage, total);
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">نمایش هر صفحه:</span>
+        <select
+          value={perPage}
+          onChange={(e) => { onPerPageChange(Number(e.target.value)); onPageChange(1); }}
+          className="text-xs font-bold px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
+          style={{ colorScheme: 'dark' }}
+        >
+          {[5, 10, 20, 50].map(n => (
+            <option className="dark:bg-slate-800" key={n} value={n}>{n} مورد</option>
+          ))}
+        </select>
+        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+          نمایش {start} تا {end} از <b className="text-slate-700 dark:text-slate-200">{total}</b> مورد
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(Math.max(page - 1, 1))}
+          disabled={page <= 1}
+          className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
+          title="صفحه قبل"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+
+        <div className="text-[11px] font-mono px-2">
+          صفحه <span className="text-slate-900 dark:text-white font-extrabold">{page}</span> از <span className="text-slate-400">{totalPages}</span>
+        </div>
+
+        <button
+          onClick={() => onPageChange(Math.min(page + 1, totalPages))}
+          disabled={page >= totalPages}
+          className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer transition-colors"
+          title="صفحه بعد"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function UserManagementView({ showCustomerToast, initialCustomerCompany, onClearInitialCustomerCompany }: { showCustomerToast: (msg: string, type?: 'success' | 'error') => void; initialCustomerCompany?: string; onClearInitialCustomerCompany?: () => void }) {
@@ -312,6 +372,18 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
       return matchesSearch && matchesRole && matchesTeam && matchesStatus && matchesLastLogin;
     });
   }, [users, userSearch, filterRole, filterTeam, filterStatus, filterLastLogin, userTypeTab]);
+
+  // Pagination state for the users table
+  const [usersPerPage, setUsersPerPage] = useState(10);
+  const [usersPage, setUsersPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / usersPerPage));
+  const safeUsersPage = Math.min(usersPage, totalPages);
+  const paginatedUsers = useMemo(() => {
+    return filteredUsers.slice((safeUsersPage - 1) * usersPerPage, safeUsersPage * usersPerPage);
+  }, [filteredUsers, safeUsersPage, usersPerPage]);
+  useEffect(() => {
+    if (usersPage > totalPages) setUsersPage(totalPages);
+  }, [usersPage, totalPages]);
 
   const handleResetFilters = () => {
     setUserSearch('');
@@ -999,7 +1071,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {filteredUsers.map((user) => (
+                      {paginatedUsers.map((user) => (
                         <tr 
                           key={user.id}
                           className="hover:bg-slate-50/[0.3] dark:hover:bg-slate-950/[0.15] transition-colors"
@@ -1103,6 +1175,14 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   </table>
                 </div>
               </div>
+              <PaginationFooter
+                total={filteredUsers.length}
+                perPage={usersPerPage}
+                page={safeUsersPage}
+                totalPages={totalPages}
+                onPerPageChange={setUsersPerPage}
+                onPageChange={setUsersPage}
+              />
             </>
             ) : (
               /* ─── Customers Table (no team column, no badge) ─── */
@@ -1123,7 +1203,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {filteredUsers.map((user) => (
+                      {paginatedUsers.map((user) => (
                         <tr 
                           key={user.id}
                           className="hover:bg-slate-50/[0.3] dark:hover:bg-slate-950/[0.15] transition-colors"
@@ -1212,6 +1292,14 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   </table>
                 </div>
               </div>
+              <PaginationFooter
+                total={filteredUsers.length}
+                perPage={usersPerPage}
+                page={safeUsersPage}
+                totalPages={totalPages}
+                onPerPageChange={setUsersPerPage}
+                onPageChange={setUsersPage}
+              />
             </>
             )}
           </motion.div>
