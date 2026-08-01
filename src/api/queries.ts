@@ -12,7 +12,9 @@ export const LOGIN_MUTATION = `
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
       accessToken
-      user { id email name role customRoleId portalType }
+      accessiblePortals
+      permissions
+      user { id email name role isCustomer }
     }
   }
 `;
@@ -21,7 +23,9 @@ export const REGISTER_MUTATION = `
   mutation Register($email: String!, $password: String!, $name: String!) {
     register(email: $email, password: $password, name: $name) {
       accessToken
-      user { id email name role customRoleId portalType }
+      accessiblePortals
+      permissions
+      user { id email name role isCustomer }
     }
   }
 `;
@@ -29,7 +33,9 @@ export const REGISTER_MUTATION = `
 export const GET_CURRENT_USER = `
   query Me {
     me {
-      id email name role customRoleId portalType
+      accessiblePortals
+      permissions
+      user { id email name role isCustomer }
     }
   }
 `;
@@ -282,31 +288,29 @@ export const REJECT_ACCESS_REQUEST = `
 `;
 
 // ── Users ──
+const USER_FIELDS = `id email name role active phone company isCustomer departmentId createdAt updatedAt userRoles { id name }`;
+
 export const GET_USERS = `
   query Users {
-    users { id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt }
+    users { ${USER_FIELDS} }
   }
 `;
 
 export const GET_USERS_BY_COMPANY = `
   query UsersByCompany($company: String!) {
-    usersByCompany(company: $company) { id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt }
+    usersByCompany(company: $company) { ${USER_FIELDS} }
   }
 `;
 
 export const CREATE_USER = `
   mutation CreateUser($input: CreateUserInput!) {
-    createUser(input: $input) {
-      id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt
-    }
+    createUser(input: $input) { ${USER_FIELDS} }
   }
 `;
 
 export const UPDATE_USER = `
   mutation UpdateUser($input: UpdateUserInput!) {
-    updateUser(input: $input) {
-      id email name role active phone company isCustomer departmentId customRoleId createdAt updatedAt
-    }
+    updateUser(input: $input) { ${USER_FIELDS} }
   }
 `;
 
@@ -345,31 +349,77 @@ export const DELETE_DEPARTMENT = `
   }
 `;
 
-// ── Custom Roles ──
-export const GET_CUSTOM_ROLES = `
-  query CustomRoles {
-    customRoles { id name description permissions createdAt updatedAt }
+// ── New RBAC ──
+const ROLE_FIELDS = `id name description isEditable isSystem scope orgId createdAt updatedAt _count { userRoles } rolePermissions { permissionId permission { id key module portalId } } portals { portalId portal { id key name } }`;
+
+export const GET_ROLES = `
+  query Roles {
+    roles { ${ROLE_FIELDS} }
   }
 `;
 
-export const CREATE_CUSTOM_ROLE = `
-  mutation CreateCustomRole($input: CreateCustomRoleInput!) {
-    createCustomRole(input: $input) {
-      id name description portalType permissions createdAt updatedAt
-    }
+export const GET_ROLE = `
+  query Role($id: String!) {
+    role(id: $id) { ${ROLE_FIELDS} }
   }
 `;
 
-export const UPDATE_CUSTOM_ROLE = `
-  mutation UpdateCustomRole($input: UpdateCustomRoleInput!) {
-    updateCustomRole(input: $input) {
-      id name description portalType permissions createdAt updatedAt
-    }
+export const CREATE_ROLE = `
+  mutation CreateRole($input: CreateRoleInput!) {
+    createRole(input: $input) { ${ROLE_FIELDS} }
   }
 `;
 
-export const DELETE_CUSTOM_ROLE = `
-  mutation DeleteCustomRole($input: DeleteCustomRoleInput!) {
-    deleteCustomRole(input: $input)
+export const UPDATE_ROLE = `
+  mutation UpdateRole($input: UpdateRoleInput!) {
+    updateRole(input: $input) { ${ROLE_FIELDS} }
+  }
+`;
+
+export const DELETE_ROLE = `
+  mutation DeleteRole($id: String!, $reassignRoleId: String) {
+    deleteRole(id: $id, reassignRoleId: $reassignRoleId)
+  }
+`;
+
+export const GET_PORTALS = `
+  query Portals {
+    portals { id key name createdAt }
+  }
+`;
+
+export const GET_PERMISSIONS = `
+  query Permissions {
+    permissions { id key module portalId createdAt }
+  }
+`;
+
+export const GET_PERMISSIONS_BY_PORTAL = `
+  query PermissionsByPortal($portalId: String!) {
+    permissionsByPortal(portalId: $portalId) { id key module portalId createdAt }
+  }
+`;
+
+export const GET_USER_ROLES = `
+  query UserRoles($userId: String!) {
+    userRoles(userId: $userId) { ${ROLE_FIELDS} }
+  }
+`;
+
+export const GET_USER_EFFECTIVE_PERMISSIONS = `
+  query UserEffectivePermissions($userId: String!) {
+    userEffectivePermissions(userId: $userId) { accessiblePortals permissions { key module portalKey } }
+  }
+`;
+
+export const ASSIGN_ROLE_TO_USER = `
+  mutation AssignRoleToUser($input: AssignRoleInput!) {
+    assignRoleToUser(input: $input) { ${ROLE_FIELDS} }
+  }
+`;
+
+export const UNASSIGN_ROLE_FROM_USER = `
+  mutation UnassignRoleFromUser($input: UnassignRoleInput!) {
+    unassignRoleFromUser(input: $input) { ${ROLE_FIELDS} }
   }
 `;

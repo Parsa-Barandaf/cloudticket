@@ -1,4 +1,5 @@
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { RoleEntity } from './role.model';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -40,11 +41,8 @@ export class User {
   @Field({ nullable: true })
   departmentId?: string;
 
-  @Field({ nullable: true })
-  customRoleId?: string;
-
-  @Field({ nullable: true })
-  portalType?: string;
+  @Field(() => [RoleEntity], { nullable: true })
+  userRoles?: RoleEntity[];
 
   @Field()
   createdAt: Date;

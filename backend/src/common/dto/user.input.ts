@@ -24,7 +24,7 @@ export class CreateUserInput {
   departmentId?: string;
 
   @Field({ nullable: true })
-  customRoleId?: string;
+  roleId?: string;
 
   @Field({ nullable: true })
   customerId?: string;
@@ -60,7 +60,7 @@ export class UpdateUserInput {
   departmentId?: string;
 
   @Field({ nullable: true })
-  customRoleId?: string;
+  roleId?: string;
 
   @Field({ nullable: true })
   role?: string;

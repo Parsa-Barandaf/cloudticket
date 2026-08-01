@@ -95,7 +95,28 @@ export default function TicketDetailsWorkspace({
   const [isLoadingSkeleton, setIsLoadingSkeleton] = useState(false);
   const [activeMoreMenu, setActiveMoreMenu] = useState(false);
   const [previewFile, setPreviewFile] = useState<{ name: string; type: 'pdf' | 'zip' | 'img'; size: string; url?: string } | null>(null);
-  
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [includeInternalNotes, setIncludeInternalNotes] = useState(false);
+  const [printData, setPrintData] = useState<{
+    ticketNumber: number;
+    title: string;
+    customer: string;
+    product: string;
+    priority: string;
+    status: string;
+    date?: string;
+    assignedTo?: string;
+    messages: { name: string; sender: string; time: string; message: string }[];
+  } | null>(null);
+
+  useEffect(() => {
+    if (printData) {
+      const handler = () => setPrintData(null);
+      window.addEventListener('afterprint', handler);
+      return () => window.removeEventListener('afterprint', handler);
+    }
+  }, [printData]);
+
   // Quick status / agent change states
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showAgentDropdown, setShowAgentDropdown] = useState(false);
@@ -529,7 +550,7 @@ export default function TicketDetailsWorkspace({
                   >
                     <button
                       onClick={() => {
-                        window.print();
+                        setShowPrintModal(true);
                         setActiveMoreMenu(false);
                       }}
                       className="w-full text-right text-xs font-bold px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-between"
@@ -1147,9 +1168,9 @@ export default function TicketDetailsWorkspace({
                 <span>مراحل زمانی تیکت</span>
               </h3>
 
-              <div className="relative border-r-2 border-slate-100 dark:border-slate-800 mr-2.5 space-y-5 pr-4 text-right max-h-64 overflow-y-auto">
-                <div className="relative">
-                  <div className="absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
+              <div className="relative z-0 border-r-2 border-slate-100 dark:border-slate-800 mr-2.5 space-y-5 pr-4 text-right max-h-64 overflow-y-auto">
+                <div className="relative z-0">
+                  <div className="absolute -right-[21px] top-1 z-20 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
                   <span className="text-[11px] font-mono text-slate-400 block font-bold">{currentTicket.date || ''}</span>
                   <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">ثبت اولیه تیکت</span>
                 </div>
@@ -1172,6 +1193,125 @@ export default function TicketDetailsWorkspace({
           </div>
 
         </div>
+
+      {/* PRINT EXPORT MODAL */}
+      <AnimatePresence>
+        {showPrintModal && (
+          <div className="fixed inset-0 bg-slate-950/60 z-[120] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl shadow-2xl text-right flex flex-col max-h-[90vh]"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">پیش‌نمایش چاپ پرونده</h3>
+                  <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includeInternalNotes}
+                      onChange={(e) => setIncludeInternalNotes(e.target.checked)}
+                      className="accent-brand-600 w-3.5 h-3.5"
+                    />
+                    شامل یادداشت‌های داخلی
+                  </label>
+                </div>
+                <button onClick={() => setShowPrintModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Print Preview Content */}
+              <div className="p-6 overflow-y-auto flex-1 space-y-5">
+                {/* Ticket Header Info */}
+                <div className="text-center border-b border-slate-200 dark:border-slate-800 pb-4 space-y-2">
+                  <h1 className="text-lg font-black text-slate-900 dark:text-white">پرونده پشتیبانی #{currentTicket.ticketNumber}</h1>
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{currentTicket.title}</p>
+                  <div className="flex items-center justify-center gap-4 text-xs font-bold text-slate-500">
+                    <span>مشتری: {currentTicket.customer}</span>
+                    <span>•</span>
+                    <span>محصول: {currentTicket.product}</span>
+                    <span>•</span>
+                    <span>اولویت: {currentTicket.priority}</span>
+                    <span>•</span>
+                    <span>وضعیت: {currentTicket.status}</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    تاریخ ثبت: {currentTicket.date || ''}
+                    {currentTicket.assignedTo && <span> • کارشناس: {currentTicket.assignedTo}</span>}
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <div className="space-y-3">
+                  {threads
+                    .filter(msg => includeInternalNotes || msg.sender !== 'internal_note')
+                    .map((msg, idx) => {
+                      const isAgent = msg.sender === 'agent';
+                      const isNote = msg.sender === 'internal_note';
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-xl border text-sm ${
+                            isNote
+                              ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+                              : isAgent
+                                ? 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                                : 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                              {msg.name}
+                              {isNote && <span className="text-amber-500 mr-1 text-[10px]">(یادداشت داخلی)</span>}
+                            </span>
+                            <span className="text-[10px] text-slate-400">{msg.time}</span>
+                          </div>
+                          <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400 whitespace-pre-line">{msg.message}</p>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex items-center justify-end gap-2.5 p-5 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                <button
+                  onClick={() => setShowPrintModal(false)}
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-black rounded-xl cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPrintModal(false);
+                    setPrintData({
+                      ticketNumber: currentTicket.ticketNumber,
+                      title: currentTicket.title,
+                      customer: currentTicket.customer,
+                      product: currentTicket.product,
+                      priority: currentTicket.priority,
+                      status: currentTicket.status,
+                      date: currentTicket.date,
+                      assignedTo: currentTicket.assignedTo,
+                      messages: threads
+                        .filter(msg => includeInternalNotes || msg.sender !== 'internal_note')
+                        .map(msg => ({ name: msg.name, sender: msg.sender, time: msg.time, message: msg.message }))
+                    });
+                    setTimeout(() => window.print(), 100);
+                  }}
+                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black rounded-xl cursor-pointer flex items-center gap-1.5"
+                >
+                  <Printer className="w-4 h-4" />
+                  چاپ
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* EDIT INTERNAL NOTE MODAL OVERLAY */}
       <AnimatePresence>
@@ -1230,6 +1370,43 @@ export default function TicketDetailsWorkspace({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Hidden print area - only visible during print */}
+      <div id="print-area">
+        {printData && (
+          <div className="print-content">
+            <div className="print-header">
+              <h1>پرونده پشتیبانی #{printData.ticketNumber}</h1>
+              <h2>{printData.title}</h2>
+              <div className="print-meta">
+                <span>مشتری: {printData.customer}</span>
+                <span>محصول: {printData.product}</span>
+                <span>اولویت: {printData.priority}</span>
+                <span>وضعیت: {printData.status}</span>
+              </div>
+              <div className="print-meta-sub">
+                تاریخ ثبت: {printData.date || ''}
+                {printData.assignedTo && <span> کارشناس: {printData.assignedTo}</span>}
+              </div>
+            </div>
+            <div className="print-messages">
+              {printData.messages.map((msg, idx) => (
+                <div key={idx} className={`print-message ${msg.sender === 'internal_note' ? 'print-note' : msg.sender === 'agent' ? 'print-agent' : 'print-customer'}`}>
+                  <div className="print-msg-header">
+                    <span className="print-msg-name">
+                      {msg.name}
+                      {msg.sender === 'internal_note' && <span className="print-msg-tag">(یادداشت داخلی)</span>}
+                    </span>
+                    <span className="print-msg-time">{msg.time}</span>
+                  </div>
+                  <p className="print-msg-body">{msg.message}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { CustomersModule } from './customers/customers.module';
 import { AccessRequestsModule } from './access-requests/access-requests.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { DatabaseModule } from './common/database.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DatabaseModule } from './common/database.module';
     CustomersModule,
     AccessRequestsModule,
     ActivitiesModule,
+    RolesModule,
   ],
 })
 export class AppModule {}

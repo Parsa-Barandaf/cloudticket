@@ -1,10 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
 import 'dotenv/config';
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
   const hashed = await bcrypt.hash('123456', 10);
@@ -62,6 +60,172 @@ async function main() {
     where: { id: custUser.id },
     data: { customerId: cust1.id },
   });
+
+  // ── Portals ──
+  const portals = await Promise.all([
+    prisma.portal.upsert({ where: { key: 'main' }, update: {}, create: { key: 'main', name: 'پورتال مدیریت' } }),
+    prisma.portal.upsert({ where: { key: 'support' }, update: {}, create: { key: 'support', name: 'پورتال پشتیبانی' } }),
+    prisma.portal.upsert({ where: { key: 'customer' }, update: {}, create: { key: 'customer', name: 'پورتال مشتریان' } }),
+  ]);
+
+  // ── Permissions ──
+  const permDefs: { key: string; module: string; portalKey: string }[] = [
+    // Main portal
+    { key: 'dashboard:view', module: 'Dashboard', portalKey: 'main' },
+    { key: 'dashboard:export', module: 'Dashboard', portalKey: 'main' },
+    { key: 'tickets:view', module: 'Tickets', portalKey: 'main' },
+    { key: 'tickets:create', module: 'Tickets', portalKey: 'main' },
+    { key: 'tickets:edit', module: 'Tickets', portalKey: 'main' },
+    { key: 'tickets:delete', module: 'Tickets', portalKey: 'main' },
+    { key: 'tickets:assign', module: 'Tickets', portalKey: 'main' },
+    { key: 'products:view', module: 'Products', portalKey: 'main' },
+    { key: 'products:create', module: 'Products', portalKey: 'main' },
+    { key: 'products:edit', module: 'Products', portalKey: 'main' },
+    { key: 'products:delete', module: 'Products', portalKey: 'main' },
+    { key: 'customers:view', module: 'Customers', portalKey: 'main' },
+    { key: 'customers:create', module: 'Customers', portalKey: 'main' },
+    { key: 'customers:edit', module: 'Customers', portalKey: 'main' },
+    { key: 'customers:delete', module: 'Customers', portalKey: 'main' },
+    { key: 'users:view', module: 'Users', portalKey: 'main' },
+    { key: 'users:create', module: 'Users', portalKey: 'main' },
+    { key: 'users:edit', module: 'Users', portalKey: 'main' },
+    { key: 'users:delete', module: 'Users', portalKey: 'main' },
+    { key: 'reports:view', module: 'Reports', portalKey: 'main' },
+    { key: 'reports:export', module: 'Reports', portalKey: 'main' },
+    { key: 'settings:view', module: 'Settings', portalKey: 'main' },
+    { key: 'settings:edit', module: 'Settings', portalKey: 'main' },
+    // Support portal
+    { key: 'tickets:view', module: 'Tickets', portalKey: 'support' },
+    { key: 'tickets:create', module: 'Tickets', portalKey: 'support' },
+    { key: 'tickets:edit', module: 'Tickets', portalKey: 'support' },
+    { key: 'tickets:assign', module: 'Tickets', portalKey: 'support' },
+    { key: 'customers:view', module: 'Customers', portalKey: 'support' },
+    { key: 'products:view', module: 'Products', portalKey: 'support' },
+    // Customer portal
+    { key: 'tickets:view', module: 'Tickets', portalKey: 'customer' },
+    { key: 'tickets:create', module: 'Tickets', portalKey: 'customer' },
+    { key: 'profile:view', module: 'Profile', portalKey: 'customer' },
+    { key: 'profile:edit', module: 'Profile', portalKey: 'customer' },
+  ];
+
+  const portalMap = new Map(portals.map(p => [p.key, p.id]));
+  const permissionIds: { [permKey: string]: string } = {};
+
+  for (const def of permDefs) {
+    const perm = await prisma.permission.upsert({
+      where: { key_portalId: { key: def.key, portalId: portalMap.get(def.portalKey)! } },
+      update: {},
+      create: { key: def.key, module: def.module, portalId: portalMap.get(def.portalKey)! },
+    });
+    permissionIds[def.key] = perm.id;
+  }
+
+  // ── Fixed Roles ──
+  const superAdminRole = await prisma.role.upsert({
+    where: { id: 'role-super-admin' },
+    update: {},
+    create: { id: 'role-super-admin', name: 'Super Admin', description: 'مدیر کل سامانه با دسترسی کامل', isEditable: false, isSystem: true, scope: 'internal' },
+  });
+  const customerAdminRole = await prisma.role.upsert({
+    where: { id: 'role-customer-admin' },
+    update: {},
+    create: { id: 'role-customer-admin', name: 'Customer Admin', description: 'مدیر سازمان مشتری', isEditable: false, isSystem: false, scope: 'customer' },
+  });
+  const customerUserRole = await prisma.role.upsert({
+    where: { id: 'role-customer-user' },
+    update: {},
+    create: { id: 'role-customer-user', name: 'Customer User', description: 'کاربر عادی مشتری', isEditable: false, isSystem: false, scope: 'customer' },
+  });
+  const supportAgentRole = await prisma.role.upsert({
+    where: { id: 'role-support-agent' },
+    update: {},
+    create: { id: 'role-support-agent', name: 'Support Agent', description: 'کارشناس پشتیبانی', isEditable: true, isSystem: false, scope: 'internal' },
+  });
+
+  // ── Role-Permission assignments ──
+  const mainAndSupportPerms = permDefs.filter(d => d.portalKey === 'main' || d.portalKey === 'support');
+  for (const def of mainAndSupportPerms) {
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: superAdminRole.id, permissionId: permissionIds[def.key] } },
+      update: {},
+      create: { roleId: superAdminRole.id, permissionId: permissionIds[def.key] },
+    });
+  }
+
+  const customerPerms = permDefs.filter(d => d.portalKey === 'customer');
+  for (const def of customerPerms) {
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: customerAdminRole.id, permissionId: permissionIds[def.key] } },
+      update: {},
+      create: { roleId: customerAdminRole.id, permissionId: permissionIds[def.key] },
+    });
+  }
+
+  const customerUserPerms = ['tickets:view', 'tickets:create', 'profile:view'];
+  for (const key of customerUserPerms) {
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: customerUserRole.id, permissionId: permissionIds[key] } },
+      update: {},
+      create: { roleId: customerUserRole.id, permissionId: permissionIds[key] },
+    });
+  }
+
+  // ── Role-Portal assignments (login gate) ──
+  const portalIdMap = new Map(portals.map(p => [p.key, p.id]));
+  for (const portalKey of ['main', 'support', 'customer']) {
+    await prisma.rolePortal.upsert({
+      where: { roleId_portalId: { roleId: superAdminRole.id, portalId: portalIdMap.get(portalKey)! } },
+      update: {},
+      create: { roleId: superAdminRole.id, portalId: portalIdMap.get(portalKey)! },
+    });
+  }
+  await prisma.rolePortal.upsert({
+    where: { roleId_portalId: { roleId: customerAdminRole.id, portalId: portalIdMap.get('customer')! } },
+    update: {},
+    create: { roleId: customerAdminRole.id, portalId: portalIdMap.get('customer')! },
+  });
+  await prisma.rolePortal.upsert({
+    where: { roleId_portalId: { roleId: customerUserRole.id, portalId: portalIdMap.get('customer')! } },
+    update: {},
+    create: { roleId: customerUserRole.id, portalId: portalIdMap.get('customer')! },
+  });
+  await prisma.rolePortal.upsert({
+    where: { roleId_portalId: { roleId: supportAgentRole.id, portalId: portalIdMap.get('support')! } },
+    update: {},
+    create: { roleId: supportAgentRole.id, portalId: portalIdMap.get('support')! },
+  });
+
+  const supportPerms = permDefs.filter(d => d.portalKey === 'support');
+  for (const def of supportPerms) {
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: supportAgentRole.id, permissionId: permissionIds[def.key] } },
+      update: {},
+      create: { roleId: supportAgentRole.id, permissionId: permissionIds[def.key] },
+    });
+  }
+
+  // ── User-Role assignments ──
+  await prisma.userRoleAssignment.upsert({
+    where: { roleId_userId: { roleId: superAdminRole.id, userId: admin.id } },
+    update: {},
+    create: { roleId: superAdminRole.id, userId: admin.id },
+  });
+
+  await prisma.userRoleAssignment.upsert({
+    where: { roleId_userId: { roleId: customerAdminRole.id, userId: custUser.id } },
+    update: {},
+    create: { roleId: customerAdminRole.id, userId: custUser.id },
+  });
+
+  for (const agent of [agent1, agent2, agent3, agent4]) {
+    await prisma.userRoleAssignment.upsert({
+      where: { roleId_userId: { roleId: supportAgentRole.id, userId: agent.id } },
+      update: {},
+      create: { roleId: supportAgentRole.id, userId: agent.id },
+    });
+  }
+
+  console.log('RBAC seed complete.');
 
   const products = await Promise.all([
     prisma.product.upsert({

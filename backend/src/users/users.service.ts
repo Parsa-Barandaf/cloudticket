@@ -11,27 +11,54 @@ export class UsersService {
     private activitiesService: ActivitiesService,
   ) {}
 
+  private include() {
+    return {
+      department: true,
+      userRoles: {
+        include: {
+          role: {
+            include: {
+              rolePermissions: { include: { permission: true } },
+              portals: { include: { portal: true } },
+            },
+          },
+        },
+      },
+    };
+  }
+
+  private mapUser(user: any) {
+    return {
+      ...user,
+      userRoles: (user.userRoles ?? []).map((ur: any) => ur.role),
+    };
+  }
+
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email }, include: { customRole: true } });
+    const user = await this.prisma.user.findUnique({ where: { email }, include: this.include() });
+    return user ? this.mapUser(user) : null;
   }
 
   async findById(id: string) {
-    return this.prisma.user.findUnique({ where: { id }, include: { customRole: true } });
+    const user = await this.prisma.user.findUnique({ where: { id }, include: this.include() });
+    return user ? this.mapUser(user) : null;
   }
 
   async findAll() {
-    return this.prisma.user.findMany({
-      include: { department: true, customRole: true },
+    const users = await this.prisma.user.findMany({
+      include: this.include(),
       orderBy: { createdAt: 'desc' },
     });
+    return users.map((u: any) => this.mapUser(u));
   }
 
   async findByCompany(company: string) {
-    return this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       where: { company },
-      include: { department: true, customRole: true },
+      include: this.include(),
       orderBy: { createdAt: 'desc' },
     });
+    return users.map((u: any) => this.mapUser(u));
   }
 
   async create(input: CreateUserInput) {
@@ -58,10 +85,11 @@ export class UsersService {
         active: input.active ?? true,
         ...(customerId && { customer: { connect: { id: customerId } } }),
         ...(input.departmentId && { department: { connect: { id: input.departmentId } } }),
-        ...(input.customRoleId && { customRole: { connect: { id: input.customRoleId } } }),
       },
-      include: { department: true, customRole: true },
+      include: this.include(),
     });
+
+    await this.assignRoleForUser(user.id, input.isCustomer ?? false, input.role, input.roleId);
 
     await this.activitiesService.create({
       type: 'customer',
@@ -69,7 +97,8 @@ export class UsersService {
       subtitle: `${input.name} به سامانه اضافه شد.`,
     });
 
-    return user;
+    const withRoles = await this.prisma.user.findUnique({ where: { id: user.id }, include: this.include() });
+    return this.mapUser(withRoles);
   }
 
   async update(input: UpdateUserInput) {
@@ -80,7 +109,7 @@ export class UsersService {
     if (willBeCustomer && !company) {
       throw new BadRequestException('برای کاربر مشتری، نام شرکت الزامی است.');
     }
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id: input.id },
       data: {
         ...(input.name !== undefined && { name: input.name }),
@@ -93,12 +122,58 @@ export class UsersService {
         ...(input.departmentId !== undefined && {
           department: input.departmentId ? { connect: { id: input.departmentId } } : { disconnect: true },
         }),
-        ...(input.customRoleId !== undefined && {
-          customRole: input.customRoleId ? { connect: { id: input.customRoleId } } : { disconnect: true },
-        }),
       },
-      include: { department: true, customRole: true },
+      include: this.include(),
     });
+
+    if (
+      input.isCustomer !== undefined ||
+      input.role !== undefined ||
+      input.roleId !== undefined
+    ) {
+      await this.assignRoleForUser(
+        input.id,
+        input.isCustomer ?? existing.isCustomer,
+        input.role ?? existing.role,
+        input.roleId !== undefined ? input.roleId : undefined,
+      );
+    }
+
+    const withRoles = await this.prisma.user.findUnique({ where: { id: input.id }, include: this.include() });
+    return this.mapUser(withRoles);
+  }
+
+  private async assignRoleForUser(userId: string, isCustomer: boolean, role?: string, roleId?: string | null) {
+    const oldAssignments = await this.prisma.userRoleAssignment.findMany({
+      where: { userId },
+      include: { role: true },
+    });
+    const oldRoleIds = oldAssignments.map(a => a.role.id);
+
+    let newRoleId: string | null = null;
+
+    if (isCustomer) {
+      const roleName = role === 'ADMIN' ? 'Customer Admin' : 'Customer User';
+      const customerRole = await this.prisma.role.findUnique({ where: { id: roleName === 'Customer Admin' ? 'role-customer-admin' : 'role-customer-user' } });
+      newRoleId = customerRole?.id ?? null;
+    } else if (roleId) {
+      const roleRow = await this.prisma.role.findUnique({ where: { id: roleId } });
+      if (roleRow) newRoleId = roleRow.id;
+    }
+
+    for (const oldId of oldRoleIds) {
+      if (newRoleId !== oldId) {
+        await this.prisma.userRoleAssignment.deleteMany({ where: { userId, roleId: oldId } });
+      }
+    }
+
+    if (newRoleId) {
+      await this.prisma.userRoleAssignment.upsert({
+        where: { roleId_userId: { roleId: newRoleId, userId } },
+        update: {},
+        create: { roleId: newRoleId, userId },
+      });
+    }
   }
 
   async delete(id: string) {

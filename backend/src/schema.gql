@@ -33,8 +33,15 @@ input ApproveAccessRequestInput {
   industry: String
 }
 
+input AssignRoleInput {
+  roleId: String!
+  userId: String!
+}
+
 type AuthPayload {
   accessToken: String!
+  accessiblePortals: [String!]!
+  permissions: [String!]!
   user: User!
 }
 
@@ -48,13 +55,6 @@ input CreateConnectionInput {
   startDate: String!
   subscriptionType: String!
   userCount: Float!
-}
-
-input CreateCustomRoleInput {
-  description: String
-  name: String!
-  permissions: String! = "{}"
-  portalType: String = "support"
 }
 
 input CreateCustomerInput {
@@ -85,6 +85,14 @@ input CreateProductInput {
   version: String
 }
 
+input CreateRoleInput {
+  description: String
+  name: String!
+  permissionIds: [String!]
+  portalIds: [String!]
+  scope: String = "internal"
+}
+
 input CreateTicketInput {
   assignedToId: String
   customerId: String!
@@ -105,7 +113,6 @@ input CreateTicketMessageInput {
 input CreateUserInput {
   active: Boolean! = true
   company: String
-  customRoleId: String
   customerId: String
   departmentId: String
   email: String!
@@ -114,16 +121,7 @@ input CreateUserInput {
   password: String!
   phone: String
   role: String
-}
-
-type CustomRole {
-  createdAt: DateTime!
-  description: String
-  id: String!
-  name: String!
-  permissions: String!
-  portalType: String!
-  updatedAt: DateTime!
+  roleId: String
 }
 
 type Customer {
@@ -162,11 +160,6 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-input DeleteCustomRoleInput {
-  id: String!
-  reassignRoleId: String
-}
-
 input DeleteTicketsInput {
   ids: [String!]!
 }
@@ -182,21 +175,28 @@ type Department {
   updatedAt: DateTime!
 }
 
+type MePayload {
+  accessiblePortals: [String!]!
+  permissions: [String!]!
+  user: User!
+}
+
 type Mutation {
   approveAccessRequest(input: ApproveAccessRequestInput!): AccessRequest!
+  assignRoleToUser(input: AssignRoleInput!): [RoleEntity!]!
   createConnection(input: CreateConnectionInput!): ProductCustomerConnection!
-  createCustomRole(input: CreateCustomRoleInput!): CustomRole!
   createCustomer(input: CreateCustomerInput!): Customer!
   createDepartment(input: CreateDepartmentInput!): Department!
   createProduct(input: CreateProductInput!): Product!
+  createRole(input: CreateRoleInput!): RoleEntity!
   createTicket(input: CreateTicketInput!): Ticket!
   createTicketMessage(input: CreateTicketMessageInput!): TicketMessage!
   createUser(input: CreateUserInput!): User!
   deleteConnection(id: String!): Boolean!
-  deleteCustomRole(input: DeleteCustomRoleInput!): Boolean!
   deleteCustomer(id: String!): Boolean!
   deleteDepartment(id: String!): Boolean!
   deleteProduct(id: String!): Boolean!
+  deleteRole(id: String!, reassignRoleId: String): Boolean!
   deleteTicket(id: String!): Boolean!
   deleteTicketMessage(id: String!): Boolean!
   deleteTickets(input: DeleteTicketsInput!): Boolean!
@@ -205,15 +205,50 @@ type Mutation {
   register(email: String!, name: String!, password: String!): AuthPayload!
   rejectAccessRequest(input: RejectAccessRequestInput!): AccessRequest!
   requestAccess(input: RequestAccessInput!): AccessRequest!
+  unassignRoleFromUser(input: UnassignRoleInput!): [RoleEntity!]!
   updateConnection(input: UpdateConnectionInput!): ProductCustomerConnection!
-  updateCustomRole(input: UpdateCustomRoleInput!): CustomRole!
   updateCustomer(input: UpdateCustomerInput!): Customer!
   updateDepartment(input: UpdateDepartmentInput!): Department!
   updateProduct(input: UpdateProductInput!): Product!
+  updateRole(input: UpdateRoleInput!): RoleEntity!
   updateTicket(input: UpdateTicketInput!): Ticket!
   updateTicketMessage(id: String!, text: String!): TicketMessage!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
   updateUser(input: UpdateUserInput!): User!
+}
+
+type Permission {
+  createdAt: DateTime!
+  id: String!
+  key: String!
+  module: String!
+  portalId: String!
+}
+
+type PermissionInfo {
+  key: String!
+  module: String!
+  portalKey: String!
+}
+
+type PermissionInfoEntity {
+  id: String!
+  key: String!
+  module: String!
+  portalId: String!
+}
+
+type Portal {
+  createdAt: DateTime!
+  id: String!
+  key: String!
+  name: String!
+}
+
+type PortalInfoEntity {
+  id: String!
+  key: String!
+  name: String!
 }
 
 type Product {
@@ -255,19 +290,25 @@ enum ProductStatus {
 type Query {
   accessRequests: [AccessRequest!]!
   activities(limit: Float): [Activity!]!
-  customRole(id: String!): CustomRole
-  customRoles: [CustomRole!]!
   customer(id: String!): Customer
   customerConnections(customerId: String!): [ProductCustomerConnection!]!
   customers: [Customer!]!
   department(id: String!): Department
   departments: [Department!]!
+  me: MePayload!
   pendingAccessRequests: [AccessRequest!]!
+  permissions: [Permission!]!
+  permissionsByPortal(portalId: String!): [Permission!]!
+  portals: [Portal!]!
   product(id: String!): Product
   products: [Product!]!
+  role(id: String!): RoleEntity!
+  roles: [RoleEntity!]!
   ticket(id: String!): Ticket
   tickets: [Ticket!]!
   user(id: String!): User
+  userEffectivePermissions(userId: String!): UserEffectivePermissions!
+  userRoles(userId: String!): [RoleEntity!]!
   users: [User!]!
   usersByCompany(company: String!): [User!]!
 }
@@ -282,6 +323,35 @@ input RequestAccessInput {
   industry: String
   name: String!
   phone: String!
+}
+
+type RoleEntity {
+  _count: RoleUserCount
+  createdAt: DateTime!
+  description: String
+  id: String!
+  isEditable: Boolean!
+  isSystem: Boolean!
+  name: String!
+  orgId: String
+  portals: [RolePortalEntity!]
+  rolePermissions: [RolePermissionEntity!]
+  scope: String!
+  updatedAt: DateTime!
+}
+
+type RolePermissionEntity {
+  permission: PermissionInfoEntity!
+  permissionId: String!
+}
+
+type RolePortalEntity {
+  portal: PortalInfoEntity!
+  portalId: String!
+}
+
+type RoleUserCount {
+  userRoles: Float!
 }
 
 type Ticket {
@@ -328,6 +398,11 @@ enum TicketStatus {
   RESOLVED
 }
 
+input UnassignRoleInput {
+  roleId: String!
+  userId: String!
+}
+
 input UpdateConnectionInput {
   activationKey: String
   endDate: String
@@ -337,14 +412,6 @@ input UpdateConnectionInput {
   startDate: String
   subscriptionType: String
   userCount: Float
-}
-
-input UpdateCustomRoleInput {
-  description: String
-  id: String!
-  name: String
-  permissions: String
-  portalType: String
 }
 
 input UpdateCustomerInput {
@@ -378,6 +445,14 @@ input UpdateProductInput {
   version: String
 }
 
+input UpdateRoleInput {
+  description: String
+  id: String!
+  name: String
+  permissionIds: [String!]
+  portalIds: [String!]
+}
+
 input UpdateTicketInput {
   assignedToId: String
   id: String!
@@ -395,7 +470,6 @@ input UpdateTicketStatusInput {
 input UpdateUserInput {
   active: Boolean
   company: String
-  customRoleId: String
   departmentId: String
   email: String
   id: String!
@@ -403,6 +477,7 @@ input UpdateUserInput {
   name: String
   phone: String
   role: String
+  roleId: String
 }
 
 type User {
@@ -410,7 +485,6 @@ type User {
   avatar: String
   company: String
   createdAt: DateTime!
-  customRoleId: String
   departmentId: String
   email: String!
   id: String!
@@ -419,6 +493,12 @@ type User {
   phone: String
   role: UserRole!
   updatedAt: DateTime!
+  userRoles: [RoleEntity!]
+}
+
+type UserEffectivePermissions {
+  accessiblePortals: [String!]!
+  permissions: [PermissionInfo!]!
 }
 
 enum UserRole {

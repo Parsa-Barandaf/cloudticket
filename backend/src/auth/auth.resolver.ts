@@ -1,7 +1,8 @@
 import { Args, Mutation, Query, Resolver, ObjectType, Field, Context } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
+import { GqlAuthGuard } from './gql-auth.guard';
+import { RolesService } from '../roles/roles.service';
 import { User } from '../common/models/user.model';
 
 @ObjectType()
@@ -11,11 +12,32 @@ class AuthPayload {
 
   @Field(() => User)
   user: User;
+
+  @Field(() => [String])
+  accessiblePortals: string[];
+
+  @Field(() => [String])
+  permissions: string[];
+}
+
+@ObjectType()
+class MePayload {
+  @Field(() => User)
+  user: User;
+
+  @Field(() => [String])
+  accessiblePortals: string[];
+
+  @Field(() => [String])
+  permissions: string[];
 }
 
 @Resolver()
 export class AuthResolver {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private rolesService: RolesService,
+  ) {}
 
   @Mutation(() => AuthPayload)
   async login(
@@ -34,13 +56,15 @@ export class AuthResolver {
     return this.authService.register(email, password, name);
   }
 
-  @Query(() => User)
-  @UseGuards(AuthGuard('jwt'))
-  async me(@Context() context: { req: { user: { id: string; email: string; name: string; role: string; customRoleId?: string | null; customRole?: { portalType: string } | null } } }) {
+  @Query(() => MePayload)
+  @UseGuards(GqlAuthGuard)
+  async me(@Context() context: any) {
     const user = context.req.user;
+    const effective = await this.rolesService.getUserEffectivePermissions(user.id);
     return {
-      ...user,
-      portalType: user.customRole?.portalType || null,
+      user,
+      accessiblePortals: effective.accessiblePortals,
+      permissions: effective.permissions.map((p: { key: string }) => p.key),
     };
   }
 }

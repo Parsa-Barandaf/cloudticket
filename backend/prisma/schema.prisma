@@ -59,18 +59,6 @@ model Department {
   users User[]
 }
 
-model CustomRole {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  portalType  String   @default("support")
-  permissions Json     @default("{}")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  users User[]
-}
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -88,14 +76,13 @@ model User {
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
 
-  customRoleId String?
-  customRole   CustomRole? @relation(fields: [customRoleId], references: [id])
-
   assignedTickets Ticket[] @relation("AssignedAgent")
 
   customerId String?
   customer   Customer? @relation("CustomerEmployees", fields: [customerId], references: [id], onDelete: Cascade)
   customerProfile Customer? @relation("CustomerOwner")
+
+  userRoles UserRoleAssignment[]
 }
 
 model Customer {
@@ -239,4 +226,69 @@ model AccessRequest {
   status      AccessRequestStatus @default(PENDING)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
+}
+
+model Portal {
+  id          String       @id @default(cuid())
+  key         String       @unique
+  name        String
+  createdAt   DateTime     @default(now())
+  permissions Permission[]
+  roles       RolePortal[]
+}
+
+model Permission {
+  id        String   @id @default(cuid())
+  key       String
+  module    String
+  portalId  String
+  portal    Portal   @relation(fields: [portalId], references: [id])
+  createdAt DateTime @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@unique([key, portalId])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isEditable  Boolean  @default(true)
+  isSystem    Boolean  @default(false)
+  scope       String   @default("internal")
+  orgId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rolePermissions RolePermission[]
+  userRoles       UserRoleAssignment[]
+  portals         RolePortal[]
+}
+
+model RolePortal {
+  roleId   String
+  role     Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  portalId String
+  portal   Portal @relation(fields: [portalId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, portalId])
+}
+
+model RolePermission {
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model UserRoleAssignment {
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId String
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, userId])
 }

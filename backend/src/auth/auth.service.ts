@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
+import { RolesService } from '../roles/roles.service';
 import { PrismaService } from '../common/prisma.service';
 
 @Injectable()
@@ -9,6 +10,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private rolesService: RolesService,
     private prisma: PrismaService,
   ) {}
 
@@ -34,17 +36,19 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private generateToken(user: { id: string; email: string; name: string; role: string; customRoleId?: string | null; customRole?: { portalType: string } | null }) {
+  private async generateToken(user: { id: string; email: string; name: string; role: string; isCustomer: boolean }) {
     const payload = { sub: user.id, email: user.email };
+    const effective = await this.rolesService.getUserEffectivePermissions(user.id);
     return {
       accessToken: this.jwtService.sign(payload),
+      accessiblePortals: effective.accessiblePortals,
+      permissions: effective.permissions.map((p: { key: string }) => p.key),
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
-        customRoleId: user.customRoleId,
-        portalType: user.customRole?.portalType || null,
+        isCustomer: user.isCustomer,
       },
     };
   }

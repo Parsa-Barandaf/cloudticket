@@ -107,7 +107,7 @@ export default function CustomerWorkspaceView({
         id: u.id,
         name: u.name,
         email: u.email,
-        role: u.customRoleId ? 'کاربر' : 'کاربر',
+        role: 'کاربر',
         lastLogin: 'هرگز',
         status: u.active ? 'فعال' : 'غیرفعال',
       })) : []);

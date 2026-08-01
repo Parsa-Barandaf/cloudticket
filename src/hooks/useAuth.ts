@@ -6,7 +6,16 @@ import type { PortalRole } from '../types';
 
 interface LoginResult {
   accessToken: string;
-  user: { id: string; email: string; name: string; role: string; customRoleId?: string | null; portalType?: string | null };
+  accessiblePortals: string[];
+  permissions: string[];
+  user: { id: string; email: string; name: string; role: string; isCustomer: boolean };
+}
+
+function resolvePortalRole(accessiblePortals: string[], fallbackRole: string): PortalRole {
+  if (accessiblePortals.includes('main')) return 'admin';
+  if (accessiblePortals.includes('support')) return 'agent';
+  if (accessiblePortals.includes('customer')) return 'customer';
+  return (fallbackRole.toLowerCase() as PortalRole) || 'customer';
 }
 
 export function useAuth() {
@@ -26,14 +35,7 @@ export function useAuth() {
       localStorage.setItem('cmp_user_email', data.login.user.email);
 
       const user = data.login.user;
-      let portalRole: PortalRole;
-      if (user.portalType === 'support') {
-        portalRole = 'agent';
-      } else if (user.portalType === 'management') {
-        portalRole = 'admin';
-      } else {
-        portalRole = user.role.toLowerCase() as PortalRole;
-      }
+      const portalRole = resolvePortalRole(data.login.accessiblePortals, user.role);
       localStorage.setItem('cmp_portal_role', portalRole);
 
       return { email: user.email, role: portalRole };
@@ -55,16 +57,9 @@ export function useAuth() {
 
   const getCurrentUser = useCallback(async (): Promise<{ email: string; role: PortalRole } | null> => {
     try {
-      const data = await gql<{ me: ApiUser }>(GET_CURRENT_USER);
-      const user = data.me;
-      let portalRole: PortalRole;
-      if (user.portalType === 'support') {
-        portalRole = 'agent';
-      } else if (user.portalType === 'management') {
-        portalRole = 'admin';
-      } else {
-        portalRole = user.role.toLowerCase() as PortalRole;
-      }
+      const data = await gql<{ me: { accessiblePortals: string[]; permissions: string[]; user: ApiUser } }>(GET_CURRENT_USER);
+      const user = data.me.user;
+      const portalRole = resolvePortalRole(data.me.accessiblePortals, user.role);
       localStorage.setItem('cmp_portal_role', portalRole);
       localStorage.setItem('cmp_user_email', user.email);
       return { email: user.email, role: portalRole };

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useUsers } from '../../hooks/useUsers';
 import { useDepartments } from '../../hooks/useDepartments';
-import { useCustomRoles } from '../../hooks/useCustomRoles';
+import { useRoles } from '../../hooks/useRoles';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useProducts } from '../../hooks/useProducts';
 import { formatDate } from '../../lib/utils';
@@ -62,7 +62,7 @@ interface UserItem {
   avatarColor: string;
   isCustomer: boolean;
   departmentId?: string;
-  customRoleId?: string;
+  roleId?: string;
 }
 
 interface RoleItem {
@@ -91,13 +91,19 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   // API hooks
   const { users: apiUsers, createUser, updateUser, deleteUser, refetch: refetchUsers } = useUsers();
   const { departments, createDepartment, updateDepartment, deleteDepartment } = useDepartments();
-  const { roles: apiRoles, createRole, updateRole, deleteRole } = useCustomRoles();
+  const { roles: apiRoles, permissions: apiPermissions, portals: apiPortals, createRole, updateRole, deleteRole, fetchPermissions, fetchPortals, refetchRoles } = useRoles();
   const { customers: apiCustomers } = useCustomers();
   const { products } = useProducts();
   
   // Interactive loading state (Simulated)
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
+  // Resolve the display role: prefer the assigned RBAC role name, else the legacy enum
+  const resolveDisplayRole = useCallback((u: { role: string; userRoles?: { id: string; name: string }[] }): string => {
+    if (u.userRoles?.length) return u.userRoles[0].name;
+    return u.role === 'ADMIN' ? 'مدیر کل' : u.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر';
+  }, []);
+
   // Users list state — synced from real API
   const [users, setUsers] = useState<UserItem[]>([]);
   useEffect(() => {
@@ -109,17 +115,17 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         phone: u.phone || '',
         company: u.company || '',
         team: departments.find(d => d.id === u.departmentId)?.name || '',
-        role: u.role === 'ADMIN' ? 'مدیر کل' : u.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
+        role: resolveDisplayRole(u),
         status: u.active ? ('فعال' as const) : ('غیرفعال' as const),
         lastLogin: '',
         createdDate: formatDate(u.createdAt) || '',
         avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600', 'bg-pink-600', 'bg-cyan-600'][Math.floor(Math.random() * 6)],
         isCustomer: u.isCustomer,
         departmentId: u.departmentId,
-        customRoleId: u.customRoleId,
+        roleId: u.userRoles?.[0]?.id,
       })));
     }
-  }, [apiUsers, departments]);
+  }, [apiUsers, departments, resolveDisplayRole]);
 
   // Open drawer with customer type pre-filled when initialCustomerCompany is set
   useEffect(() => {
@@ -133,7 +139,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
       setFormDataPhone('');
       setFormDataCompany(initialCustomerCompany);
       setFormDataDepartmentId('');
-      setFormDataCustomRoleId('');
+      setFormDataRoleId('');
       setUserType('customer');
       setFormDataCustomerRole('کاربر');
       setFormErrors({});
@@ -150,19 +156,45 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleDesc, setNewRoleDesc] = useState('');
 
-  // Map API roles to local RoleItem format (with parsed permissions)
+  // Map API roles to local RoleItem format
   const roles = useMemo(() => {
     return apiRoles.map(r => ({
       id: r.id,
       name: r.name,
-      userCount: apiUsers.filter(u => u.customRoleId === r.id).length,
+      userCount: r._count?.userRoles ?? 0,
       description: r.description || '',
-      portalType: r.portalType || 'support',
+      portalType: (r.portals?.some(p => p.portal.key === 'support') ? 'support'
+        : r.portals?.some(p => p.portal.key === 'main') ? 'management'
+        : 'support'),
       permissions: (() => {
-        try { return JSON.parse(r.permissions); } catch { return {}; }
+        const perms: { [key: string]: string[] } = {};
+        for (const rp of r.rolePermissions ?? []) {
+          const key = rp.permission?.key || '';
+          const [module, action] = key.split(':');
+          if (!module || !action) continue;
+          const category = module.charAt(0).toUpperCase() + module.slice(1);
+          const label = action.charAt(0).toUpperCase() + action.slice(1);
+          if (!perms[category]) perms[category] = [];
+          if (!perms[category].includes(label)) perms[category].push(label);
+        }
+        return perms;
       })(),
     }));
-  }, [apiRoles, apiUsers]);
+  }, [apiRoles]);
+
+  // Load permissions + portals for the matrix editor
+  useEffect(() => { fetchPermissions(); fetchPortals(); }, [fetchPermissions, fetchPortals]);
+
+  // Refetch live data whenever the sub-tab is activated so counts stay fresh
+  useEffect(() => {
+    if (activeSubTab === 'roles') {
+      refetchRoles();
+      fetchPermissions();
+      fetchPortals();
+    } else if (activeSubTab === 'users') {
+      refetchUsers();
+    }
+  }, [activeSubTab, refetchRoles, fetchPermissions, fetchPortals, refetchUsers]);
 
   // Auto-select first role when roles load
   useEffect(() => {
@@ -204,7 +236,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const [formDataPhone, setFormDataPhone] = useState('');
   const [formDataCompany, setFormDataCompany] = useState('شرکت توسعه امنیت آریا');
   const [formDataDepartmentId, setFormDataDepartmentId] = useState('');
-  const [formDataCustomRoleId, setFormDataCustomRoleId] = useState('');
+  const [formDataRoleId, setFormDataRoleId] = useState('');
   const [userType, setUserType] = useState<'organization' | 'customer'>('organization');
   const [formDataCustomerRole, setFormDataCustomerRole] = useState('');
   const [formDataAccessLevel, setFormDataAccessLevel] = useState('متوسط');
@@ -302,7 +334,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     setFormDataPhone('');
     setFormDataCompany('');
     setFormDataDepartmentId('');
-    setFormDataCustomRoleId('');
+    setFormDataRoleId('');
     setUserType('organization');
     setFormDataCustomerRole('');
     setFormErrors({});
@@ -318,7 +350,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     setFormDataPhone(user.phone);
     setFormDataCompany(user.company);
     setFormDataDepartmentId(user.departmentId || '');
-    setFormDataCustomRoleId(user.customRoleId || '');
+    setFormDataRoleId(user.roleId || '');
     setUserType(user.isCustomer ? 'customer' : 'organization');
     setFormDataCustomerRole('');
     setFormErrors({});
@@ -351,7 +383,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
           isCustomer: userType === 'customer',
           role: formDataCustomerRole === 'مدیر اصلی' ? 'ADMIN' : formDataCustomerRole === 'کاربر' ? 'CUSTOMER' : undefined,
           departmentId: userType === 'organization' ? formDataDepartmentId || undefined : undefined,
-          customRoleId: userType === 'organization' ? formDataCustomRoleId || undefined : undefined,
+          roleId: userType === 'organization' ? formDataRoleId || undefined : undefined,
           active: formDataImmediateActive,
         });
         const newUserItem: UserItem = {
@@ -361,14 +393,14 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
           phone: newUser.phone || '',
           company: newUser.company || '',
           team: departments.find(d => d.id === newUser.departmentId)?.name || '',
-          role: newUser.role === 'ADMIN' ? 'مدیر کل' : newUser.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
+          role: resolveDisplayRole(newUser),
           status: formDataImmediateActive ? 'فعال' : 'دعوت شده',
           lastLogin: '',
           createdDate: formatDate(newUser.createdAt) || '',
           avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-violet-600', 'bg-rose-600', 'bg-indigo-600'][Math.floor(Math.random() * 6)],
           isCustomer: newUser.isCustomer,
           departmentId: newUser.departmentId,
-          customRoleId: newUser.customRoleId,
+          roleId: newUser.userRoles?.[0]?.id,
         };
         setUsers(prev => [newUserItem, ...prev]);
         showCustomerToast(`کاربر جدید «${formDataName}» با موفقیت افزوده و ثبت گردید.`, 'success');
@@ -384,7 +416,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
           role: formDataCustomerRole === 'مدیر اصلی' ? 'ADMIN' : formDataCustomerRole === 'کاربر' ? 'CUSTOMER' : undefined,
           active: formDataImmediateActive,
           departmentId: userType === 'organization' ? formDataDepartmentId || undefined : undefined,
-          customRoleId: userType === 'organization' ? formDataCustomRoleId || undefined : undefined,
+          roleId: userType === 'organization' ? formDataRoleId || undefined : undefined,
         });
         setUsers(prev => prev.map(u => u.id === selectedUserForEdit.id ? {
           ...u,
@@ -393,11 +425,11 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
           phone: updated.phone || '',
           company: updated.company || '',
           team: departments.find(d => d.id === updated.departmentId)?.name || '',
-          role: updated.role === 'ADMIN' ? 'مدیر کل' : updated.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر',
+          role: resolveDisplayRole(updated),
           status: formDataImmediateActive ? 'فعال' : 'غیرفعال',
           isCustomer: updated.isCustomer,
           departmentId: updated.departmentId,
-          customRoleId: updated.customRoleId,
+          roleId: updated.userRoles?.[0]?.id,
         } : u));
         showCustomerToast(`اطلاعات کاربری «${formDataName}» با موفقیت بروزرسانی شد.`, 'success');
       }
@@ -412,33 +444,48 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     return roles.find(r => r.id === selectedRoleForMatrix);
   }, [roles, selectedRoleForMatrix]);
 
+  // Helper: permission id for a matrix cell (module + action) in the role's portal
+  const permIdForCell = (category: string, type: string) => {
+    const portalKey = currentRoleMatrix?.portalType === 'support' ? 'support' : 'main';
+    const portalId = apiPortals.find(p => p.key === portalKey)?.id;
+    const key = `${category.toLowerCase()}:${type.toLowerCase()}`;
+    return apiPermissions.find(p => p.key === key && p.portalId === portalId)?.id;
+  };
+
+  // Helper: current permission ids of the selected role
+  const currentRolePermissionIds = useMemo(() => {
+    const role = apiRoles.find(r => r.id === selectedRoleForMatrix);
+    return new Set((role?.rolePermissions ?? []).map(rp => rp.permissionId));
+  }, [apiRoles, selectedRoleForMatrix]);
+
   const handleTogglePermission = async (category: string, type: string) => {
-    if (!currentRoleMatrix) return;
-    const currentPerms: string[] = currentRoleMatrix.permissions[category] || [];
-    const nextPerms = currentPerms.includes(type)
-      ? currentPerms.filter(p => p !== type)
-      : [...currentPerms, type];
-    const newPermissions = { ...currentRoleMatrix.permissions, [category]: nextPerms };
+    if (!selectedRoleForMatrix) return;
+    const pid = permIdForCell(category, type);
+    if (!pid) return;
+    const next = new Set(currentRolePermissionIds);
+    if (next.has(pid)) next.delete(pid); else next.add(pid);
     try {
-      await updateRole({ id: selectedRoleForMatrix, permissions: JSON.stringify(newPermissions) });
+      await updateRole({ id: selectedRoleForMatrix, permissionIds: Array.from(next) });
     } catch (e) {
       showCustomerToast(`خطا در ذخیره دسترسی: ${(e as Error).message}`, 'error');
     }
   };
 
   const handleSelectAllCategoryPermissions = async (category: string) => {
-    if (!currentRoleMatrix) return;
-    const allTypes = ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'];
-    const currentPerms = currentRoleMatrix.permissions[category] || [];
-    const isAllSelected = currentPerms.length === allTypes.length;
-    const newPermissions = {
-      ...currentRoleMatrix.permissions,
-      [category]: isAllSelected ? [] : allTypes,
-    };
+    if (!selectedRoleForMatrix) return;
+    const portalKey = currentRoleMatrix?.portalType === 'support' ? 'support' : 'main';
+    const portalId = apiPortals.find(p => p.key === portalKey)?.id;
+    const catPerms = apiPermissions.filter(p => p.module === category && p.portalId === portalId);
+    if (catPerms.length === 0) return;
+    const allSelected = catPerms.every(p => currentRolePermissionIds.has(p.id));
+    const next = new Set(currentRolePermissionIds);
+    for (const p of catPerms) {
+      if (allSelected) next.delete(p.id); else next.add(p.id);
+    }
     try {
-      await updateRole({ id: selectedRoleForMatrix, permissions: JSON.stringify(newPermissions) });
+      await updateRole({ id: selectedRoleForMatrix, permissionIds: Array.from(next) });
       showCustomerToast(
-        isAllSelected ? `تمام دسترسی‌های بخش ${category} لغو گردید.` : `تمام دسترسی‌های بخش ${category} اعطا شد.`,
+        allSelected ? `تمام دسترسی‌های بخش ${category} لغو گردید.` : `تمام دسترسی‌های بخش ${category} اعطا شد.`,
         'success'
       );
     } catch (e) {
@@ -447,16 +494,12 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   };
 
   const handleSelectAllMatrix = async () => {
-    if (!currentRoleMatrix) return;
-    const allTypes = ['View', 'Create', 'Edit', 'Delete', 'Assign', 'Export'];
-    const isSupport = currentRoleMatrix.portalType === 'support';
-    const categories = isSupport
-      ? ['Tickets']
-      : ['Dashboard', 'Products', 'Customers', 'Tickets', 'Users', 'Reports', 'Settings'];
-    const newPerms: { [key: string]: string[] } = {};
-    categories.forEach(cat => { newPerms[cat] = allTypes; });
+    if (!selectedRoleForMatrix) return;
+    const portalKey = currentRoleMatrix?.portalType === 'support' ? 'support' : 'main';
+    const portalId = apiPortals.find(p => p.key === portalKey)?.id;
+    const allIds = apiPermissions.filter(p => p.portalId === portalId).map(p => p.id);
     try {
-      await updateRole({ id: selectedRoleForMatrix, permissions: JSON.stringify(newPerms) });
+      await updateRole({ id: selectedRoleForMatrix, permissionIds: allIds });
       showCustomerToast('تمامی دسترسی‌های ماتریس برای این نقش فعال شد.', 'success');
     } catch (e) {
       showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
@@ -464,9 +507,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   };
 
   const handleClearAllMatrix = async () => {
-    if (!currentRoleMatrix) return;
+    if (!selectedRoleForMatrix) return;
     try {
-      await updateRole({ id: selectedRoleForMatrix, permissions: '{}' });
+      await updateRole({ id: selectedRoleForMatrix, permissionIds: [] });
       showCustomerToast('کلیه دسترسی‌های ماتریس برای این نقش پاکسازی شد.', 'success');
     } catch (e) {
       showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
@@ -475,11 +518,14 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
 
   const handleDuplicateRole = async (role: RoleItem) => {
     try {
+      const src = apiRoles.find(r => r.id === role.id);
       const newRole = await createRole({
         name: `${role.name} (کپی)`,
         description: role.description,
-        permissions: JSON.stringify(role.permissions),
+        portalIds: src?.portals?.map(p => p.portalId) ?? [],
+        permissionIds: src?.rolePermissions?.map(rp => rp.permissionId) ?? [],
       });
+      setSelectedRoleForMatrix(newRole.id);
       showCustomerToast(`نقش «${role.name}» با موفقیت تکثیر شد.`, 'success');
     } catch (e) {
       showCustomerToast(`خطا: ${(e as Error).message}`, 'error');
@@ -1218,7 +1264,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
-                              {role.id !== 'ROL-1' && (
+                              {role.id !== 'role-super-admin' && (
                                 <button
                                   onClick={() => handleDeleteRole(role.id)}
                                   className="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-md text-slate-400 hover:text-rose-600 transition-colors"
@@ -1696,12 +1742,12 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                             </select>
                           </div>
 
-                          {/* Custom role selection (from API) */}
+                          {/* Role selection (from RBAC roles API) */}
                           <div className="space-y-1">
                             <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش دسترسی (RBAC)</label>
                             <select
-                              value={formDataCustomRoleId}
-                              onChange={(e) => setFormDataCustomRoleId(e.target.value)}
+                              value={formDataRoleId}
+                              onChange={(e) => setFormDataRoleId(e.target.value)}
                               className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer"
                               style={{ colorScheme: 'dark' }}
                             >
@@ -2292,7 +2338,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                 <button
                   onClick={async () => {
                     if (!selectedRoleForMatrix || !pendingPortalType) return;
-                    await updateRole({ id: selectedRoleForMatrix, portalType: pendingPortalType });
+                    const portalKey = pendingPortalType === 'support' ? 'support' : 'main';
+                    const portalId = apiPortals.find(p => p.key === portalKey)?.id;
+                    await updateRole({ id: selectedRoleForMatrix, portalIds: portalId ? [portalId] : [] });
                     setPendingPortalType(null);
                   }}
                   className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black rounded-xl cursor-pointer flex items-center gap-1.5"
@@ -2361,7 +2409,12 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   onClick={async () => {
                     if (!newRoleName.trim()) return;
                     try {
-                      const newRole = await createRole({ name: newRoleName.trim(), description: newRoleDesc.trim() || '', permissions: '{}' });
+                      const supportPortalId = apiPortals.find(p => p.key === 'support')?.id;
+                      const newRole = await createRole({
+                        name: newRoleName.trim(),
+                        description: newRoleDesc.trim() || '',
+                        portalIds: supportPortalId ? [supportPortalId] : [],
+                      });
                       setSelectedRoleForMatrix(newRole.id);
                       setShowCreateRoleModal(false);
                       showCustomerToast(`نقش سفارشی «${newRoleName.trim()}» با موفقیت ایجاد گردید.`, 'success');

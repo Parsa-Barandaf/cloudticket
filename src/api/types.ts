@@ -17,8 +17,7 @@ export interface ApiUser {
   company?: string;
   isCustomer: boolean;
   departmentId?: string;
-  customRoleId?: string;
-  portalType?: string;
+  userRoles?: { id: string; name: string }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -30,16 +29,6 @@ export interface ApiDepartment {
   icon: string;
   color: string;
   assignedProducts: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ApiCustomRole {
-  id: string;
-  name: string;
-  description?: string;
-  portalType?: string;
-  permissions: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -124,6 +113,51 @@ export interface ApiAccessRequest {
   status: AccessRequestStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ApiRole {
+  id: string;
+  name: string;
+  description?: string;
+  isEditable: boolean;
+  isSystem: boolean;
+  scope: string;
+  orgId?: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { userRoles: number };
+  rolePermissions?: ApiRolePermission[];
+  portals?: ApiRolePortal[];
+}
+
+export interface ApiRolePortal {
+  portalId: string;
+  portal: ApiPortal;
+}
+
+export interface ApiRolePermission {
+  permissionId: string;
+  permission: ApiPermission;
+}
+
+export interface ApiPermission {
+  id: string;
+  key: string;
+  module: string;
+  portalId: string;
+  createdAt: string;
+}
+
+export interface ApiPortal {
+  id: string;
+  key: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface ApiEffectivePermissions {
+  accessiblePortals: string[];
+  permissions: { key: string; module: string; portalKey: string }[];
 }
 
 export interface ApiActivity {
