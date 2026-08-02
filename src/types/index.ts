@@ -20,10 +20,12 @@ export interface Ticket {
   title: string;
   customerId: string;
   customer: string;
+  productId?: string;
   product: string;
   priority: Priority;
   status: TicketStatus;
   assignedTo: string;
+  assignedToId?: string;
   date: string;
   updatedAt: string;
 }

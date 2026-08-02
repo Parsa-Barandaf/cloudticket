@@ -29,10 +29,12 @@ export function mapTicket(t: ApiTicket): Ticket {
     title: t.title,
     customerId: t.customerId,
     customer: t.customer?.commercialName || t.customer?.user?.name || '',
+    productId: t.productId ?? undefined,
     product: t.product?.name || '',
     priority: priorityMap[t.priority] || 'متوسط',
     status: statusMap[t.status] || 'باز',
     assignedTo: t.assignedTo?.name || '',
+    assignedToId: t.assignedToId,
     date: t.date,
     updatedAt: t.updatedAt,
   };

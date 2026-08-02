@@ -485,6 +485,7 @@ type User {
   avatar: String
   company: String
   createdAt: DateTime!
+  customerId: String
   departmentId: String
   email: String!
   id: String!

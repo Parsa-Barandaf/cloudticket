@@ -14,7 +14,7 @@ export const LOGIN_MUTATION = `
       accessToken
       accessiblePortals
       permissions
-      user { id email name role isCustomer }
+      user { id email name role isCustomer customerId departmentId }
     }
   }
 `;
@@ -25,7 +25,7 @@ export const REGISTER_MUTATION = `
       accessToken
       accessiblePortals
       permissions
-      user { id email name role isCustomer }
+      user { id email name role isCustomer customerId departmentId }
     }
   }
 `;
@@ -35,7 +35,7 @@ export const GET_CURRENT_USER = `
     me {
       accessiblePortals
       permissions
-      user { id email name role isCustomer }
+      user { id email name role isCustomer customerId departmentId }
     }
   }
 `;
@@ -288,7 +288,7 @@ export const REJECT_ACCESS_REQUEST = `
 `;
 
 // ── Users ──
-const USER_FIELDS = `id email name role active phone company isCustomer departmentId createdAt updatedAt userRoles { id name }`;
+const USER_FIELDS = `id email name role active phone company isCustomer customerId departmentId createdAt updatedAt userRoles { id name }`;
 
 export const GET_USERS = `
   query Users {

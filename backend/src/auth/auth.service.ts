@@ -49,6 +49,8 @@ export class AuthService {
         name: user.name,
         role: user.role,
         isCustomer: user.isCustomer,
+        customerId: (user as any).customerId ?? null,
+        departmentId: (user as any).departmentId ?? null,
       },
     };
   }

@@ -2,6 +2,7 @@ import type { Ticket, Product } from '../types';
 
 export interface CustomerTicketItem {
   id: string;
+  ticketNumber: number;
   subject: string;
   product: string;
   status: string;
@@ -24,6 +25,7 @@ export interface ActiveProductItem {
 export function mapTicketToCustomerItem(t: Ticket): CustomerTicketItem {
   return {
     id: t.id,
+    ticketNumber: t.ticketNumber,
     subject: t.title,
     product: t.product,
     status: t.status,

@@ -39,6 +39,9 @@ export class User {
   isCustomer: boolean;
 
   @Field({ nullable: true })
+  customerId?: string;
+
+  @Field({ nullable: true })
   departmentId?: string;
 
   @Field(() => [RoleEntity], { nullable: true })

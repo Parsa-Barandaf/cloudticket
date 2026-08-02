@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Headphones,
@@ -66,11 +66,26 @@ import type { Ticket, Product, Customer } from '../../types';
 import { PortalRole } from '../../types';
 import type { AgentTicketItem } from '../../api/transform-agent';
 import { mergeAgentTicketData } from '../../api/transform-agent';
+import { useDepartments } from '../../hooks/useDepartments';
 import { gql } from '../../api/graphql';
-import { CREATE_TICKET } from '../../api/queries';
+import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET_STATUS } from '../../api/queries';
+import type { ApiTicket, ApiTicketMessage } from '../../api/types';
+
+function mapApiMessageToAgent(m: ApiTicketMessage): AgentTicketItem['messages'][number] {
+  return {
+    id: m.id,
+    sender: m.authorType === 'customer' ? 'customer' : m.isInternal ? 'agent' : 'agent',
+    senderName: m.senderName,
+    text: m.text,
+    time: m.createdAt ? new Date(m.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) : '',
+    isInternalNote: m.isInternal,
+  };
+}
 
 interface SupportAgentPortalViewProps {
   userEmail: string;
+  currentUserId?: string;
+  currentDepartmentId?: string;
   ticketsList: Ticket[];
   productsList: Product[];
   customersList: Customer[];
@@ -84,6 +99,8 @@ interface SupportAgentPortalViewProps {
 
 export default function SupportAgentPortalView({
   userEmail,
+  currentUserId = '',
+  currentDepartmentId = '',
   ticketsList,
   productsList,
   customersList,
@@ -133,28 +150,58 @@ export default function SupportAgentPortalView({
   const [agentTickets, setAgentTickets] = useState<AgentTicketItem[]>([]);
 
   // Sync real ticket data from props to agent ticket state
-  const mockMessagesMap = useMemo(() => ({} as Record<string, AgentTicketItem['messages']>), []);
   useEffect(() => {
     if (ticketsList.length > 0) {
-      setAgentTickets(mergeAgentTicketData(ticketsList, customersList, userEmail, mockMessagesMap));
+      setAgentTickets(mergeAgentTicketData(ticketsList, customersList, currentUserId, {}));
     }
-  }, [ticketsList, customersList, userEmail, mockMessagesMap]);
+  }, [ticketsList, customersList, currentUserId]);
+
+  // Fetch real messages for a ticket from the API and merge into local state
+  const fetchTicketMessages = useCallback(async (ticketId: string) => {
+    try {
+      const data = await gql<{ ticket: ApiTicket }>(GET_TICKET, { id: ticketId });
+      const msgs = (data?.ticket?.messages || []).map(mapApiMessageToAgent);
+      setAgentTickets(prev => prev.map(t => (t.id === ticketId ? { ...t, messages: msgs } : t)));
+    } catch {
+      // keep existing local messages on failure
+    }
+  }, []);
+
+  // Send a reply or internal note through the API and refresh the thread
+  const sendTicketMessage = useCallback(async (ticketId: string, text: string, isInternal: boolean): Promise<boolean> => {
+    if (!text.trim()) return false;
+    try {
+      await gql(CREATE_TICKET_MESSAGE, {
+        input: {
+          ticketId,
+          text,
+          senderName: userEmail,
+          isInternal,
+          authorType: 'agent',
+        },
+      });
+      await fetchTicketMessages(ticketId);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [userEmail, fetchTicketMessages]);
 
   // Selected Active Ticket
-  const [activeTicketId, setActiveTicketId] = useState<string>('TKT-1024');
+  const [activeTicketId, setActiveTicketId] = useState<string>('');
 
   const activeTicket = useMemo(() => {
     return agentTickets.find(t => t.id === activeTicketId) || agentTickets[0];
   }, [agentTickets, activeTicketId]);
 
   // Support Ticket Inbox State
-  const [inboxFilter, setInboxFilter] = useState<string>('صف کاری من');
+  const [inboxFilter, setInboxFilter] = useState<string>('همه');
   const [inboxSearch, setInboxSearch] = useState<string>('');
   const [inboxSortBy, setInboxSortBy] = useState<'newest' | 'oldest' | 'priority' | 'sla'>('newest');
   const [inboxViewMode, setInboxViewMode] = useState<'detailed' | 'compact'>('detailed');
   const [selectedTicketIds, setSelectedTicketIds] = useState<string[]>([]);
-  const [starredTicketIds, setStarredTicketIds] = useState<string[]>(['TKT-1024']);
-  const [unreadTicketIds, setUnreadTicketIds] = useState<string[]>(['TKT-1024', 'TKT-1023']);
+  const [starredTicketIds, setStarredTicketIds] = useState<string[]>([]);
+  const [unreadTicketIds, setUnreadTicketIds] = useState<string[]>([]);
   const [showSavedFiltersModal, setShowSavedFiltersModal] = useState<boolean>(false);
   const [showBulkAssignModal, setShowBulkAssignModal] = useState<boolean>(false);
   const [showBulkStatusModal, setShowBulkStatusModal] = useState<boolean>(false);
@@ -164,25 +211,49 @@ export default function SupportAgentPortalView({
   const [previewQuickReplyText, setPreviewQuickReplyText] = useState<string>('');
   const [selectedDrawerTicketId, setSelectedDrawerTicketId] = useState<string | null>(null);
 
+  // Departments: resolve the current agent's team product access
+  const { departments } = useDepartments();
+
+  // Products accessible by the current agent's department (matched by name or id)
+  const teamProducts = useMemo(() => {
+    if (!currentDepartmentId) return [] as string[];
+    const dept = departments.find(d => d.id === currentDepartmentId);
+    return dept?.assignedProducts || [];
+  }, [departments, currentDepartmentId]);
+
+  // Tickets scoped by tab: inbox → team (department products), my-tickets → assigned to me
+  const teamTickets = useMemo(() => {
+    if (teamProducts.length === 0) return [] as AgentTicketItem[];
+    return agentTickets.filter(t => teamProducts.includes(t.product) || (t.productId ? teamProducts.includes(t.productId) : false));
+  }, [agentTickets, teamProducts]);
+
+  const myTickets = useMemo(() => {
+    return agentTickets.filter(t => t.assignedToMe);
+  }, [agentTickets]);
+
+  const scopedTickets = useMemo(() => {
+    return agentTab === 'inbox' ? teamTickets : myTickets;
+  }, [agentTab, teamTickets, myTickets]);
+
   // Filter badge counts
   const filterCounts = useMemo(() => {
     return {
-      all: agentTickets.length,
-      myQueue: agentTickets.filter(t => t.assignedToMe).length,
-      needsAction: agentTickets.filter(t => t.status === 'جدید' || t.status === 'در حال بررسی').length,
-      waitingCustomer: agentTickets.filter(t => t.status === 'منتظر پاسخ مشتری').length,
-      urgent: agentTickets.filter(t => t.priority === 'بحرانی').length,
-      unanswered: agentTickets.filter(t => t.messages.length === 1 || t.messages[t.messages.length - 1]?.sender === 'customer').length,
-      today: agentTickets.filter(t => t.createdAt.includes('۱۴۰۳') || t.waitingTime.includes('پیش')).length,
-      recentUpdated: agentTickets.length,
-      slaRisk: agentTickets.filter(t => t.slaRisk).length,
-      pinned: agentTickets.filter(t => t.pinned).length,
+      all: scopedTickets.length,
+      myQueue: scopedTickets.filter(t => t.assignedToMe).length,
+      needsAction: scopedTickets.filter(t => t.status === 'جدید' || t.status === 'در حال بررسی').length,
+      waitingCustomer: scopedTickets.filter(t => t.status === 'منتظر پاسخ مشتری').length,
+      urgent: scopedTickets.filter(t => t.priority === 'بحرانی').length,
+      unanswered: scopedTickets.filter(t => t.messages.length === 1 || t.messages[t.messages.length - 1]?.sender === 'customer').length,
+      today: scopedTickets.filter(t => t.createdAt.includes('۱۴۰۳') || t.waitingTime.includes('پیش')).length,
+      recentUpdated: scopedTickets.length,
+      slaRisk: scopedTickets.filter(t => t.slaRisk).length,
+      pinned: scopedTickets.filter(t => t.pinned).length,
     };
-  }, [agentTickets]);
+  }, [scopedTickets]);
 
   // Filtered tickets for inbox list
   const filteredInboxTickets = useMemo(() => {
-    return agentTickets.filter(ticket => {
+    return scopedTickets.filter(ticket => {
       if (inboxSearch.trim()) {
         const q = inboxSearch.toLowerCase();
         const matchId = ticket.id.toLowerCase().includes(q);
@@ -225,7 +296,7 @@ export default function SupportAgentPortalView({
       if (inboxSortBy === 'sla') return (b.slaRisk ? 1 : 0) - (a.slaRisk ? 1 : 0);
       return 0;
     });
-  }, [agentTickets, inboxSearch, inboxFilter, inboxSortBy]);
+  }, [scopedTickets, inboxSearch, inboxFilter, inboxSortBy]);
 
   const handleToggleSelectAll = () => {
     if (selectedTicketIds.length === filteredInboxTickets.length) {
@@ -319,33 +390,20 @@ export default function SupportAgentPortalView({
   };
 
   // Handle Send Reply / Note
-  const handleSendReply = (e: React.FormEvent) => {
+  const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!replyText.trim() && attachedFiles.length === 0) return;
 
-    const newMsg = {
-      id: `MSG-${Date.now()}`,
-      sender: 'agent' as const,
-      senderName: 'امیرحسین رضایی (کارشناس ارشد)',
-      text: replyText,
-      time: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
-      isInternalNote: replyMode === 'note',
-      attachments: attachedFiles.map(f => ({ name: f.name, size: `${Math.round(f.size / 1024)} KB` }))
-    };
+    const isInternal = replyMode === 'note';
+    const ok = await sendTicketMessage(activeTicket.id, replyText, isInternal);
+    if (!ok) {
+      showToast('خطا در ثبت پاسخ. لطفاً دوباره تلاش کنید.');
+      return;
+    }
 
-    setAgentTickets(prev =>
-      prev.map(t => {
-        if (t.id === activeTicket.id) {
-          const updatedStatus = replyMode === 'reply' ? ('منتظر پاسخ مشتری' as const) : t.status;
-          return {
-            ...t,
-            status: updatedStatus,
-            messages: [...t.messages, newMsg]
-          };
-        }
-        return t;
-      })
-    );
+    if (replyMode === 'reply') {
+      handleChangeStatus('منتظر پاسخ مشتری');
+    }
 
     setReplyText('');
     setAttachedFiles([]);
@@ -357,10 +415,22 @@ export default function SupportAgentPortalView({
   };
 
   // Status Change Helper
-  const handleChangeStatus = (status: AgentTicketItem['status']) => {
+  const handleChangeStatus = async (status: AgentTicketItem['status']) => {
     setAgentTickets(prev =>
       prev.map(t => (t.id === activeTicket.id ? { ...t, status } : t))
     );
+    try {
+      const statusToApi: Record<string, string> = {
+        'جدید': 'OPEN',
+        'در حال بررسی': 'INVESTIGATING',
+        'منتظر پاسخ مشتری': 'AWAITING_CUSTOMER',
+        'حل شده': 'RESOLVED',
+        'بسته شده': 'CLOSED',
+      };
+      await gql(UPDATE_TICKET_STATUS, { input: { id: activeTicket.id, status: statusToApi[status] || status } });
+    } catch {
+      showToast('خطا در بروزرسانی وضعیت. لطفاً دوباره تلاش کنید.');
+    }
     showToast(`وضعیت تیکت به "${status}" تغییر یافت.`);
   };
 
@@ -606,8 +676,8 @@ export default function SupportAgentPortalView({
                 <Inbox className="w-4.5 h-4.5 shrink-0" />
                 {!sidebarCollapsed && <span className="whitespace-nowrap">صندوق ورودی تیکتها</span>}
                 {!sidebarCollapsed && (
-                  <span className="mr-auto text-[10px] bg-rose-500/10 text-rose-500 font-extrabold px-1.5 py-0.5 rounded-md border border-rose-500/20">
-                    ۸
+                  <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
+                    {teamTickets.filter(t => t.status !== 'بسته شده').length}
                   </span>
                 )}
               </button>
@@ -624,8 +694,8 @@ export default function SupportAgentPortalView({
                 <Headphones className="w-4.5 h-4.5 shrink-0" />
                 {!sidebarCollapsed && <span className="whitespace-nowrap">تیکتهای من</span>}
                 {!sidebarCollapsed && (
-                  <span className="mr-auto text-[10px] bg-amber-500/10 text-amber-500 font-extrabold px-1.5 py-0.5 rounded-md border border-amber-500/20">
-                    ۲۴
+                  <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
+                    {myTickets.filter(t => t.status !== 'بسته شده').length}
                   </span>
                 )}
               </button>
@@ -1072,10 +1142,12 @@ export default function SupportAgentPortalView({
                     </div>
                     <div>
                       <h1 className="text-base font-black text-slate-900 dark:text-white">
-                        صندوق ورودی تیکتها
+                        {agentTab === 'my-tickets' ? 'تیکتهای من' : 'صندوق ورودی تیکتها'}
                       </h1>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                        مدیریت و بررسی درخواستهای پشتیبانی با پاسخ‌دهی سریع
+                        {agentTab === 'my-tickets'
+                          ? 'تیکتهای تخصیصدادهشده به شما و در حال پیگیری'
+                          : 'مدیریت و بررسی درخواستهای پشتیبانی با پاسخدهی سریع'}
                       </p>
                     </div>
                   </div>
@@ -1326,6 +1398,7 @@ export default function SupportAgentPortalView({
                             onClick={() => {
                               setActiveTicketId(t.id);
                               setSelectedDrawerTicketId(t.id);
+                              fetchTicketMessages(t.id);
                             }}
                             className={`p-4 rounded-2xl border transition-all cursor-pointer relative group ${
                               isSelected
@@ -1355,8 +1428,8 @@ export default function SupportAgentPortalView({
                                     }}
                                     className="rounded accent-brand-500 cursor-pointer w-4 h-4"
                                   />
-                                  <span className="font-mono font-black text-brand-600 dark:text-brand-400 text-xs">
-                                    {t.id}
+                                  <span className="font-mono font-bold text-slate-400 dark:text-slate-500 hover:text-brand-500 transition-colors">
+                                    #{t.ticketNumber}
                                   </span>
                                   <span className="font-bold text-slate-800 dark:text-slate-200">
                                     {t.customer}
@@ -1487,7 +1560,7 @@ export default function SupportAgentPortalView({
                         <div className="p-4 bg-slate-50/80 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
                           <div className="flex items-center gap-2.5">
                             <span className="font-mono text-xs font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-1 rounded-lg border border-brand-500/20">
-                              {activeTicket.id}
+                              #{activeTicket.ticketNumber}
                             </span>
                             <span className={`text-xs px-2.5 py-0.5 rounded-lg font-extrabold border ${getStatusBadge(activeTicket.status)}`}>
                               {activeTicket.status}
@@ -1634,9 +1707,7 @@ export default function SupportAgentPortalView({
                               </button>
                               <button
                                 onClick={() => {
-                                  setAgentTickets(prev =>
-                                    prev.map(t => (t.id === activeTicket.id ? { ...t, status: 'حل شده' } : t))
-                                  );
+                                  handleChangeStatus('حل شده');
                                   showToast(`تیکت ${activeTicket.id} علامت‌گذاری شد به عنوان حل‌شده.`);
                                 }}
                                 className="px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-500 hover:text-white text-emerald-600 dark:text-emerald-400 font-bold transition-colors cursor-pointer border border-emerald-500/20"
@@ -1645,23 +1716,19 @@ export default function SupportAgentPortalView({
                               </button>
                             </div>
 
-                            <button
-                              onClick={() => {
-                                if (!previewQuickReplyText.trim()) return;
-                                const newMsg = {
-                                  id: `MSG-${Date.now()}`,
-                                  sender: 'agent' as const,
-                                  senderName: 'امیرحسین رضایی',
-                                  text: previewQuickReplyText,
-                                  time: 'هم‌اکنون',
-                                  isInternalNote: previewQuickReplyMode === 'note'
-                                };
-                                setAgentTickets(prev =>
-                                  prev.map(t => (t.id === activeTicket.id ? { ...t, messages: [...t.messages, newMsg] } : t))
-                                );
-                                setPreviewQuickReplyText('');
-                                showToast(previewQuickReplyMode === 'note' ? 'یادداشت داخلی ثبت شد.' : 'پاسخ مستقیم ارسال گردید.');
-                              }}
+                              <button
+                                onClick={async () => {
+                                  const ok = await sendTicketMessage(activeTicket.id, previewQuickReplyText, previewQuickReplyMode === 'note');
+                                  if (!ok) {
+                                    showToast('خطا در ثبت پاسخ. لطفاً دوباره تلاش کنید.');
+                                    return;
+                                  }
+                                  if (previewQuickReplyMode === 'reply') {
+                                    handleChangeStatus('منتظر پاسخ مشتری');
+                                  }
+                                  setPreviewQuickReplyText('');
+                                  showToast(previewQuickReplyMode === 'note' ? 'یادداشت داخلی ثبت شد.' : 'پاسخ مستقیم ارسال گردید.');
+                                }}
                               className={`px-4 py-2 rounded-xl text-white font-black text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5 ${
                                 previewQuickReplyMode === 'note' ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20' : 'bg-brand-500 hover:bg-brand-600 shadow-brand-500/20'
                               }`}
@@ -2109,7 +2176,7 @@ export default function SupportAgentPortalView({
                     });
                     showToast('تیکت جدید با موفقیت ثبت و به صف کاری اضافه شد.');
                   } catch {
-                    showToast('خطا در ثبت تیکت. لطفاً دوباره تلاش کنید.', 'error');
+                    showToast('خطا در ثبت تیکت. لطفاً دوباره تلاش کنید.');
                   }
                   setShowNewTicketModal(false);
                   setNewTicketFields({ title: '', customerId: '', productId: '', priority: 'متوسط' });
@@ -2226,7 +2293,7 @@ export default function SupportAgentPortalView({
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-0.5 rounded-lg border border-brand-500/20">
-                      {viewingTicketModal.id}
+                      #{viewingTicketModal.ticketNumber}
                     </span>
                     <span className={`text-xs px-2.5 py-0.5 rounded-lg border font-bold ${getStatusBadge(viewingTicketModal.status)}`}>
                       {viewingTicketModal.status}
@@ -2311,18 +2378,25 @@ export default function SupportAgentPortalView({
               </div>
 
               {/* Fast Reply Composer */}
-              <form onSubmit={e => {
+              <form onSubmit={async e => {
                 e.preventDefault();
                 if (!replyText.trim()) return;
-                const newMsg = {
-                  id: `MSG-${Date.now()}`,
-                  sender: 'agent' as const,
-                  senderName: 'امیرحسین رضایی (پشتیبان ارشد)',
-                  text: replyText,
-                  time: 'هم‌اکنون',
-                  isInternalNote: replyMode === 'note',
-                };
-                setViewingTicketModal(prev => prev ? ({ ...prev, messages: [...prev.messages, newMsg] }) : null);
+                const isInternal = replyMode === 'note';
+                const ok = await sendTicketMessage(viewingTicketModal.id, replyText, isInternal);
+                if (!ok) {
+                  showToast('خطا در ثبت پاسخ. لطفاً دوباره تلاش کنید.');
+                  return;
+                }
+                if (replyMode === 'reply') {
+                  handleChangeStatus('منتظر پاسخ مشتری');
+                }
+                try {
+                  const data = await gql<{ ticket: ApiTicket }>(GET_TICKET, { id: viewingTicketModal.id });
+                  const msgs = (data?.ticket?.messages || []).map(mapApiMessageToAgent);
+                  setViewingTicketModal(prev => prev ? ({ ...prev, messages: msgs }) : prev);
+                } catch {
+                  // keep current modal messages on failure
+                }
                 setReplyText('');
                 showToast(replyMode === 'note' ? 'یادداشت داخلی با موفقیت ثبت شد' : 'پاسخ تیکت با موفقیت ارسال شد');
               }} className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3 shrink-0">

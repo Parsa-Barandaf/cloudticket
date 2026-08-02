@@ -17,6 +17,7 @@ export interface ApiUser {
   company?: string;
   isCustomer: boolean;
   departmentId?: string;
+  customerId?: string;
   userRoles?: { id: string; name: string }[];
   createdAt: string;
   updatedAt: string;

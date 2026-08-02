@@ -25,6 +25,15 @@ function AppContent() {
   const [userEmail, setUserEmail] = useState<string>(() => {
     return localStorage.getItem('cmp_user_email') || 'admin@example.com';
   });
+  const [currentUserId, setCurrentUserId] = useState<string>(() => {
+    return localStorage.getItem('cmp_user_id') || '';
+  });
+  const [currentCustomerId, setCurrentCustomerId] = useState<string>(() => {
+    return localStorage.getItem('cmp_customer_id') || '';
+  });
+  const [currentDepartmentId, setCurrentDepartmentId] = useState<string>(() => {
+    return localStorage.getItem('cmp_department_id') || '';
+  });
   const [portalRole, setPortalRole] = useState<PortalRole>(() => {
     return (localStorage.getItem('cmp_portal_role') as PortalRole) || 'admin';
   });
@@ -39,12 +48,18 @@ function AppContent() {
     getCurrentUser().then(result => {
       if (result) {
         setUserEmail(result.email);
+        setCurrentUserId(result.userId || '');
+        setCurrentCustomerId(result.customerId || '');
+        setCurrentDepartmentId(result.departmentId || '');
         setPortalRole(result.role);
         localStorage.setItem('cmp_logged_in', 'true');
         setScreen('dashboard');
       } else {
         localStorage.removeItem('cmp_access_token');
         localStorage.removeItem('cmp_user_email');
+        localStorage.removeItem('cmp_user_id');
+        localStorage.removeItem('cmp_customer_id');
+        localStorage.removeItem('cmp_department_id');
         localStorage.removeItem('cmp_portal_role');
         localStorage.removeItem('cmp_logged_in');
         setScreen('login');
@@ -52,14 +67,20 @@ function AppContent() {
     });
   }, [getCurrentUser]);
 
-  const handleLoginSuccess = (email: string, role?: PortalRole) => {
-    const mail = email || 'admin@example.com';
-    const activeRole = role || 'admin';
+  const handleLoginSuccess = (result: { email: string; role?: PortalRole; userId?: string; customerId?: string; departmentId?: string }) => {
+    const mail = result.email || 'admin@example.com';
+    const activeRole = result.role || 'admin';
     setUserEmail(mail);
     setPortalRole(activeRole);
+    setCurrentUserId(result.userId || '');
+    setCurrentCustomerId(result.customerId || '');
+    setCurrentDepartmentId(result.departmentId || '');
     localStorage.setItem('cmp_logged_in', 'true');
     localStorage.setItem('cmp_user_email', mail);
     localStorage.setItem('cmp_portal_role', activeRole);
+    if (result.userId) localStorage.setItem('cmp_user_id', result.userId);
+    if (result.customerId) localStorage.setItem('cmp_customer_id', result.customerId);
+    if (result.departmentId) localStorage.setItem('cmp_department_id', result.departmentId);
     setScreen('dashboard');
   };
 
@@ -80,6 +101,7 @@ function AppContent() {
         <div className={isDark ? 'dark' : ''}>
           <CustomerPortalView
             userEmail={userEmail}
+            currentCustomerId={currentCustomerId}
             ticketsList={realTickets}
             productsList={realProducts}
             customersList={realCustomers}
@@ -97,6 +119,8 @@ function AppContent() {
         <div className={isDark ? 'dark' : ''}>
           <SupportAgentPortalView
             userEmail={userEmail}
+            currentUserId={currentUserId}
+            currentDepartmentId={currentDepartmentId}
             ticketsList={realTickets}
             productsList={realProducts}
             customersList={realCustomers}

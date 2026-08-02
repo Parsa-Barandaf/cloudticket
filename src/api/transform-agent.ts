@@ -2,10 +2,12 @@ import type { Ticket, Customer } from '../types';
 
 export interface AgentTicketItem {
   id: string;
+  ticketNumber: number;
   title: string;
   customer: string;
   customerTier: 'طلایی' | 'نقره‌ای' | 'برنزی';
   product: string;
+  productId?: string;
   priority: 'بحرانی' | 'بالا' | 'متوسط' | 'پایین';
   status: 'جدید' | 'در حال بررسی' | 'منتظر پاسخ مشتری' | 'حل شده' | 'بسته شده';
   waitingTime: string;
@@ -50,23 +52,25 @@ const prioritySlaMap: Record<string, string> = {
 export function mapTicketToAgentItem(
   t: Ticket,
   customersList: Customer[],
-  userEmail: string,
+  currentUserId: string,
 ): AgentTicketItem {
   const customerData = customersList.find(c => c.name === t.customer || c.commercialName === t.customer);
   const tier = customerTierMap[customerData?.tier || ''] || 'برنزی';
 
   return {
     id: t.id,
+    ticketNumber: t.ticketNumber,
     title: t.title,
     customer: t.customer,
     customerTier: tier,
     product: t.product,
+    productId: t.productId,
     priority: t.priority,
     status: ticketStatusToAgent[t.status] || 'جدید',
     waitingTime: t.date,
     slaRemaining: prioritySlaMap[t.priority] || '۰۴:۰۰:۰۰',
     slaRisk: t.priority === 'بحرانی' || t.priority === 'بالا',
-    assignedToMe: t.assignedTo.includes('@') ? t.assignedTo === userEmail : false,
+    assignedToMe: !!currentUserId && t.assignedToId === currentUserId,
     pinned: false,
     important: false,
     createdAt: t.date,
@@ -77,11 +81,11 @@ export function mapTicketToAgentItem(
 export function mergeAgentTicketData(
   tickets: Ticket[],
   customersList: Customer[],
-  userEmail: string,
+  currentUserId: string,
   existingMockMessages: Record<string, AgentTicketItem['messages']>,
 ): AgentTicketItem[] {
   return tickets.map(t => {
-    const agentItem = mapTicketToAgentItem(t, customersList, userEmail);
+    const agentItem = mapTicketToAgentItem(t, customersList, currentUserId);
     const mockMessages = existingMockMessages[t.id];
     if (mockMessages) {
       agentItem.messages = mockMessages;

@@ -23,8 +23,16 @@ import { gql } from '../api/graphql';
 import { REQUEST_ACCESS } from '../api/queries';
 import type { ApiAccessRequest } from '../api/types';
 
+interface LoginSuccess {
+  email: string;
+  role: PortalRole;
+  userId?: string;
+  customerId?: string;
+  departmentId?: string;
+}
+
 interface LoginFormProps {
-  onSuccess: (email: string, role: PortalRole) => void;
+  onSuccess: (result: LoginSuccess) => void;
   onScreenChange: (screen: AuthScreen) => void;
   currentScreen: AuthScreen;
 }
@@ -107,7 +115,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
     setIsLoading(false);
 
     if (result) {
-      onSuccess(result.email, result.role);
+      onSuccess({ email: result.email, role: result.role, userId: result.userId, customerId: result.customerId, departmentId: result.departmentId });
     }
   };
 

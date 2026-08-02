@@ -37,6 +37,7 @@ import { CREATE_TICKET } from '../../api/queries';
 
 interface CustomerPortalViewProps {
   userEmail: string;
+  currentCustomerId?: string;
   ticketsList?: Ticket[];
   productsList?: Product[];
   customersList?: Customer[];
@@ -48,6 +49,7 @@ interface CustomerPortalViewProps {
 
 export default function CustomerPortalView({
   userEmail,
+  currentCustomerId = '',
   ticketsList = [],
   productsList = [],
   customersList = [],
@@ -74,9 +76,15 @@ export default function CustomerPortalView({
 
   useEffect(() => {
     if (ticketsList.length > 0) {
-      setCustomerTickets(ticketsList.map(mapTicketToCustomerItem));
+      const myCustomer =
+        customersList.find(c => c.id === currentCustomerId) ||
+        customersList.find(c => c.managerEmail === userEmail);
+      const filtered = myCustomer
+        ? ticketsList.filter(t => t.customerId === myCustomer.id)
+        : [];
+      setCustomerTickets(filtered.map(mapTicketToCustomerItem));
     }
-  }, [ticketsList]);
+  }, [ticketsList, customersList, currentCustomerId, userEmail]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -89,7 +97,9 @@ export default function CustomerPortalView({
     e.preventDefault();
     if (!ticketSubject.trim() || !ticketMessage.trim()) return;
 
-    const matchedCustomer = customersList.find(c => c.email === userEmail);
+    const matchedCustomer =
+      customersList.find(c => c.id === currentCustomerId) ||
+      customersList.find(c => c.managerEmail === userEmail);
     const customerId = matchedCustomer?.id;
 
     if (customerId) {
@@ -106,6 +116,7 @@ export default function CustomerPortalView({
 
     const newTkt = {
       id: `TKT-${Math.floor(1000 + Math.random() * 9000)}`,
+      ticketNumber: Math.floor(100 + Math.random() * 900),
       subject: ticketSubject,
       product: ticketProduct,
       status: 'جدید',
@@ -473,7 +484,7 @@ export default function CustomerPortalView({
                   <div key={tkt.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors flex items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-xs text-brand-600 dark:text-brand-400">{tkt.id}</span>
+                        <span className="font-mono font-bold text-slate-400 dark:text-slate-500">{tkt.ticketNumber ? `#${tkt.ticketNumber}` : tkt.id}</span>
                         <span className="text-xs font-black text-slate-900 dark:text-white">{tkt.subject}</span>
                       </div>
                       <div className="flex items-center gap-3 text-[11px] text-slate-400">
