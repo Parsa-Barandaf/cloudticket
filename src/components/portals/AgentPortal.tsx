@@ -145,6 +145,12 @@ export default function SupportAgentPortalView({
   const [fullConversationTicketId, setFullConversationTicketId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Leaving the inbox/my-tickets tab closes the full conversation page
+  useEffect(() => {
+    setFullConversationTicketId(null);
+    setSelectedDrawerTicketId(null);
+  }, [agentTab]);
+
   // Queue Filter & Search
   const [queueFilter, setQueueFilter] = useState<'همه' | 'تخصیص داده شده به من' | 'بدون پاسخ' | 'بحرانی' | 'امروز' | 'SLA'>('همه');
   const [queueSearch, setQueueSearch] = useState('');
