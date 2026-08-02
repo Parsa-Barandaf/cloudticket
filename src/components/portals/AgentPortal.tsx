@@ -68,6 +68,15 @@ import { gql } from '../../api/graphql';
 import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET, UPDATE_TICKET_STATUS } from '../../api/queries';
 import type { ApiTicket, ApiTicketMessage } from '../../api/types';
 
+function loadAgentFlags(userId: string): { pinned: string[]; starred: string[] } {
+  const key = `cmp_agent_flags_${userId || 'anon'}`;
+  try {
+    return JSON.parse(localStorage.getItem(key) || '{"pinned":[],"starred":[]}');
+  } catch {
+    return { pinned: [], starred: [] };
+  }
+}
+
 function mapApiMessageToAgent(m: ApiTicketMessage): AgentTicketItem['messages'][number] {
   return {
     id: m.id,
@@ -146,11 +155,33 @@ export default function SupportAgentPortalView({
   // Initial Agent Queue Data — synced from backend via props
   const [agentTickets, setAgentTickets] = useState<AgentTicketItem[]>([]);
 
-  // Sync real ticket data from props to agent ticket state
+  // Star & Pin flags (local, per agent), persisted to localStorage so they survive
+  // re-syncs, tab switches, refreshes and logins.
+  const flagsKey = `cmp_agent_flags_${currentUserId || 'anon'}`;
+  const loadFlags = (): { pinned: string[]; starred: string[] } => {
+    try {
+      return JSON.parse(localStorage.getItem(flagsKey) || '{"pinned":[],"starred":[]}');
+    } catch {
+      return { pinned: [], starred: [] };
+    }
+  };
+  const saveFlags = useCallback((next: { pinned: string[]; starred: string[] }) => {
+    localStorage.setItem(flagsKey, JSON.stringify(next));
+  }, [flagsKey]);
+
+  // Sync real ticket data from props to agent ticket state, preserving pin/star
   useEffect(() => {
     if (ticketsList.length > 0) {
-      setAgentTickets(mergeAgentTicketData(ticketsList, customersList, currentUserId, {}));
+      const flags = loadFlags();
+      setAgentTickets(
+        mergeAgentTicketData(ticketsList, customersList, currentUserId, {}).map(t => ({
+          ...t,
+          pinned: flags.pinned.includes(t.id),
+          important: flags.starred.includes(t.id),
+        })),
+      );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketsList, customersList, currentUserId]);
 
   // Fetch real messages for a ticket from the API and merge into local state
@@ -221,7 +252,9 @@ export default function SupportAgentPortalView({
   const [inboxSortBy, setInboxSortBy] = useState<'newest' | 'oldest' | 'priority' | 'sla'>('newest');
   const [inboxViewMode, setInboxViewMode] = useState<'detailed' | 'compact'>('detailed');
   const [selectedTicketIds, setSelectedTicketIds] = useState<string[]>([]);
-  const [starredTicketIds, setStarredTicketIds] = useState<string[]>([]);
+  const [starredTicketIds, setStarredTicketIds] = useState<string[]>(() => {
+    return loadAgentFlags(currentUserId).starred;
+  });
   const [unreadTicketIds, setUnreadTicketIds] = useState<string[]>([]);
   const [showBulkAssignModal, setShowBulkAssignModal] = useState<boolean>(false);
   const [showBulkStatusModal, setShowBulkStatusModal] = useState<boolean>(false);
@@ -314,6 +347,8 @@ export default function SupportAgentPortalView({
           return true;
       }
     }).sort((a, b) => {
+      // Pinned tickets always float to the top of the list
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
       if (inboxSortBy === 'newest') return b.id.localeCompare(a.id);
       if (inboxSortBy === 'oldest') return a.id.localeCompare(b.id);
       if (inboxSortBy === 'priority') {
@@ -414,21 +449,36 @@ export default function SupportAgentPortalView({
     });
   }, [agentTickets, queueFilter, queueSearch]);
 
-  // Toggle Pin & Important
+  // Toggle Pin & Important (persisted in localStorage)
   const togglePin = (ticketId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    const flags = loadFlags();
+    const next = {
+      ...flags,
+      pinned: flags.pinned.includes(ticketId)
+        ? flags.pinned.filter(id => id !== ticketId)
+        : [...flags.pinned, ticketId],
+    };
+    saveFlags(next);
     setAgentTickets(prev =>
       prev.map(t => (t.id === ticketId ? { ...t, pinned: !t.pinned } : t))
     );
     showToast('وضعیت سنجاق تیکت تغییر یافت.');
   };
 
-  const toggleImportant = (ticketId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Persist star flags for a ticket (keeps separate starred list in sync with important flag)
+  const toggleStarFlag = (ticketId: string) => {
+    const flags = loadFlags();
+    const was = flags.starred.includes(ticketId);
+    const next = {
+      ...flags,
+      starred: was ? flags.starred.filter(id => id !== ticketId) : [...flags.starred, ticketId],
+    };
+    saveFlags(next);
+    setStarredTicketIds(next.starred);
     setAgentTickets(prev =>
-      prev.map(t => (t.id === ticketId ? { ...t, important: !t.important } : t))
+      prev.map(t => (t.id === ticketId ? { ...t, important: !was, pinned: t.pinned } : t))
     );
-    showToast('علامت اهمیت تیکت بروزرسانی شد.');
   };
 
   // Handle Send Reply / Note
@@ -1630,11 +1680,7 @@ export default function SupportAgentPortalView({
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (isStarred) {
-                                          setStarredTicketIds(starredTicketIds.filter(id => id !== t.id));
-                                        } else {
-                                          setStarredTicketIds([...starredTicketIds, t.id]);
-                                        }
+                                        toggleStarFlag(t.id);
                                       }}
                                       className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-450 hover:text-amber-500 transition-colors cursor-pointer"
                                       title="ستاره‌دار"
@@ -1642,12 +1688,7 @@ export default function SupportAgentPortalView({
                                       <Star className={`w-4 h-4 ${isStarred ? 'fill-amber-500 text-amber-500' : ''}`} />
                                     </button>
                                     <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setAgentTickets(prev =>
-                                          prev.map(x => (x.id === t.id ? { ...x, pinned: !x.pinned } : x))
-                                        );
-                                      }}
+                                      onClick={(e) => togglePin(t.id, e)}
                                       className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-450 hover:text-brand-500 transition-colors cursor-pointer"
                                       title="سنجاق‌کردن"
                                     >
@@ -1741,9 +1782,7 @@ export default function SupportAgentPortalView({
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setAgentTickets(prev =>
-                                      prev.map(x => (x.id === t.id ? { ...x, pinned: !x.pinned } : x))
-                                    );
+                                    togglePin(t.id, e);
                                   }}
                                   className="p-1 text-slate-300 dark:text-slate-600 hover:text-brand-500 cursor-pointer"
                                   title="سنجاق‌کردن"
