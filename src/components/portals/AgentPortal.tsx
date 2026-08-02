@@ -65,6 +65,7 @@ import type { AgentTicketItem } from '../../api/transform-agent';
 import { mergeAgentTicketData } from '../../api/transform-agent';
 import { useDepartments } from '../../hooks/useDepartments';
 import { useUsers } from '../../hooks/useUsers';
+import AgentTicketConversation from './AgentTicketConversation';
 import { gql } from '../../api/graphql';
 import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET, UPDATE_TICKET_STATUS } from '../../api/queries';
 import type { ApiTicket, ApiTicketMessage } from '../../api/types';
@@ -141,6 +142,7 @@ export default function SupportAgentPortalView({
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
   const [newTicketFields, setNewTicketFields] = useState({ title: '', customerId: '', productId: '', priority: 'متوسط' });
   const [viewingTicketModal, setViewingTicketModal] = useState<AgentTicketItem | null>(null);
+  const [fullConversationTicketId, setFullConversationTicketId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Queue Filter & Search
@@ -1003,7 +1005,35 @@ export default function SupportAgentPortalView({
 
         {/* WORKSPACE MAIN BODY */}
         <main className="p-6 flex-1 space-y-6 overflow-x-hidden">
-          {agentTab === 'dashboard' && (
+          {fullConversationTicketId ? (() => {
+            const convTicket = agentTickets.find(t => t.id === fullConversationTicketId) || activeTicket;
+            if (!convTicket) return null;
+            return (
+              <div className="max-w-7xl mx-auto w-full">
+                <AgentTicketConversation
+                  ticket={convTicket}
+                  userEmail={userEmail}
+                  currentUserId={currentUserId}
+                  customersList={customersList}
+                  productsList={productsList}
+                  departments={departments}
+                  agentsList={agentsList}
+                  onBack={() => {
+                    setFullConversationTicketId(null);
+                    setSelectedDrawerTicketId(null);
+                  }}
+                  showToast={showToast}
+                  onTicketUpdated={(updated) => {
+                    setAgentTickets(prev => prev.map(t => (t.id === updated.id ? updated : t)));
+                    if (updated.id === activeTicketId) {
+                      // keep the merged ticket in sync
+                    }
+                  }}
+                />
+              </div>
+            );
+          })() : (
+          <>{agentTab === 'dashboard' && (
             <div className="space-y-6">
               {/* 4 COMPACT ACTIONABLE KPI CARDS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -2020,11 +2050,7 @@ export default function SupportAgentPortalView({
                             <button
                               onClick={() => {
                                 setSelectedDrawerTicketId(null);
-                                if (onOpenTicketDetails) {
-                                  onOpenTicketDetails(activeTicket.id);
-                                } else {
-                                  setViewingTicketModal(activeTicket);
-                                }
+                                setFullConversationTicketId(activeTicket.id);
                               }}
                               className="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                               title="انتقال به صفحه اختصاصی گفتگو"
@@ -2389,6 +2415,7 @@ export default function SupportAgentPortalView({
               </div>
             </div>
           )}
+          </>)}
 
       {/* COMMAND PALETTE MODAL (Ctrl + K) */}
       <AnimatePresence>
