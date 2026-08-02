@@ -35,7 +35,7 @@ import { PortalRole } from '../../types';
 import type { CustomerTicketItem, ActiveProductItem } from '../../api/transform-customer';
 import { mapTicketToCustomerItem } from '../../api/transform-customer';
 import { gql } from '../../api/graphql';
-import { CREATE_TICKET, GET_CUSTOMER_CONNECTIONS } from '../../api/queries';
+import { CREATE_TICKET, CREATE_TICKET_MESSAGE, GET_CUSTOMER_CONNECTIONS } from '../../api/queries';
 import { formatDateTime } from '../../lib/utils';
 
 interface CustomerPortalViewProps {
@@ -167,20 +167,42 @@ export default function CustomerPortalView({
       customersList.find(c => c.managerEmail === userEmail);
     const customerId = matchedCustomer?.id;
 
+    // Resolve the selected product to its real id (fall back to name match)
+    const selectedProduct = activeProducts.find(p => p.name === ticketProduct);
+    const productId = selectedProduct?.id || productsList.find(p => p.name === ticketProduct)?.id || undefined;
+
+    let createdTicketId: string | null = null;
     if (customerId) {
       try {
-        await gql(CREATE_TICKET, {
+        const data = await gql<{ createTicket: { id: string } }>(CREATE_TICKET, {
           input: {
             title: ticketSubject,
             priority: priorityToApi[ticketPriority] || 'MEDIUM',
             customerId,
+            productId,
           },
         });
+        createdTicketId = data?.createTicket?.id || null;
+
+        // Persist the customer's message as the first ticket message so it shows in other portals
+        if (createdTicketId) {
+          try {
+            await gql(CREATE_TICKET_MESSAGE, {
+              input: {
+                ticketId: createdTicketId,
+                text: ticketMessage,
+                senderName: userEmail,
+                isInternal: false,
+                authorType: 'customer',
+              },
+            });
+          } catch { /* message creation is best-effort */ }
+        }
       } catch { /* fall through — local state still updated */ }
     }
 
     const newTkt = {
-      id: `TKT-${Math.floor(1000 + Math.random() * 9000)}`,
+      id: createdTicketId || `TKT-${Math.floor(1000 + Math.random() * 9000)}`,
       ticketNumber: Math.floor(100 + Math.random() * 900),
       subject: ticketSubject,
       product: ticketProduct,
@@ -811,9 +833,13 @@ export default function CustomerPortalView({
                       onChange={(e) => setTicketProduct(e.target.value)}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold"
                     >
-                      <option value="Cloud Security Platform">Cloud Security Platform</option>
-                      <option value="Identity Protection Server">Identity Protection Server</option>
-                      <option value="Enterprise IAM Suite">Enterprise IAM Suite</option>
+                      {activeProducts.length > 0 ? (
+                        activeProducts.map(prd => (
+                          <option key={prd.id} value={prd.name}>{prd.name}</option>
+                        ))
+                      ) : (
+                        <option value="Cloud Security Platform">Cloud Security Platform</option>
+                      )}
                     </select>
                   </div>
 
