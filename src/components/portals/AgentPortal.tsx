@@ -57,7 +57,8 @@ import {
   MoreVertical,
   Sliders,
   UserPlus,
-  ExternalLink
+  ExternalLink,
+  Pencil
 } from 'lucide-react';
 import type { Ticket, Product, Customer } from '../../types';
 import { PortalRole } from '../../types';
@@ -88,6 +89,38 @@ function mapApiMessageToAgent(m: ApiTicketMessage): AgentTicketItem['messages'][
     time: m.createdAt ? new Date(m.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) : '',
     isInternalNote: m.isInternal,
   };
+}
+
+interface ChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+function MetricRing({ value, color }: { value: number; color: string }) {
+  const r = 34;
+  const c = 2 * Math.PI * r;
+  const filled = (Math.min(100, Math.max(0, value)) / 100) * c;
+  return (
+    <div className="relative w-20 h-20 shrink-0">
+      <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r={r} fill="none" strokeWidth="6" className="stroke-slate-100 dark:stroke-slate-800" />
+        <circle
+          cx="40"
+          cy="40"
+          r={r}
+          fill="none"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={`${filled} ${c}`}
+          style={{ stroke: color }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-slate-800 dark:text-slate-200">
+        {Math.round(value)}٪
+      </div>
+    </div>
+  );
 }
 
 interface SupportAgentPortalViewProps {
@@ -367,6 +400,74 @@ export default function SupportAgentPortalView({
     if (!transferDepartmentId) return [] as typeof agentsList;
     return agentsList.filter(u => u.departmentId === transferDepartmentId);
   }, [agentsList, transferDepartmentId]);
+
+  // ── Dashboard: daily shift checklist (persisted per agent) ──
+  const checklistKey = `cmp_agent_checklist_${currentUserId || 'anon'}`;
+  const defaultChecklist: ChecklistItem[] = [
+    { id: 'chk-1', text: 'بررسی تیکت‌های دارای اولویت بحرانی', done: true },
+    { id: 'chk-2', text: 'پاسخگویی به موارد در آستانه SLA', done: true },
+    { id: 'chk-3', text: 'هماهنگی با لایه ۲ فنی برای مشکلات دیتابیس', done: false },
+    { id: 'chk-4', text: 'ثبت خلاصه عملکرد شیفت جاری', done: false },
+  ];
+  const [checklist, setChecklist] = useState<ChecklistItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(checklistKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch { /* ignore corrupted storage */ }
+    return defaultChecklist;
+  });
+  const [checklistInput, setChecklistInput] = useState('');
+  const [editingChecklistId, setEditingChecklistId] = useState<string | null>(null);
+  const [editingChecklistText, setEditingChecklistText] = useState('');
+
+  useEffect(() => {
+    try { localStorage.setItem(checklistKey, JSON.stringify(checklist)); } catch { /* ignore */ }
+  }, [checklist, checklistKey]);
+
+  const toggleChecklistItem = (id: string) => {
+    setChecklist(prev => prev.map(i => (i.id === id ? { ...i, done: !i.done } : i)));
+  };
+  const addChecklistItem = () => {
+    const text = checklistInput.trim();
+    if (!text) return;
+    setChecklist(prev => [...prev, { id: `chk-${Date.now()}`, text, done: false }]);
+    setChecklistInput('');
+  };
+  const removeChecklistItem = (id: string) => {
+    setChecklist(prev => prev.filter(i => i.id !== id));
+  };
+  const saveChecklistEdit = (id: string) => {
+    const text = editingChecklistText.trim();
+    if (!text) return;
+    setChecklist(prev => prev.map(i => (i.id === id ? { ...i, text } : i)));
+    setEditingChecklistId(null);
+    setEditingChecklistText('');
+  };
+
+  const checklistDoneCount = checklist.filter(i => i.done).length;
+
+  // ── Dashboard: real ticket KPIs ──
+  const dashboardKpis = useMemo(() => {
+    const tickets = agentTickets;
+    return {
+      needsAction: tickets.filter(t => t.status === 'جدید' || t.status === 'در حال بررسی').length,
+      slaRisk: tickets.filter(t => t.slaRisk).length,
+      awaitingCustomer: tickets.filter(t => t.status === 'منتظر پاسخ مشتری').length,
+      resolved: tickets.filter(t => t.status === 'حل شده' || t.status === 'بسته شده').length,
+    };
+  }, [agentTickets]);
+
+  const jumpToInbox = (inboxFilterValue: string, statusFilter: string = 'همه') => {
+    setAgentTab('inbox');
+    setInboxFilter(inboxFilterValue);
+    setInboxStatusFilter(statusFilter);
+    setInboxPriorityFilter('همه');
+    setInboxSearch('');
+    setCurrentPage(1);
+  };
 
   // Tickets scoped by tab: inbox → team (department products), my-tickets → assigned to me
   const teamTickets = useMemo(() => {
@@ -963,41 +1064,7 @@ export default function SupportAgentPortalView({
           </div>
 
           {/* Sidebar Footer */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
-            {/* Quick Portal Switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setShowPortalSwitchMenu(!showPortalSwitchMenu)}
-                className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition-all cursor-pointer`}
-              >
-                <div className="flex items-center gap-2">
-                  <Headphones className="w-4 h-4 text-brand-500 shrink-0" />
-                  {!sidebarCollapsed && <span>پرتال پشتیبانی</span>}
-                </div>
-                {!sidebarCollapsed && <span className="text-[9px] bg-brand-500/10 text-brand-500 px-1.5 py-0.5 rounded font-black">تغییر پرتال</span>}
-              </button>
-
-              {showPortalSwitchMenu && (
-                <div className="absolute bottom-12 right-0 left-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-1.5 space-y-1 z-50 text-right">
-                  <div className="text-[10px] text-slate-400 px-2 py-1 font-bold">تغییر پرتال فعال:</div>
-                  <button
-                    onClick={() => { onSwitchPortalRole?.('admin'); setShowPortalSwitchMenu(false); }}
-                    className="w-full text-right p-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                  >
-                    <Building className="w-3.5 h-3.5 text-blue-500" />
-                    <span>پرتال مدیریت سیستم</span>
-                  </button>
-                  <button
-                    onClick={() => { onSwitchPortalRole?.('customer'); setShowPortalSwitchMenu(false); }}
-                    className="w-full text-right p-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                  >
-                    <Users className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>پرتال مشتریان سازمانی</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2 sticky bottom-5">
             {/* Logout Button */}
             <button
               onClick={onLogout}
@@ -1040,15 +1107,18 @@ export default function SupportAgentPortalView({
             );
           })() : (
           <>{agentTab === 'dashboard' && (
-            <div className="space-y-6">
-              {/* 4 COMPACT ACTIONABLE KPI CARDS */}
+            <div className="space-y-6 max-w-7xl mx-auto w-full">
+              {/* 4 ACTIONABLE KPI CARDS (real data, clickable, colored border on hover only) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 {/* Card 1: تیکتهای نیازمند اقدام */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-amber-500/20 dark:border-amber-500/30 shadow-xs flex items-center justify-between">
+                <button
+                  onClick={() => jumpToInbox('نیازمند اقدام')}
+                  className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-amber-500/50 dark:hover:border-amber-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
+                >
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">تیکتهای نیازمند اقدام</span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">12</span>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.needsAction.toLocaleString('fa-IR')}</span>
                       <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
                         اقدام ضروری
                       </span>
@@ -1057,14 +1127,17 @@ export default function SupportAgentPortalView({
                   <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
                     <AlertCircle className="w-5 h-5" />
                   </div>
-                </div>
+                </button>
 
                 {/* Card 2: SLA نزدیک */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-rose-500/20 dark:border-rose-500/30 shadow-xs flex items-center justify-between">
+                <button
+                  onClick={() => jumpToInbox('SLA در خطر')}
+                  className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-rose-500/50 dark:hover:border-rose-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
+                >
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">SLA نزدیک</span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">5</span>
+                      <span className="text-2xl font-black text-rose-600 dark:text-rose-400">{dashboardKpis.slaRisk.toLocaleString('fa-IR')}</span>
                       <span className="text-[10px] text-rose-600 dark:text-rose-400 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
                         کمتر از ۱ ساعت
                       </span>
@@ -1073,262 +1146,217 @@ export default function SupportAgentPortalView({
                   <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5" />
                   </div>
-                </div>
+                </button>
 
                 {/* Card 3: منتظر پاسخ مشتری */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-indigo-500/20 dark:border-indigo-500/30 shadow-xs flex items-center justify-between">
+                <button
+                  onClick={() => jumpToInbox('منتظر پاسخ مشتری')}
+                  className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
+                >
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">منتظر پاسخ مشتری</span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">8</span>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.awaitingCustomer.toLocaleString('fa-IR')}</span>
                       <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
-                        پاسخ ارسال شد
+                        نیاز به پیگیری
                       </span>
                     </div>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
                     <MessageSquare className="w-5 h-5" />
                   </div>
-                </div>
+                </button>
 
-                {/* Card 4: حل شده امروز */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-emerald-500/20 dark:border-emerald-500/30 shadow-xs flex items-center justify-between">
+                {/* Card 4: حل شده */}
+                <button
+                  onClick={() => jumpToInbox('همه', 'حل شده')}
+                  className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
+                >
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">حل شده امروز</span>
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">حل شده</span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">42</span>
+                      <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{dashboardKpis.resolved.toLocaleString('fa-IR')}</span>
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                        +۱۸٪ رشد
+                        تکمیل شده
                       </span>
                     </div>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
-                </div>
+                </button>
               </div>
 
               {/* CLEAN DASHBOARD OPERATIONAL OVERVIEW SECTION */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                
-                {/* PERFORMANCE & QUALITY METRICS GRID (8 Cols) */}
+
+                {/* PERFORMANCE & QUALITY METRICS (8 Cols) */}
                 <div className="lg:col-span-8 space-y-5">
-                  {/* Quality Metrics Box */}
+                  {/* Quality Metrics: minimal ring gauges */}
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-2">
                         <Activity className="w-4 h-4 text-brand-500" />
-                        <h2 className="text-sm font-black text-slate-900 dark:text-white">شاخص‌های کیفیت و پاسخگویی شیفت</h2>
+                        <h2 className="text-sm font-black text-slate-900 dark:text-white">شاخص‌های کیفیت و پاسخگویی</h2>
                       </div>
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                         وضعیت مطلوب شیفت
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Metric 1 */}
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                          <span>میانگین زمان اولین پاسخ (FRT)</span>
-                          <Zap className="w-4 h-4 text-amber-500" />
-                        </div>
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-xl font-black text-slate-900 dark:text-white font-mono">۱۲ دقیقه</span>
-                          <span className="text-[10px] text-emerald-500 font-extrabold bg-emerald-500/10 px-2 py-0.5 rounded">
-                            ۵ دقیقه سریع‌تر از هدف
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-amber-500 h-full rounded-full" style={{ width: '82%' }} />
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* Ring 1: FRT */}
+                      <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
+                        <MetricRing value={82} color="#f59e0b" />
+                        <div className="text-center space-y-0.5">
+                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">میانگین اولین پاسخ</span>
+                          <span className="block text-[10px] text-slate-400 font-bold">۱۲ دقیقه</span>
                         </div>
                       </div>
 
-                      {/* Metric 2 */}
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                          <span>رضایت مشتریان (CSAT)</span>
-                          <Star className="w-4 h-4 text-yellow-500" />
-                        </div>
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-xl font-black text-slate-900 dark:text-white font-mono">۹۸.۴٪</span>
-                          <span className="text-[10px] text-emerald-500 font-extrabold bg-emerald-500/10 px-2 py-0.5 rounded">
-                            از ۱۴۲ بازخورد
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-emerald-500 h-full rounded-full" style={{ width: '98%' }} />
+                      {/* Ring 2: CSAT */}
+                      <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
+                        <MetricRing value={98} color="#10b981" />
+                        <div className="text-center space-y-0.5">
+                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">رضایت مشتری (CSAT)</span>
+                          <span className="block text-[10px] text-slate-400 font-bold">از ۱۴۲ بازخورد</span>
                         </div>
                       </div>
 
-                      {/* Metric 3 */}
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                          <span>پایبندی به زمان‌بندی SLA</span>
-                          <Shield className="w-4 h-4 text-brand-500" />
-                        </div>
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-xl font-black text-slate-900 dark:text-white font-mono">۹۹.۱٪</span>
-                          <span className="text-[10px] text-brand-500 font-extrabold bg-brand-500/10 px-2 py-0.5 rounded">
-                            استاندارد عالی
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-brand-500 h-full rounded-full" style={{ width: '99%' }} />
+                      {/* Ring 3: SLA Adherence */}
+                      <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
+                        <MetricRing value={99} color="#6366f1" />
+                        <div className="text-center space-y-0.5">
+                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">پایبندی به SLA</span>
+                          <span className="block text-[10px] text-slate-400 font-bold">استاندارد عالی</span>
                         </div>
                       </div>
 
-                      {/* Metric 4 */}
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                          <span>میانگین زمان بستن تیکت</span>
-                          <Clock className="w-4 h-4 text-indigo-500" />
-                        </div>
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-xl font-black text-slate-900 dark:text-white font-mono">۴۵ دقیقه</span>
-                          <span className="text-[10px] text-indigo-500 font-extrabold bg-indigo-500/10 px-2 py-0.5 rounded">
-                            بهینه‌شده
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-indigo-500 h-full rounded-full" style={{ width: '75%' }} />
+                      {/* Ring 4: Avg close time */}
+                      <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
+                        <MetricRing value={75} color="#0ea5e9" />
+                        <div className="text-center space-y-0.5">
+                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">میانگین زمان بستن</span>
+                          <span className="block text-[10px] text-slate-400 font-bold">۴۵ دقیقه</span>
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* QUICK OPERATIONAL SHORTCUT CARDS */}
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
-                    <h3 className="text-xs font-black text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
-                      دسترسی سریع به ابزارهای پشتیبانی
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setAgentTab('inbox')}
-                        className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 hover:bg-brand-50 dark:hover:bg-brand-500/10 border border-slate-200/60 dark:border-slate-800 text-right transition-all group cursor-pointer flex items-center justify-between"
-                      >
-                        <div className="space-y-1">
-                          <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-brand-500 transition-colors block">
-                            صندوق ورودی تیکت‌ها
-                          </span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
-                            مشاهده و مدیریت کلیه تیکت‌های دریافتی
-                          </span>
-                        </div>
-                        <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-brand-500 group-hover:-translate-x-1 transition-all shrink-0" />
-                      </button>
-
-                      <button
-                        onClick={() => setAgentTab('saved-replies')}
-                        className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 hover:bg-brand-50 dark:hover:bg-brand-500/10 border border-slate-200/60 dark:border-slate-800 text-right transition-all group cursor-pointer flex items-center justify-between"
-                      >
-                        <div className="space-y-1">
-                          <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-brand-500 transition-colors block">
-                            پاسخ‌های آماده (Canned Responses)
-                          </span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
-                            ارسال سریع قالب‌های پاسخ استاندارد
-                          </span>
-                        </div>
-                        <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-brand-500 group-hover:-translate-x-1 transition-all shrink-0" />
-                      </button>
-
-                      <button
-                        onClick={() => setAgentTab('knowledge-base')}
-                        className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 hover:bg-brand-50 dark:hover:bg-brand-500/10 border border-slate-200/60 dark:border-slate-800 text-right transition-all group cursor-pointer flex items-center justify-between"
-                      >
-                        <div className="space-y-1">
-                          <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-brand-500 transition-colors block">
-                            پایگاه دانش و راهنماها
-                          </span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
-                            جستجو در مستندات فنی و راهنمای حل مشکلات
-                          </span>
-                        </div>
-                        <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-brand-500 group-hover:-translate-x-1 transition-all shrink-0" />
-                      </button>
-
-                      <button
-                        onClick={() => setAgentTab('related-customers')}
-                        className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 hover:bg-brand-50 dark:hover:bg-brand-500/10 border border-slate-200/60 dark:border-slate-800 text-right transition-all group cursor-pointer flex items-center justify-between"
-                      >
-                        <div className="space-y-1">
-                          <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-brand-500 transition-colors block">
-                            اطلاعات و سابقه مشتریان
-                          </span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
-                            بررسی سطوح پشتیبانی و تیکت‌های قبلی کاربران
-                          </span>
-                        </div>
-                        <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-brand-500 group-hover:-translate-x-1 transition-all shrink-0" />
-                      </button>
                     </div>
                   </div>
                 </div>
 
                 {/* SHIFT CHECKLIST & SYSTEM NOTICES (4 Cols) */}
                 <div className="lg:col-span-4 space-y-5">
-                  {/* Shift Routine Checklist */}
+                  {/* Shift Routine Checklist (editable) */}
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                       <h3 className="text-xs font-black text-slate-900 dark:text-white">چک‌لیست روزانه شیفت</h3>
-                      <span className="text-[10px] text-brand-500 font-mono font-bold">۲ از ۴ انجام شده</span>
+                      <span className="text-[10px] text-brand-500 font-bold">
+                        {checklistDoneCount} از {checklist.length} انجام شده
+                      </span>
                     </div>
 
                     <div className="space-y-2.5 text-xs">
-                      <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 cursor-pointer">
-                        <input type="checkbox" defaultChecked className="rounded accent-brand-500 w-4 h-4" />
-                        <span className="text-slate-700 dark:text-slate-300 font-medium line-through opacity-70">
-                          بررسی تیکت‌های دارای اولویت بحرانی
-                        </span>
-                      </label>
+                      {checklist.map(item => (
+                        <div
+                          key={item.id}
+                          className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={item.done}
+                            onChange={() => toggleChecklistItem(item.id)}
+                            className="rounded accent-brand-500 w-4 h-4 cursor-pointer shrink-0"
+                          />
+                          {editingChecklistId === item.id ? (
+                            <input
+                              autoFocus
+                              value={editingChecklistText}
+                              onChange={e => setEditingChecklistText(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') saveChecklistEdit(item.id);
+                                if (e.key === 'Escape') setEditingChecklistId(null);
+                              }}
+                              className="flex-1 min-w-0 bg-white dark:bg-slate-900 border border-brand-500 rounded-lg px-2 py-1 text-xs outline-none"
+                            />
+                          ) : (
+                            <span className={`flex-1 min-w-0 font-medium ${item.done ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-700 dark:text-slate-300'}`}>
+                              {item.text}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => {
+                                setEditingChecklistId(item.id);
+                                setEditingChecklistText(item.text);
+                              }}
+                              className="p-1 text-slate-400 hover:text-brand-500 rounded-md transition-colors cursor-pointer"
+                              title="ویرایش"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => removeChecklistItem(item.id)}
+                              className="p-1 text-slate-400 hover:text-rose-500 rounded-md transition-colors cursor-pointer"
+                              title="حذف"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
-                      <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 cursor-pointer">
-                        <input type="checkbox" defaultChecked className="rounded accent-brand-500 w-4 h-4" />
-                        <span className="text-slate-700 dark:text-slate-300 font-medium line-through opacity-70">
-                          پاسخگویی به موارد در آستانه SLA
-                        </span>
-                      </label>
-
-                      <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 cursor-pointer">
-                        <input type="checkbox" className="rounded accent-brand-500 w-4 h-4" />
-                        <span className="text-slate-800 dark:text-slate-200 font-bold">
-                          هماهنگی با لایه ۲ فنی برای مشکلات دیتابیس
-                        </span>
-                      </label>
-
-                      <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 cursor-pointer">
-                        <input type="checkbox" className="rounded accent-brand-500 w-4 h-4" />
-                        <span className="text-slate-800 dark:text-slate-200 font-bold">
-                          ثبت خلاصه عملکرد شیفت جاری
-                        </span>
-                      </label>
+                    {/* Add new item */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        value={checklistInput}
+                        onChange={e => setChecklistInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') addChecklistItem(); }}
+                        placeholder="افزودن مورد جدید..."
+                        className="flex-1 min-w-0 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 outline-none text-xs font-medium placeholder:text-slate-400 focus:border-brand-500 transition-colors"
+                      />
+                      <button
+                        onClick={addChecklistItem}
+                        className="p-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white transition-colors cursor-pointer"
+                        title="افزودن"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
 
-                  {/* System & Team Announcements */}
+                  {/* System & Team Announcements (minimal, with importance badges) */}
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <Bell className="w-4 h-4 text-slate-400" />
                         <h3 className="text-xs font-black text-slate-900 dark:text-white">اطلاعیه‌های مهم تیم پشتیبانی</h3>
                       </div>
                     </div>
 
-                    <div className="space-y-3 text-xs">
-                      <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-amber-900 dark:text-amber-200 space-y-1">
-                        <span className="text-[10px] font-black font-mono text-amber-600 dark:text-amber-400 block">
-                          امشب ساعت ۲۴:۰۰
-                        </span>
-                        <p className="font-bold leading-relaxed text-[11px]">
-                          بروزرسانی زیرساخت ابری  به مدت ۱۵ دقیقه صورت می‌گیرد.
+                    <div className="space-y-2.5 text-xs">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" />
+                            مهم
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">امشب ساعت ۲۴:۰۰</span>
+                        </div>
+                        <p className="font-bold leading-relaxed text-[11px] text-slate-700 dark:text-slate-300">
+                          بروزرسانی زیرساخت ابری به مدت ۱۵ دقیقه صورت می‌گیرد.
                         </p>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-brand-500/5 border border-brand-500/20 text-slate-800 dark:text-slate-200 space-y-1">
-                        <span className="text-[10px] font-black font-mono text-brand-500 block">
-                          امروز ۱۰:۳۰
-                        </span>
-                        <p className="font-bold leading-relaxed text-[11px]">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 border border-brand-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            اطلاعیه
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">امروز ۱۰:۳۰</span>
+                        </div>
+                        <p className="font-bold leading-relaxed text-[11px] text-slate-700 dark:text-slate-300">
                           قالب‌های جدید پاسخ آماده برای مشکلات درگاه پرداخت اضافه شد.
                         </p>
                       </div>
@@ -1768,13 +1796,13 @@ export default function SupportAgentPortalView({
                                 {/* SLA */}
                                 <td className="p-4 whitespace-nowrap">
                                   {t.slaRisk ? (
-                                    <span className="flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg font-mono font-bold border border-rose-500/20">
-                                      <Clock className="w-3 h-3 animate-pulse" />
+                                    <span className="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg font-bold border border-rose-500/20">
+                                      <Clock className="w-3.5 h-3.5 animate-pulse" />
                                       {t.slaRemaining}
                                     </span>
                                   ) : (
-                                    <span className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg font-mono font-bold border border-emerald-500/20">
-                                      <Clock className="w-3 h-3" />
+                                    <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg font-bold border border-emerald-500/20">
+                                      <Clock className="w-3.5 h-3.5" />
                                       {t.slaRemaining}
                                     </span>
                                   )}
@@ -1865,7 +1893,7 @@ export default function SupportAgentPortalView({
                               <span className={`px-2 py-0.5 rounded-md text-[9px] font-black border ${getStatusBadge(t.status)}`}>
                                 {t.status}
                               </span>
-                              <span className="font-mono text-slate-400 font-bold">{t.waitingTime}</span>
+                              <span className="text-slate-400 font-bold">{t.waitingTime}</span>
                             </div>
 
                             <div className="flex items-center justify-between pt-2">
@@ -2096,7 +2124,7 @@ export default function SupportAgentPortalView({
                             </div>
                             <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
                               <span className="text-[10px] text-slate-400 font-medium block">مهلت SLA:</span>
-                              <span className="font-mono font-bold text-rose-500">{activeTicket.slaRemaining || '۱ ساعت'}</span>
+                              <span className="text-xs font-bold text-rose-500">{activeTicket.slaRemaining || '۱ ساعت'}</span>
                             </div>
                           </div>
                         </div>
@@ -2105,7 +2133,7 @@ export default function SupportAgentPortalView({
                         <div className="flex-1 p-4 space-y-3 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/30">
                           <div className="flex items-center justify-between text-xs text-slate-400 font-bold pb-1 border-b border-slate-200/50 dark:border-slate-800/50">
                             <span>تاریخچه گفتگو ({activeTicket.messages.length} پیام)</span>
-                            <span className="font-mono text-[10px]">{activeTicket.waitingTime}</span>
+                            <span className="text-[10px]">{activeTicket.waitingTime}</span>
                           </div>
 
                           {activeTicket.messages.map(m => (
