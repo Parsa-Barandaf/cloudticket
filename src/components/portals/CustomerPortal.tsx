@@ -27,14 +27,15 @@ import {
   Key,
   Calendar,
   ExternalLink,
-  Inbox
+  Inbox,
+  RefreshCw
 } from 'lucide-react';
-import type { Ticket, Product, Customer } from '../../types';
+import type { Ticket, Product, Customer, ProductCustomerConnection } from '../../types';
 import { PortalRole } from '../../types';
 import type { CustomerTicketItem, ActiveProductItem } from '../../api/transform-customer';
-import { mapTicketToCustomerItem, mapProductToActiveItem } from '../../api/transform-customer';
+import { mapTicketToCustomerItem } from '../../api/transform-customer';
 import { gql } from '../../api/graphql';
-import { CREATE_TICKET } from '../../api/queries';
+import { CREATE_TICKET, GET_CUSTOMER_CONNECTIONS } from '../../api/queries';
 import { formatDateTime } from '../../lib/utils';
 
 interface CustomerPortalViewProps {
@@ -75,7 +76,52 @@ export default function CustomerPortalView({
 
   // Customer tickets and products — synced from real props
   const [customerTickets, setCustomerTickets] = useState<CustomerTicketItem[]>([]);
-  const activeProducts: ActiveProductItem[] = productsList.map(mapProductToActiveItem);
+  const [customerConnections, setCustomerConnections] = useState<ProductCustomerConnection[]>([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const myCustomerId =
+    (customersList.find(c => c.id === currentCustomerId) || customersList.find(c => c.managerEmail === userEmail))?.id || '';
+
+  // Fetch the customer's real product-license connections
+  useEffect(() => {
+    if (!myCustomerId) return;
+    setConnectionsLoading(true);
+    gql<{ customerConnections: any[] }>(GET_CUSTOMER_CONNECTIONS, { customerId: myCustomerId })
+      .then((data) => {
+        const conns = (data?.customerConnections || []).map((c: any) => ({
+          id: c.id,
+          productId: c.productId,
+          customerId: c.customerId,
+          customerName: c.customer?.commercialName || '',
+          managerName: c.customer?.user?.name || '',
+          startDate: c.startDate,
+          endDate: c.endDate,
+          licenseStatus: (c.licenseStatus === 'ACTIVE' ? 'فعال' : c.licenseStatus === 'EXPIRED' ? 'منقضی شده' : 'در انتظار تایید') as 'فعال' | 'منقضی شده' | 'در انتظار تایید',
+          userCount: c.userCount,
+          activationKey: c.activationKey,
+          notes: c.notes,
+          subscriptionType: c.subscriptionType,
+          productName: c.product?.name || c.productId,
+          version: c.product?.version,
+          logoColor: c.product?.logoColor,
+          logoInitials: c.product?.logoInitials || c.product?.name?.substring(0, 2).toUpperCase(),
+        }));
+        setCustomerConnections(conns);
+      })
+      .catch(() => { /* keep existing state */ })
+      .finally(() => setConnectionsLoading(false));
+  }, [myCustomerId, refreshKey]);
+
+  const activeProducts: ActiveProductItem[] = customerConnections.map(c => ({
+    id: c.productId,
+    name: c.productName || c.productId,
+    version: c.version || '',
+    licenseKey: c.activationKey,
+    expiresAt: c.endDate ? formatDateTime(c.endDate) : '—',
+    status: c.licenseStatus,
+    userQuota: `${c.userCount} کاربر`,
+  }));
 
   // Dashboard derived metrics from real data
   const totalTickets = customerTickets.length;
@@ -632,57 +678,108 @@ export default function CustomerPortalView({
 
           {activeTab === 'products' && (
             <div className="space-y-6 max-w-7xl mx-auto w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {activeProducts.map(prd => (
-                  <div key={prd.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-500/10 to-brand-500/20 text-brand-500 flex items-center justify-center shrink-0">
-                          <Layers className="w-4.5 h-4.5" />
-                        </span>
-                        <div className="min-w-0">
-                          <h3 className="text-xs font-black text-slate-900 dark:text-white truncate">{prd.name}</h3>
-                          <span className="text-[9px] font-bold text-slate-400">{prd.version}</span>
+              {/* Header row */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <Layers className="w-4.5 h-4.5 text-brand-500" />
+                    محصولات و لایسنس‌های فعال سازمان
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-bold">
+                    {customerConnections.length > 0
+                      ? `${customerConnections.length.toLocaleString('fa-IR')} لایسنس فعال در سامانه برای ${customerName}`
+                      : 'لایسنس‌های اختصاصی سازمان شما'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setRefreshKey(k => k + 1)}
+                  className="px-3.5 py-2 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-brand-500 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${connectionsLoading ? 'animate-spin text-brand-500' : ''}`} />
+                  <span>بروزرسانی</span>
+                </button>
+              </div>
+
+              {/* Loading state */}
+              {connectionsLoading && activeProducts.length === 0 ? (
+                <div className="flex items-center justify-center py-16">
+                  <RefreshCw className="w-7 h-7 text-brand-500 animate-spin" />
+                </div>
+              ) : activeProducts.length === 0 ? (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-12 text-center space-y-2">
+                  <Layers className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto" />
+                  <p className="text-xs font-black text-slate-500 dark:text-slate-400">هیچ محصول فعالی برای سازمان شما ثبت نشده است</p>
+                  <p className="text-[10px] text-slate-400 font-bold">برای ثبت لایسنس جدید با تیم فروش و لایسنسینگ تماس بگیرید.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {activeProducts.map(prd => {
+                    const conn = customerConnections.find(c => c.productId === prd.id);
+                    return (
+                      <div key={prd.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-500/10 to-brand-500/20 text-brand-500 flex items-center justify-center shrink-0">
+                              <Layers className="w-4.5 h-4.5" />
+                            </span>
+                            <div className="min-w-0">
+                              <h3 className="text-xs font-black text-slate-900 dark:text-white truncate">{prd.name}</h3>
+                              <span className="text-[9px] font-bold text-slate-400">{prd.version}</span>
+                            </div>
+                          </div>
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                            prd.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                            prd.status === 'منقضی شده' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
+                            'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                          }`}>
+                            {prd.status}
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800">
+                          <span className="text-[9px] text-slate-400 font-bold block mb-0.5">کلید فعال‌سازی</span>
+                          <code className="text-[10px] font-mono font-bold text-brand-600 dark:text-brand-400 dir-ltr block truncate">{prd.licenseKey}</code>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-600 dark:text-slate-400 font-medium">
+                          <div className="space-y-0.5">
+                            <span className="text-[9px] text-slate-400 block">انقضای لایسنس</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{prd.expiresAt}</span>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-[9px] text-slate-400 block">سهمیه کاربر</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{prd.userQuota}</span>
+                          </div>
+                        </div>
+
+                        {conn?.subscriptionType && (
+                          <div className="flex items-center gap-1.5 text-[9px] text-slate-500 dark:text-slate-400 font-bold">
+                            <Calendar className="w-3 h-3 text-brand-500 shrink-0" />
+                            <span>نوع اشتراک: {conn.subscriptionType}</span>
+                          </div>
+                        )}
+
+                        <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
+                          <button
+                            onClick={() => { setActiveTab('create-ticket'); setTicketProduct(prd.name); }}
+                            className="text-[10px] font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Headphones className="w-3 h-3" />
+                            <span>درخواست پشتیبانی</span>
+                          </button>
+                          <button
+                            onClick={() => showToast('کلید لایسنس در حال دانلود است.')}
+                            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer"
+                            title="دانلود لایسنس"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                        prd.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                      }`}>
-                        {prd.status}
-                      </span>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800">
-                      <span className="text-[9px] text-slate-400 font-bold block mb-0.5">کلید فعال‌سازی</span>
-                      <code className="text-[10px] font-mono font-bold text-brand-600 dark:text-brand-400 dir-ltr block truncate">{prd.licenseKey}</code>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-600 dark:text-slate-400 font-medium">
-                      <div className="space-y-0.5">
-                        <span className="text-[9px] text-slate-400 block">انقضای لایسنس</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{prd.expiresAt}</span>
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="text-[9px] text-slate-400 block">سهمیه کاربر</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{prd.userQuota}</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
-                      <button
-                        onClick={() => { setActiveTab('create-ticket'); setTicketProduct(prd.name); }}
-                        className="text-[10px] font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <Headphones className="w-3 h-3" />
-                        <span>درخواست پشتیبانی</span>
-                      </button>
-                      <button className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer">
-                        <Download className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
