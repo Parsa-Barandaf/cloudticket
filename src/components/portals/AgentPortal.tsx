@@ -64,6 +64,7 @@ import { PortalRole } from '../../types';
 import type { AgentTicketItem } from '../../api/transform-agent';
 import { mergeAgentTicketData } from '../../api/transform-agent';
 import { useDepartments } from '../../hooks/useDepartments';
+import { useUsers } from '../../hooks/useUsers';
 import { gql } from '../../api/graphql';
 import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET, UPDATE_TICKET_STATUS } from '../../api/queries';
 import type { ApiTicket, ApiTicketMessage } from '../../api/types';
@@ -133,6 +134,9 @@ export default function SupportAgentPortalView({
 
   // Modals
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferDepartmentId, setTransferDepartmentId] = useState('');
+  const [transferAgentId, setTransferAgentId] = useState('');
+  const [transferReason, setTransferReason] = useState('');
   const [showCallModal, setShowCallModal] = useState(false);
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
   const [newTicketFields, setNewTicketFields] = useState({ title: '', customerId: '', productId: '', priority: 'متوسط' });
@@ -238,6 +242,72 @@ export default function SupportAgentPortalView({
     }
   }, [currentUserId]);
 
+  // Transfer / forward the active ticket to another department or agent
+  const handleTransferTicket = async (): Promise<void> => {
+    if (!activeTicket) {
+      showToast('تیکتی برای انتقال انتخاب نشده است.');
+      return;
+    }
+    if (!transferDepartmentId) {
+      showToast('لطفاً دپارتمان مقصد را انتخاب کنید.');
+      return;
+    }
+    if (!transferReason.trim()) {
+      showToast('برای انتقال تیکت، نوشتن علت ارجاع الزامی است.');
+      return;
+    }
+    try {
+      const targetDept = departments.find(d => d.id === transferDepartmentId);
+      const targetAgent = agentsList.find(u => u.id === transferAgentId);
+      const targetProduct = targetDept?.assignedProducts?.length
+        ? productsList.find(p => targetDept.assignedProducts.includes(p.name) || targetDept.assignedProducts.includes(p.id))
+        : undefined;
+
+      // 1. Reassign the ticket to the target agent (if chosen) and/or target department product.
+      //    When no agent is chosen, unassign so the ticket lands in the department's pool.
+      const updateInput: { id: string; assignedToId?: string | null; productId?: string } = { id: activeTicket.id };
+      if (transferAgentId) {
+        updateInput.assignedToId = transferAgentId;
+      } else {
+        updateInput.assignedToId = null;
+      }
+      if (targetProduct?.id) updateInput.productId = targetProduct.id;
+      await gql(UPDATE_TICKET, { input: updateInput });
+
+      // 2. Record the reason as an internal note visible to the receiving department
+      const deptName = targetDept?.name || 'دپارتمان مقصد';
+      const agentName = targetAgent?.name || (transferAgentId ? 'همکار' : '');
+      const noteText = `ارجاع تیکت به ${deptName}${agentName ? ` (${agentName})` : ''}\nعلت ارجاع: ${transferReason.trim()}`;
+      await gql(CREATE_TICKET_MESSAGE, {
+        input: {
+          ticketId: activeTicket.id,
+          text: noteText,
+          senderName: userEmail,
+          isInternal: true,
+          authorType: 'agent',
+        },
+      });
+
+      // 3. Update local state: unassign from me (unless transferring back to me), refresh thread
+      await fetchTicketMessages(activeTicket.id);
+      setAgentTickets(prev => prev.map(t => (t.id === activeTicket.id
+        ? {
+            ...t,
+            assignedToMe: !!transferAgentId && transferAgentId === currentUserId,
+            product: targetProduct?.name || t.product,
+            productId: targetProduct?.id || t.productId,
+          }
+        : t)));
+      setShowTransferModal(false);
+      setTransferDepartmentId('');
+      setTransferAgentId('');
+      setTransferReason('');
+      showToast(`تیکت ${activeTicket.id} با موفقیت به «${deptName}» ارجاع داده شد.`);
+    } catch {
+      showToast('خطا در ارجاع تیکت. لطفاً دوباره تلاش کنید.');
+    }
+  };
+
   // Selected Active Ticket
   const [activeTicketId, setActiveTicketId] = useState<string>('');
 
@@ -277,6 +347,18 @@ export default function SupportAgentPortalView({
     const dept = departments.find(d => d.id === currentDepartmentId);
     return dept?.assignedProducts || [];
   }, [departments, currentDepartmentId]);
+
+  // Real users (agents) for the transfer / assign targets
+  const { users: apiUsers } = useUsers();
+  const agentsList = useMemo(() => {
+    return apiUsers.filter(u => !u.isCustomer && (u.role === 'ADMIN' || u.role === 'AGENT'));
+  }, [apiUsers]);
+
+  // Agents belonging to the selected transfer target department
+  const transferDepartmentAgents = useMemo(() => {
+    if (!transferDepartmentId) return [] as typeof agentsList;
+    return agentsList.filter(u => u.departmentId === transferDepartmentId);
+  }, [agentsList, transferDepartmentId]);
 
   // Tickets scoped by tab: inbox → team (department products), my-tickets → assigned to me
   const teamTickets = useMemo(() => {
@@ -2064,7 +2146,12 @@ export default function SupportAgentPortalView({
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 text-xs">
                               <button
-                                onClick={() => setShowTransferModal(true)}
+                                onClick={() => {
+                                  setTransferDepartmentId('');
+                                  setTransferAgentId('');
+                                  setTransferReason('');
+                                  setShowTransferModal(true);
+                                }}
                                 className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold transition-colors cursor-pointer"
                               >
                                 ارجاع تیکت
@@ -2336,7 +2423,7 @@ export default function SupportAgentPortalView({
               <div className="p-2 max-h-80 overflow-y-auto space-y-1 text-xs">
                 {[
                   { id: 'cmd-1', icon: Plus, title: 'ایجاد تیکت جدید پشتیبانی', desc: 'افزودن درخواست برای مشتری سازمانی', action: () => { setShowNewTicketModal(true); setCommandPaletteOpen(false); } },
-                  { id: 'cmd-2', icon: UserCheck, title: 'انتقال تیکت به همکار یا دپارتمان', desc: 'ارجاع تیکت جاری به دپارتمان مرتبط', action: () => { setShowTransferModal(true); setCommandPaletteOpen(false); } },
+                  { id: 'cmd-2', icon: UserCheck, title: 'انتقال تیکت به همکار یا دپارتمان', desc: 'ارجاع تیکت جاری به دپارتمان مرتبط', action: () => { setTransferDepartmentId(''); setTransferAgentId(''); setTransferReason(''); setShowTransferModal(true); setCommandPaletteOpen(false); } },
                   { id: 'cmd-3', icon: PhoneCall, title: 'ثبت درخواست تماس تلفنی فوری', desc: 'هماهنگی تماس با نماینده سازمان', action: () => { setShowCallModal(true); setCommandPaletteOpen(false); } },
                   { id: 'cmd-4', icon: RefreshCw, title: 'تغییر وضعیت تیکت جاری به حل‌شده', desc: 'بستن کامل چرخه پشتیبانی', action: () => { handleChangeStatus('حل شده'); setCommandPaletteOpen(false); } },
                   { id: 'cmd-5', icon: Lock, title: 'افزودن یادداشت محرمانه داخلی', desc: 'درج یادداشت دیده‌نشده توسط مشتری', action: () => { setReplyMode('note'); setCommandPaletteOpen(false); } },
@@ -2402,24 +2489,62 @@ export default function SupportAgentPortalView({
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                    انتخاب دپارتمان یا پشتیبان مقصد
+                    دپارتمان مقصد
                   </label>
-                  <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold">
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="1">تیم امنیت شبکه و SSL (علی علوی)</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="2">تیم زیرساخت ابری و سرورها (زهرا موسوی)</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="3">امور مالی و لایسنسینگ (مریم اکبری)</option>
+                  <select
+                    value={transferDepartmentId}
+                    onChange={(e) => {
+                      setTransferDepartmentId(e.target.value);
+                      setTransferAgentId('');
+                    }}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold cursor-pointer"
+                  >
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="">انتخاب دپارتمان...</option>
+                    {departments.map(d => (
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={d.id} value={d.id}>
+                        {d.name}
+                        {d.lead ? ` (${d.lead})` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                    علت ارجاع / توضیحات فنی
+                    پشتیبان مقصد (اختیاری)
+                  </label>
+                  <select
+                    value={transferAgentId}
+                    onChange={(e) => setTransferAgentId(e.target.value)}
+                    disabled={!transferDepartmentId}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option className="dark:bg-slate-800 dark:text-slate-200" value="">تخصیص خودکار به دپارتمان</option>
+                    {transferDepartmentAgents.map(u => (
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={u.id} value={u.id}>
+                        {u.name} ({u.email})
+                      </option>
+                    ))}
+                  </select>
+                  {!transferDepartmentId && (
+                    <p className="text-[10px] text-slate-400 font-medium mt-1">ابتدا دپارتمان مقصد را انتخاب کنید.</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                    علت ارجاع / توضیحات فنی <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     rows={3}
-                    placeholder="علت انتقال تیکت جهت اطلاع همکار مقصد..."
-                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none"
+                    value={transferReason}
+                    onChange={(e) => setTransferReason(e.target.value)}
+                    placeholder="علت انتقال تیکت جهت اطلاع همکار مقصد... (الزامی)"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 transition-colors"
                   />
+                  {!transferReason.trim() && (
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-1">برای ارجاع تیکت، نوشتن علت الزامی است.</p>
+                  )}
                 </div>
               </div>
 
@@ -2431,10 +2556,7 @@ export default function SupportAgentPortalView({
                   انصراف
                 </button>
                 <button
-                  onClick={() => {
-                    setShowTransferModal(false);
-                    showToast(`تیکت ${activeTicket.id} با موفقیت انتقال یافت.`);
-                  }}
+                  onClick={handleTransferTicket}
                   className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-black cursor-pointer shadow-md shadow-brand-500/15"
                 >
                   تایید و ارجاع
