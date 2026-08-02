@@ -395,6 +395,14 @@ export default function SupportAgentPortalView({
     return apiUsers.filter(u => !u.isCustomer && (u.role === 'ADMIN' || u.role === 'AGENT'));
   }, [apiUsers]);
 
+  // Real profile data of the current logged-in agent
+  const currentUserInfo = useMemo(() => {
+    return apiUsers.find(u => (currentUserId && u.id === currentUserId) || u.email === userEmail) || null;
+  }, [apiUsers, currentUserId, userEmail]);
+  const currentUserName = currentUserInfo?.name || 'کارشناس پشتیبانی';
+  const currentUserRoleLabel = currentUserInfo?.role === 'ADMIN' ? 'مدیر پشتیبانی' : currentUserInfo?.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر';
+  const currentUserInitials = currentUserName.split(' ').slice(0, 2).map(p => p[0] || '').join('');
+
   // Agents belonging to the selected transfer target department
   const transferDepartmentAgents = useMemo(() => {
     if (!transferDepartmentId) return [] as typeof agentsList;
@@ -889,11 +897,11 @@ export default function SupportAgentPortalView({
           <div className="h-9 w-[1px] bg-slate-200 dark:bg-slate-800" />
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs shadow-inner">
-              ار
+              {currentUserInitials || '؟'}
             </div>
             <div className="hidden lg:flex flex-col text-right">
-              <span className="text-xs font-black text-slate-800 dark:text-slate-200">امیرحسین رضایی</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">کارشناس ارشد پشتیبانی</span>
+              <span className="text-xs font-black text-slate-800 dark:text-slate-200">{currentUserName}</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">{currentUserRoleLabel}</span>
             </div>
           </div>
         </div>
@@ -2436,14 +2444,24 @@ export default function SupportAgentPortalView({
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 shadow-xs space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-brand-500 text-white flex items-center justify-center font-black text-xl shadow-md">
-                    AR
+                    {currentUserInitials || 'پ'}
                   </div>
-                  <div>
-                    <h2 className="text-base font-black text-slate-900 dark:text-white">امیرحسین رضایی</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">کارشناس ارشد پشتیبانی فنی  • شیفت صبح</p>
-                    <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold text-[10px]">
-                      وضعیت: {agentStatus}
-                    </span>
+                  <div className="flex-1">
+                    <h2 className="text-base font-black text-slate-900 dark:text-white">{currentUserName}</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">{currentUserRoleLabel}</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-full font-bold">{userEmail}</span>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold ${currentUserInfo?.active === false ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                        {currentUserInfo?.active === false ? 'غیرفعال' : 'فعال'}
+                      </span>
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold text-[10px]">
+                        وضعیت: {agentStatus}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-400 font-bold md:text-left">
+                    <span className="block">شماره تماس</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-black">{currentUserInfo?.phone || '—'}</span>
                   </div>
                 </div>
               </div>

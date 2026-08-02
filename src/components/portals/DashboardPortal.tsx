@@ -59,7 +59,8 @@ import {
   ExternalLink,
   Download,
   UserCheck,
-  History
+  History,
+  Calendar
 } from 'lucide-react';
 
 import CustomerWorkspaceView from './CustomerWorkspace';
@@ -74,7 +75,7 @@ import { useUsers } from '../../hooks/useUsers';
 import { useActivities } from '../../hooks/useActivities';
 import { gql } from '../../api/graphql';
 import { formatDateTime } from '../../lib/utils';
-import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, GET_USERS } from '../../api/queries';
+import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, GET_USERS, GET_CURRENT_USER } from '../../api/queries';
 import type { ApiCustomer, ApiAccessRequest, ApiProduct, ApiUser } from '../../api/types';
 
 // Interfaces for our state elements
@@ -166,20 +167,33 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSavingCustomer, setIsSavingCustomer] = useState(false);
-  const [currentUserData, setCurrentUserData] = useState<{ name: string; role: string } | null>(null);
+  const [currentUserData, setCurrentUserData] = useState<ApiUser | null>(null);
 
   useEffect(() => {
-    gql<{ users: ApiUser[] }>(GET_USERS)
+    // Fetch the authenticated user directly via `me` for reliable real data
+    gql<{ me: { user: ApiUser } }>(GET_CURRENT_USER)
       .then(data => {
-        const u = data.users.find(x => x.email === userEmail);
-        if (u) setCurrentUserData({ name: u.name, role: u.role });
+        if (data?.me?.user) setCurrentUserData(data.me.user);
       })
-      .catch(() => {});
+      .catch(() => {
+        // Fallback: match by email from the users list
+        gql<{ users: ApiUser[] }>(GET_USERS)
+          .then(d => {
+            const u = d.users.find(x => x.email === userEmail);
+            if (u) setCurrentUserData(u);
+          })
+          .catch(() => {});
+      });
   }, [userEmail]);
+
+  // Profile helper derivations from real user data
+  const currentUserName = currentUserData?.name || 'کاربر سامانه';
+  const currentUserInitials = currentUserName.split(' ').slice(0, 2).map(p => p[0] || '').join('');
+  const currentUserRoleLabel = currentUserData?.role === 'ADMIN' ? 'مدیر سامانه' : currentUserData?.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر';
 
   // Active Tab state
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'access-requests' | 'users' | 'reports' | 'notifications' | 'settings' | 'customer-details' | 'agent-portal'
+    'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'access-requests' | 'users' | 'reports' | 'notifications' | 'settings' | 'profile' | 'customer-details' | 'agent-portal'
   >('dashboard');
 
   const [selectedCustomerWorkspace, setSelectedCustomerWorkspace] = useState<Customer | null>(null);
@@ -1057,6 +1071,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                 {activeTab === 'reports' && 'گزارش‌ها'}
                 {activeTab === 'notifications' && 'اعلان‌ها'}
                 {activeTab === 'settings' && 'تنظیمات'}
+                {activeTab === 'profile' && 'پروفایل'}
               </span>
             </div>
             <h1 className="text-base font-black text-slate-900 dark:text-white mt-0.5">
@@ -1072,6 +1087,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               {activeTab === 'reports' && 'گزارش‌ها و تحلیل عملکرد'}
               {activeTab === 'notifications' && 'مرکز اعلان‌های سیستم'}
               {activeTab === 'settings' && 'تنظیمات پیکربندی '}
+              {activeTab === 'profile' && 'پروفایل کاربری'}
             </h1>
           </div>
         </div>
@@ -1194,11 +1210,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
           <div className="h-9 w-[1px] bg-slate-200 dark:bg-slate-800" />
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs shadow-inner">
-              {currentUserData ? currentUserData.name.substring(0, 2) : '?'}
+              {currentUserInitials || '؟'}
             </div>
             <div className="hidden lg:flex flex-col text-right">
-              <span className="text-xs font-black text-slate-800 dark:text-slate-200">{currentUserData?.name ?? '?'}</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">{currentUserData?.role ?? '?'}</span>
+              <span className="text-xs font-black text-slate-800 dark:text-slate-200">{currentUserName}</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">{currentUserRoleLabel}</span>
             </div>
           </div>
         </div>
@@ -1380,6 +1396,19 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               <Settings className="w-4.5 h-4.5 shrink-0" />
               {!sidebarCollapsed && <span className="whitespace-nowrap">تنظیمات</span>}
             </button>
+
+            <button
+              onClick={() => { setActiveTab('profile'); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center transition-all duration-200 ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'} rounded-xl text-xs font-semibold ${
+                activeTab === 'profile' 
+                  ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border-r-4 border-brand-500' 
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+              title={sidebarCollapsed ? "پروفایل" : undefined}
+            >
+              <User className="w-4.5 h-4.5 shrink-0" />
+              {!sidebarCollapsed && <span className="whitespace-nowrap">پروفایل</span>}
+            </button>
           </nav>
           </div>
 
@@ -1389,11 +1418,11 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/60 flex flex-col gap-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 font-bold text-xs">
-                    {currentUserData ? currentUserData.name.substring(0, 2) : '?'}
+                    {currentUserInitials || '؟'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{currentUserData?.name ?? '?'}</h4>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{currentUserData?.role ?? '?'}</p>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{currentUserName}</h4>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{currentUserRoleLabel}</p>
                   </div>
                 </div>
                 <button
@@ -4231,6 +4260,113 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                     <button className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-6 py-3 rounded-xl transition-all cursor-pointer">
                       ذخیره تغییرات تنظیمات
                     </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB: PROFILE */}
+            {activeTab === 'profile' && (
+              <motion.div
+                key="profile-tab"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="space-y-6"
+              >
+                {/* Profile header card */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs relative overflow-hidden">
+                  <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none z-0">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-brand-500/10 to-transparent rounded-bl-full" />
+                  </div>
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-brand-500 text-white flex items-center justify-center font-black text-xl shadow-md">
+                      {currentUserInitials || '؟'}
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-base font-black text-slate-900 dark:text-white">{currentUserName}</h2>
+                      <p className="text-xs text-slate-500 mt-0.5">{currentUserRoleLabel}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-full font-bold">{userEmail}</span>
+                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold ${currentUserData?.active === false ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                          {currentUserData?.active === false ? 'غیرفعال' : 'فعال'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-slate-400 font-bold md:text-left">
+                      <span className="block">عضو سامانه از</span>
+                      <span className="text-slate-800 dark:text-slate-200 font-black">
+                        {currentUserData?.createdAt ? new Date(currentUserData.createdAt).toLocaleDateString('fa-IR') : '—'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Profile detail cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                      <User className="w-4 h-4 text-brand-500" />
+                      <span>مشخصات فردی</span>
+                    </h3>
+                    <div className="space-y-3 text-xs font-semibold">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">نام و نام خانوادگی:</span>
+                        <span className="font-black text-slate-800 dark:text-slate-200">{currentUserName}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">ایمیل:</span>
+                        <span className="font-mono text-[10.5px] font-black text-slate-500 truncate">{userEmail}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">شماره تماس:</span>
+                        <span className="font-black text-slate-800 dark:text-slate-200">{currentUserData?.phone || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-brand-500" />
+                      <span>نقش و دسترسی</span>
+                    </h3>
+                    <div className="space-y-3 text-xs font-semibold">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">نقش:</span>
+                        <span className="font-black text-slate-800 dark:text-slate-200">{currentUserRoleLabel}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">سطح نقش:</span>
+                        <span className="font-black text-slate-800 dark:text-slate-200">{currentUserData?.role || '—'}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">وضعیت حساب:</span>
+                        <span className={`font-black ${currentUserData?.active === false ? 'text-rose-500' : 'text-emerald-500'}`}>
+                          {currentUserData?.active === false ? 'غیرفعال' : 'فعال'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">سازمان:</span>
+                        <span className="font-black text-slate-800 dark:text-slate-200 truncate">{currentUserData?.company || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-white pb-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-brand-500" />
+                      <span>اطلاعات فعالیت</span>
+                    </h3>
+                    <div className="space-y-3 text-xs font-semibold">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">تاریخ عضویت:</span>
+                        <span className="font-black text-slate-800 dark:text-slate-200">{currentUserData?.createdAt ? new Date(currentUserData.createdAt).toLocaleDateString('fa-IR') : '—'}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">آخرین به‌روزرسانی:</span>
+                        <span className="font-black text-slate-800 dark:text-slate-200">{currentUserData?.updatedAt ? new Date(currentUserData.updatedAt).toLocaleDateString('fa-IR') : '—'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
