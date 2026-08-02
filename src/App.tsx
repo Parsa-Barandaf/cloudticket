@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sun, Moon, Sparkles } from 'lucide-react';
 import type { AuthScreen, PortalRole, Ticket, Product, Customer } from './types';
@@ -37,10 +37,16 @@ function AppContent() {
   const [portalRole, setPortalRole] = useState<PortalRole>(() => {
     return (localStorage.getItem('cmp_portal_role') as PortalRole) || 'admin';
   });
-  const { tickets: realTickets } = useTickets();
-  const { products: realProducts } = useProducts();
-  const { customers: realCustomers } = useCustomers();
+  const { tickets: realTickets, refetch: refetchTickets } = useTickets();
+  const { products: realProducts, refetch: refetchProducts } = useProducts();
+  const { customers: realCustomers, refetch: refetchCustomers } = useCustomers();
   const { getCurrentUser, logout } = useAuth();
+
+  const refreshAllData = useCallback(() => {
+    refetchTickets();
+    refetchProducts();
+    refetchCustomers();
+  }, [refetchTickets, refetchProducts, refetchCustomers]);
 
   useEffect(() => {
     const token = localStorage.getItem('cmp_access_token');
@@ -54,6 +60,7 @@ function AppContent() {
         setPortalRole(result.role);
         localStorage.setItem('cmp_logged_in', 'true');
         setScreen('dashboard');
+        refreshAllData();
       } else {
         localStorage.removeItem('cmp_access_token');
         localStorage.removeItem('cmp_user_email');
@@ -82,6 +89,7 @@ function AppContent() {
     if (result.customerId) localStorage.setItem('cmp_customer_id', result.customerId);
     if (result.departmentId) localStorage.setItem('cmp_department_id', result.departmentId);
     setScreen('dashboard');
+    refreshAllData();
   };
 
   const handleLogout = () => {
