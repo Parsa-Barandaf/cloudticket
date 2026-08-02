@@ -94,8 +94,6 @@ model Customer {
   address               String?
   tier                  CustomerTier @default(BRONZE)
   status                CustomerStatus @default(ACTIVE)
-  usersCount            Int          @default(0)
-  activeProductsCount   Int          @default(0)
   partnershipStartDate  DateTime?
   lastActivity          DateTime?
   createdAt             DateTime     @default(now())

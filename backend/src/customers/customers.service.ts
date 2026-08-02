@@ -10,9 +10,18 @@ export class CustomersService {
     private activitiesService: ActivitiesService,
   ) {}
 
+  private include() {
+    return {
+      user: true,
+      tickets: true,
+      employees: { select: { id: true } },
+      connections: { include: { product: true, customer: true } },
+    };
+  }
+
   async findAll() {
     return this.prisma.customer.findMany({
-      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
+      include: this.include(),
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -20,7 +29,7 @@ export class CustomersService {
   async findById(id: string) {
     return this.prisma.customer.findUnique({
       where: { id },
-      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
+      include: this.include(),
     });
   }
 
@@ -42,7 +51,7 @@ export class CustomersService {
         status: input.status ?? 'ACTIVE',
         userId: input.userId,
       },
-      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
+      include: this.include(),
     });
 
     await this.activitiesService.create({
@@ -69,7 +78,7 @@ export class CustomersService {
         ...(input.tier !== undefined && { tier: input.tier }),
         ...(input.status !== undefined && { status: input.status }),
       },
-      include: { user: true, tickets: true, connections: { include: { product: true, customer: true } } },
+      include: this.include(),
     });
   }
 

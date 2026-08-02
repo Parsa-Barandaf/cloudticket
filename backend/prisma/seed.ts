@@ -50,8 +50,6 @@ async function main() {
       address: 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲',
       tier: 'GOLD',
       status: 'ACTIVE',
-      usersCount: 23,
-      activeProductsCount: 5,
       partnershipStartDate: new Date('2021-07-15'),
     },
   });
