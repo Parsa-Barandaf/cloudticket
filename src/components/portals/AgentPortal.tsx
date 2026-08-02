@@ -45,12 +45,9 @@ import {
   LogOut,
   Menu,
   Building,
-  Bookmark,
   SlidersHorizontal,
   Layers,
   Eye,
-  CheckSquare,
-  Square,
   Trash2,
   Share2,
   Download,
@@ -68,7 +65,7 @@ import type { AgentTicketItem } from '../../api/transform-agent';
 import { mergeAgentTicketData } from '../../api/transform-agent';
 import { useDepartments } from '../../hooks/useDepartments';
 import { gql } from '../../api/graphql';
-import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET_STATUS } from '../../api/queries';
+import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET, UPDATE_TICKET_STATUS } from '../../api/queries';
 import type { ApiTicket, ApiTicketMessage } from '../../api/types';
 
 function mapApiMessageToAgent(m: ApiTicketMessage): AgentTicketItem['messages'][number] {
@@ -167,10 +164,16 @@ export default function SupportAgentPortalView({
     }
   }, []);
 
-  // Send a reply or internal note through the API and refresh the thread
+  // Send a reply or internal note through the API and refresh the thread.
+  // Writing a reply to an unassigned ticket automatically assigns it to this agent.
   const sendTicketMessage = useCallback(async (ticketId: string, text: string, isInternal: boolean): Promise<boolean> => {
     if (!text.trim()) return false;
     try {
+      const target = agentTickets.find(t => t.id === ticketId);
+      if (target && !target.assignedToMe && currentUserId) {
+        await gql(UPDATE_TICKET, { input: { id: ticketId, assignedToId: currentUserId } });
+        setAgentTickets(prev => prev.map(t => (t.id === ticketId ? { ...t, assignedToMe: true } : t)));
+      }
       await gql(CREATE_TICKET_MESSAGE, {
         input: {
           ticketId,
@@ -185,7 +188,24 @@ export default function SupportAgentPortalView({
     } catch {
       return false;
     }
-  }, [userEmail, fetchTicketMessages]);
+  }, [userEmail, fetchTicketMessages, agentTickets, currentUserId]);
+
+  // Explicitly accept / assign a ticket to the current agent
+  const acceptTicket = useCallback(async (ticketId: string): Promise<boolean> => {
+    if (!currentUserId) {
+      showToast('برای پذیرش تیکت ابتدا وارد حساب شوید.');
+      return false;
+    }
+    try {
+      await gql(UPDATE_TICKET, { input: { id: ticketId, assignedToId: currentUserId } });
+      setAgentTickets(prev => prev.map(t => (t.id === ticketId ? { ...t, assignedToMe: true } : t)));
+      showToast('تیکت با موفقیت به شما تخصیص داده شد و به «تیکت‌های من» اضافه گردید.');
+      return true;
+    } catch {
+      showToast('خطا در تخصیص تیکت. لطفاً دوباره تلاش کنید.');
+      return false;
+    }
+  }, [currentUserId]);
 
   // Selected Active Ticket
   const [activeTicketId, setActiveTicketId] = useState<string>('');
@@ -196,13 +216,13 @@ export default function SupportAgentPortalView({
 
   // Support Ticket Inbox State
   const [inboxFilter, setInboxFilter] = useState<string>('همه');
+  const [activeQuickFilter, setActiveQuickFilter] = useState<string>('all');
   const [inboxSearch, setInboxSearch] = useState<string>('');
   const [inboxSortBy, setInboxSortBy] = useState<'newest' | 'oldest' | 'priority' | 'sla'>('newest');
   const [inboxViewMode, setInboxViewMode] = useState<'detailed' | 'compact'>('detailed');
   const [selectedTicketIds, setSelectedTicketIds] = useState<string[]>([]);
   const [starredTicketIds, setStarredTicketIds] = useState<string[]>([]);
   const [unreadTicketIds, setUnreadTicketIds] = useState<string[]>([]);
-  const [showSavedFiltersModal, setShowSavedFiltersModal] = useState<boolean>(false);
   const [showBulkAssignModal, setShowBulkAssignModal] = useState<boolean>(false);
   const [showBulkStatusModal, setShowBulkStatusModal] = useState<boolean>(false);
   const [showBulkTagModal, setShowBulkTagModal] = useState<boolean>(false);
@@ -210,6 +230,10 @@ export default function SupportAgentPortalView({
   const [previewQuickReplyMode, setPreviewQuickReplyMode] = useState<'reply' | 'note'>('reply');
   const [previewQuickReplyText, setPreviewQuickReplyText] = useState<string>('');
   const [selectedDrawerTicketId, setSelectedDrawerTicketId] = useState<string | null>(null);
+  const [inboxStatusFilter, setInboxStatusFilter] = useState<string>('همه');
+  const [inboxPriorityFilter, setInboxPriorityFilter] = useState<string>('همه');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   // Departments: resolve the current agent's team product access
   const { departments } = useDepartments();
@@ -263,6 +287,9 @@ export default function SupportAgentPortalView({
         if (!matchId && !matchTitle && !matchCustomer && !matchProduct) return false;
       }
 
+      if (inboxStatusFilter !== 'همه' && ticket.status !== inboxStatusFilter) return false;
+      if (inboxPriorityFilter !== 'همه' && ticket.priority !== inboxPriorityFilter) return false;
+
       switch (inboxFilter) {
         case 'صف کاری من':
           return ticket.assignedToMe;
@@ -296,7 +323,22 @@ export default function SupportAgentPortalView({
       if (inboxSortBy === 'sla') return (b.slaRisk ? 1 : 0) - (a.slaRisk ? 1 : 0);
       return 0;
     });
-  }, [scopedTickets, inboxSearch, inboxFilter, inboxSortBy]);
+  }, [scopedTickets, inboxSearch, inboxFilter, inboxSortBy, inboxStatusFilter, inboxPriorityFilter]);
+
+  // KPI counts derived from the scoped ticket set
+  const totalOpenTickets = useMemo(() => scopedTickets.filter(t => t.status === 'جدید' || t.status === 'در حال بررسی').length, [scopedTickets]);
+  const totalWaitingResponse = useMemo(() => scopedTickets.filter(t => t.status === 'منتظر پاسخ مشتری').length, [scopedTickets]);
+  const totalResolved = useMemo(() => scopedTickets.filter(t => t.status === 'حل شده' || t.status === 'بسته شده').length, [scopedTickets]);
+  const totalSlaRisk = useMemo(() => scopedTickets.filter(t => t.slaRisk).length, [scopedTickets]);
+
+  // Pagination over the filtered set
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredInboxTickets.length / itemsPerPage)), [filteredInboxTickets.length, itemsPerPage]);
+  const paginatedTickets = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredInboxTickets.slice(start, start + itemsPerPage);
+  }, [filteredInboxTickets, currentPage, itemsPerPage]);
+  const startIndex = Math.min((currentPage - 1) * itemsPerPage + 1, filteredInboxTickets.length);
+  const endIndex = Math.min(currentPage * itemsPerPage, filteredInboxTickets.length);
 
   const handleToggleSelectAll = () => {
     if (selectedTicketIds.length === filteredInboxTickets.length) {
@@ -1130,268 +1172,505 @@ export default function SupportAgentPortalView({
             </div>
           )}
 
-          {/* SUPPORT TICKET INBOX VIEW (3-COLUMN WORKSPACE) */}
+          {/* SUPPORT TICKET INBOX VIEW (REDESIGNED TO MATCH DASHBOARD STYLE) */}
           {(agentTab === 'inbox' || agentTab === 'my-tickets') && (
-            <div className="space-y-4 dir-rtl text-right">
-              {/* PAGE HEADER WITH DROPDOWN FILTERS */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 shadow-xs">
-                <div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center shrink-0">
-                      <Inbox className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h1 className="text-base font-black text-slate-900 dark:text-white">
-                        {agentTab === 'my-tickets' ? 'تیکتهای من' : 'صندوق ورودی تیکتها'}
-                      </h1>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                        {agentTab === 'my-tickets'
-                          ? 'تیکتهای تخصیصدادهشده به شما و در حال پیگیری'
-                          : 'مدیریت و بررسی درخواستهای پشتیبانی با پاسخدهی سریع'}
-                      </p>
-                    </div>
+            <div className="space-y-6 dir-rtl text-right pb-6 max-w-7xl mx-auto w-full">
+              {/* 1. TOP NAV / HEADER */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-white dark:bg-slate-900 p-6 md:p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-brand-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                <div className="space-y-1.5 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse" />
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                      {agentTab === 'my-tickets' ? 'تیکت‌های من' : 'صندوق ورودی تیکت‌ها'}
+                    </h2>
                   </div>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">
+                    {agentTab === 'my-tickets'
+                      ? 'تیکت‌های تخصیص‌داده‌شده به شما و در حال پیگیری'
+                      : 'مشاهده، پیگیری و پاسخ‌دهی سریع به درخواست‌های پشتیبانی تحت پوشش تیم شما'}
+                  </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {/* Smart Filters Dropdown */}
-                  <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <Filter className="w-3.5 h-3.5 text-brand-500 shrink-0" />
-                    <select
-                      value={inboxFilter}
-                      onChange={e => setInboxFilter(e.target.value)}
-                      className="bg-transparent text-slate-900 dark:text-white font-extrabold text-xs outline-none cursor-pointer pr-1"
-                    >
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="صف کاری من">صف کاری من ({filterCounts.myQueue})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="نیازمند اقدام">نیازمند اقدام ({filterCounts.needsAction})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="منتظر پاسخ مشتری">منتظر پاسخ مشتری ({filterCounts.waitingCustomer})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بحرانی">بحرانی ({filterCounts.urgent})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بدون پاسخ">بدون پاسخ ({filterCounts.unanswered})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="امروز">امروز ({filterCounts.today})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="بروزرسانی اخیر">بروزرسانی اخیر ({filterCounts.recentUpdated})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="SLA در خطر">SLA در خطر 🔥 ({filterCounts.slaRisk})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="سنجاق‌شده">سنجاق‌شده 📌 ({filterCounts.pinned})</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">همه تیکت‌ها ({filterCounts.all})</option>
-                    </select>
-                  </div>
-
-                  {/* Saved Filters Dropdown */}
-                  <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <Bookmark className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <select
-                      onChange={e => {
-                        if (e.target.value === 'golden') {
-                          setInboxFilter('همه');
-                          setInboxSearch('پتروشیمی');
-                        } else if (e.target.value === 'ssl') {
-                          setInboxFilter('همه');
-                          setInboxSearch('SSL');
-                        } else if (e.target.value === 'new') {
-                          setShowSavedFiltersModal(true);
-                        }
-                        e.target.value = '';
-                      }}
-                      defaultValue=""
-                      className="bg-transparent text-slate-900 dark:text-white font-extrabold text-xs outline-none cursor-pointer pr-1"
-                    >
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="" disabled>فیلترهای شخصی ذخیره‌شده...</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="golden">تیکت‌های مشتریان طلایی (۲)</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="ssl">خطاهای امنیت و SSL (۱)</option>
-                      <option className="dark:bg-slate-800 dark:text-slate-200" value="new">+ تعریف فیلتر جدید</option>
-                    </select>
-                  </div>
-
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0 relative z-10">
+                  <button
+                    onClick={() => {
+                      setIsRefreshingInbox(true);
+                      setTimeout(() => setIsRefreshingInbox(false), 600);
+                    }}
+                    title="همگام‌سازی اطلاعات"
+                    className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750 rounded-xl transition-all text-slate-550 dark:text-slate-300 cursor-pointer"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isRefreshingInbox ? 'animate-spin text-brand-500' : ''}`} />
+                  </button>
+                  <button
+                    onClick={() => showToast('گزارش تیکت‌های جاری به صورت اکسل صادر شد.')}
+                    className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750 text-xs font-black px-4.5 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 text-slate-400" />
+                    <span>خروجی گزارش</span>
+                  </button>
                   <button
                     onClick={() => setShowNewTicketModal(true)}
-                    className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-brand-500/20 transition-all cursor-pointer"
+                    className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-black px-5 py-2.5 rounded-xl shadow-md shadow-brand-500/15 transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>ثبت تیکت</span>
+                    <span>ایجاد تیکت جدید</span>
                   </button>
                 </div>
               </div>
 
-              {/* UNCLUTTERED FULL-WIDTH INBOX WORKSPACE */}
-              <div className="w-full space-y-3">
-                {/* INBOX LIST CONTAINER */}
-                <div className="space-y-3">
-                  {/* TOOLBAR & SEARCH */}
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-3.5 shadow-xs space-y-3">
-                    {/* Row 1: Search & Refresh */}
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        <input
-                          type="text"
-                          value={inboxSearch}
-                          onChange={e => setInboxSearch(e.target.value)}
-                          placeholder="جستجوی شماره تیکت، نام مشتری یا عنوان..."
-                          className="w-full pr-10 pl-3 py-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium outline-none focus:border-brand-500 transition-colors placeholder:text-slate-400"
-                        />
-                        {inboxSearch && (
-                          <button
-                            onClick={() => setInboxSearch('')}
-                            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+              {/* 2. TICKET KPI CARDS ROW */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+                <button
+                  onClick={() => { setActiveQuickFilter(activeQuickFilter === 'open' ? 'all' : 'open'); setInboxFilter('نیازمند اقدام'); setInboxStatusFilter('همه'); setInboxPriorityFilter('همه'); setInboxSearch(''); setCurrentPage(1); }}
+                  className={`rounded-2xl border p-5 flex items-center justify-between shadow-xs transition-all duration-200 cursor-pointer text-right ${
+                    activeQuickFilter === 'open'
+                      ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-700'
+                      : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/30'
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز</span>
+                    <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalOpenTickets}</h4>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">جریان کار فعال در سیستم</span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <Inbox className="w-5 h-5" />
+                  </div>
+                </button>
 
-                      <button
-                        onClick={() => {
-                          setIsRefreshingInbox(true);
-                          setTimeout(() => setIsRefreshingInbox(false), 600);
-                        }}
-                        className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shrink-0"
-                        title="بروزرسانی لیست"
-                      >
-                        <RefreshCw className={`w-4 h-4 ${isRefreshingInbox ? 'animate-spin text-brand-500' : ''}`} />
-                      </button>
+                <button
+                  onClick={() => { setActiveQuickFilter(activeQuickFilter === 'waiting' ? 'all' : 'waiting'); setInboxFilter('منتظر پاسخ مشتری'); setInboxStatusFilter('همه'); setInboxPriorityFilter('همه'); setInboxSearch(''); setCurrentPage(1); }}
+                  className={`rounded-2xl border p-5 flex items-center justify-between shadow-xs transition-all duration-200 cursor-pointer text-right ${
+                    activeQuickFilter === 'waiting'
+                      ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700'
+                      : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/30'
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">در انتظار پاسخ</span>
+                    <h4 className="text-2xl font-black text-amber-500 font-mono leading-none">{totalWaitingResponse}</h4>
+                    <span className="text-[10px] font-bold text-amber-500">نیاز به اقدام و مانیتورینگ</span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveQuickFilter(activeQuickFilter === 'resolved' ? 'all' : 'resolved'); setInboxFilter('همه'); setInboxStatusFilter('حل شده'); setInboxPriorityFilter('همه'); setInboxSearch(''); setCurrentPage(1); }}
+                  className={`rounded-2xl border p-5 flex items-center justify-between shadow-xs transition-all duration-200 cursor-pointer text-right ${
+                    activeQuickFilter === 'resolved'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-700'
+                      : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/30'
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">حل شده</span>
+                    <h4 className="text-2xl font-black text-emerald-500 font-mono leading-none">{totalResolved}</h4>
+                    <span className="text-[10px] font-bold text-emerald-500">تیکت‌های خاتمه‌یافته نهایی</span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveQuickFilter(activeQuickFilter === 'sla' ? 'all' : 'sla'); setInboxFilter('SLA در خطر'); setInboxStatusFilter('همه'); setInboxPriorityFilter('همه'); setInboxSearch(''); setCurrentPage(1); }}
+                  className={`rounded-2xl border p-5 flex items-center justify-between shadow-xs transition-all duration-200 cursor-pointer text-right ${
+                    activeQuickFilter === 'sla'
+                      ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-700'
+                      : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/30'
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">SLA در خطر</span>
+                    <h4 className="text-2xl font-black text-rose-500 font-mono leading-none">{totalSlaRisk}</h4>
+                    <span className="text-[10px] font-bold text-rose-500">نیازمند پیگیری فوری</span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                </button>
+              </div>
+
+              {/* 3. SEARCH AND FILTERS TOOLBAR PANEL */}
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs space-y-4">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex flex-1 flex-col sm:flex-row items-center gap-3">
+                    {/* Search Box */}
+                    <div className="relative w-full sm:max-w-xs">
+                      <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="جستجو بر اساس شماره، عنوان یا مشتری..."
+                        value={inboxSearch}
+                        onChange={e => { setInboxSearch(e.target.value); setCurrentPage(1); }}
+                        className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-xs font-semibold focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-150"
+                      />
                     </div>
 
-                    {/* Row 2: Sort, View mode & Select All */}
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={handleToggleSelectAll}
-                          className="p-1 rounded text-slate-500 hover:text-brand-500 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
-                          title="انتخاب همه"
+                    {/* Quick dropdown filters */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto font-bold text-slate-600 dark:text-slate-300">
+                      <div>
+                        <select
+                          value={inboxStatusFilter}
+                          onChange={e => { setInboxStatusFilter(e.target.value); setCurrentPage(1); setActiveQuickFilter('all'); }}
+                          className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                         >
-                          {selectedTicketIds.length > 0 && selectedTicketIds.length === filteredInboxTickets.length ? (
-                            <CheckSquare className="w-4 h-4 text-brand-500" />
-                          ) : (
-                            <Square className="w-4 h-4 text-slate-400" />
-                          )}
-                          <span>{selectedTicketIds.length > 0 ? `${selectedTicketIds.length} انتخاب` : 'انتخاب همه'}</span>
-                        </button>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="جدید">جدید</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="در حال بررسی">در حال بررسی</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="منتظر پاسخ مشتری">منتظر پاسخ مشتری</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="حل شده">حل شده</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="بسته شده">بسته شده</option>
+                        </select>
                       </div>
-
-                      <div className="flex items-center gap-2.5">
-                        {/* Sort Dropdown */}
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">مرتب‌سازی:</span>
-                          <select
-                            value={inboxSortBy}
-                            onChange={e => setInboxSortBy(e.target.value as any)}
-                            className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
-                          >
-                            <option className="dark:bg-slate-800 dark:text-slate-200" value="newest">جدیدترین</option>
-                            <option className="dark:bg-slate-800 dark:text-slate-200" value="oldest">قدیمی‌ترین</option>
-                            <option className="dark:bg-slate-800 dark:text-slate-200" value="priority">اولویت</option>
-                            <option className="dark:bg-slate-800 dark:text-slate-200" value="sla">ریسک SLA</option>
-                          </select>
-                        </div>
-
-                        {/* View Mode Toggle */}
-                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[11px]">
-                          <button
-                            onClick={() => setInboxViewMode('detailed')}
-                            className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
-                              inboxViewMode === 'detailed' ? 'bg-white dark:bg-slate-900 text-brand-500 font-extrabold shadow-2xs' : 'text-slate-400'
-                            }`}
-                          >
-                            مفصل
-                          </button>
-                          <button
-                            onClick={() => setInboxViewMode('compact')}
-                            className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
-                              inboxViewMode === 'compact' ? 'bg-white dark:bg-slate-900 text-brand-500 font-extrabold shadow-2xs' : 'text-slate-400'
-                            }`}
-                          >
-                            فشرده
-                          </button>
-                        </div>
+                      <div>
+                        <select
+                          value={inboxPriorityFilter}
+                          onChange={e => { setInboxPriorityFilter(e.target.value); setCurrentPage(1); setActiveQuickFilter('all'); }}
+                          className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
+                        >
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">اولویت: همه</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="پایین">پایین</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="متوسط">متوسط</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="بالا">بالا</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="بحرانی">بحرانی</option>
+                        </select>
                       </div>
                     </div>
+
+                    {/* Sort Selector */}
+                    <select
+                      value={inboxSortBy}
+                      onChange={e => setInboxSortBy(e.target.value as any)}
+                      title="مرتب‌سازی"
+                      className="text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold text-slate-700 dark:text-slate-300"
+                    >
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="newest">جدیدترین</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="oldest">قدیمی‌ترین</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="priority">اولویت</option>
+                      <option className="dark:bg-slate-800 dark:text-slate-200" value="sla">ریسک SLA</option>
+                    </select>
                   </div>
 
-                  {/* BULK ACTIONS FLOATING TOOLBAR */}
-                  <AnimatePresence>
-                    {selectedTicketIds.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-brand-600 text-white p-3 rounded-2xl shadow-lg flex items-center justify-between text-xs font-bold gap-2"
+                  <button
+                    onClick={() => {
+                      setInboxFilter('همه');
+                      setInboxStatusFilter('همه');
+                      setInboxPriorityFilter('همه');
+                      setInboxSearch('');
+                      setActiveQuickFilter('all');
+                      setCurrentPage(1);
+                    }}
+                    className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold hover:underline self-end lg:self-auto cursor-pointer"
+                  >
+                    حذف فیلترها
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. QUICK FILTERS CHIPS */}
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { id: 'all', label: 'همه تیکت‌ها', count: scopedTickets.length },
+                  { id: 'my', label: 'صف کاری من', count: filterCounts.myQueue },
+                  { id: 'critical', label: 'وضعیت بحرانی', count: filterCounts.urgent },
+                  { id: 'unanswered', label: 'پاسخ داده نشده', count: filterCounts.unanswered },
+                  { id: 'sla', label: 'SLA در خطر', count: filterCounts.slaRisk },
+                  { id: 'pinned', label: 'سنجاق‌شده', count: filterCounts.pinned }
+                ].map(c => {
+                  const isActive = activeQuickFilter === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        setActiveQuickFilter(c.id);
+                        setCurrentPage(1);
+                        setInboxStatusFilter('همه');
+                        setInboxPriorityFilter('همه');
+                        switch (c.id) {
+                          case 'my': setInboxFilter('صف کاری من'); break;
+                          case 'critical': setInboxFilter('بحرانی'); break;
+                          case 'unanswered': setInboxFilter('بدون پاسخ'); break;
+                          case 'sla': setInboxFilter('SLA در خطر'); break;
+                          case 'pinned': setInboxFilter('سنجاق‌شده'); break;
+                          default: setInboxFilter('همه');
+                        }
+                      }}
+                      className={`flex items-center gap-2.5 px-4.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-brand-600 text-white shadow-md shadow-brand-500/10 border border-transparent'
+                          : 'bg-white dark:bg-slate-900 text-slate-550 hover:text-slate-800 dark:hover:text-slate-200 border border-slate-200/60 dark:border-slate-800'
+                      }`}
+                    >
+                      <span>{c.label}</span>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                      }`}>
+                        {c.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* 5. BULK ACTIONS FLOATING BAR */}
+              <AnimatePresence>
+                {selectedTicketIds.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-800 flex items-center justify-between gap-6 w-full max-w-3xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-5.5 h-5.5 rounded-lg bg-brand-500 flex items-center justify-center text-xs font-black">
+                        {selectedTicketIds.length}
+                      </span>
+                      <span className="text-xs font-black">تیکت انتخاب شده است</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-xs font-bold">
+                      <button
+                        onClick={() => setShowBulkAssignModal(true)}
+                        className="px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-xl transition-all cursor-pointer"
                       >
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>{selectedTicketIds.length} تیکت انتخاب شده</span>
-                        </div>
+                        تخصیص کارشناس
+                      </button>
+                      <button
+                        onClick={() => setShowBulkStatusModal(true)}
+                        className="px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-xl transition-all cursor-pointer"
+                      >
+                        تغییر وضعیت
+                      </button>
+                      <button
+                        onClick={() => setShowBulkTagModal(true)}
+                        className="px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-xl transition-all cursor-pointer"
+                      >
+                        برچسب
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedTicketIds([]);
+                          showToast('عملیات بستن گروهی اجرا گردید.');
+                        }}
+                        className="px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-emerald-400 hover:text-emerald-300 rounded-xl transition-all cursor-pointer"
+                      >
+                        بستن تیکت‌ها
+                      </button>
+                      <span>|</span>
+                      <button
+                        onClick={() => setSelectedTicketIds([])}
+                        className="p-2 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                        <div className="flex items-center gap-2 text-xs">
-                          <button
-                            onClick={() => setShowBulkAssignModal(true)}
-                            className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-                          >
-                            تخصیص
-                          </button>
-                          <button
-                            onClick={() => setShowBulkStatusModal(true)}
-                            className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-                          >
-                            تغییر وضعیت
-                          </button>
-                          <button
-                            onClick={() => setShowBulkTagModal(true)}
-                            className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-                          >
-                            برچسب
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedTicketIds([]);
-                              showToast('عملیات بستن گروهی اجرا گردید.');
-                            }}
-                            className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer"
-                          >
-                            بستن
-                          </button>
-                          <button
-                            onClick={() => setSelectedTicketIds([])}
-                            className="p-1 rounded hover:bg-white/10 cursor-pointer"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+              {/* 6. MAIN TICKETS CONTAINER (Table on Desktop, Cards on Mobile) */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs overflow-hidden">
+                {paginatedTickets.length > 0 ? (
+                  <>
+                    {/* TABLE: Shown on tablet / desktop (sm: block, mobile hidden) */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <table className="w-full min-w-[1100px] text-right border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-slate-450 dark:text-slate-550 text-[10px] font-extrabold uppercase">
+                            <th className="p-4 pr-6 w-10">
+                              <input
+                                type="checkbox"
+                                checked={selectedTicketIds.length === paginatedTickets.length && paginatedTickets.length > 0}
+                                onChange={handleToggleSelectAll}
+                                className="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                              />
+                            </th>
+                            <th className="p-4 whitespace-nowrap">شماره تیکت</th>
+                            <th className="p-4 pr-1 whitespace-nowrap">موضوع و خلاصه درخواست</th>
+                            <th className="p-4 whitespace-nowrap">مشتری</th>
+                            <th className="p-4 whitespace-nowrap">محصول / زیرسرویس</th>
+                            <th className="p-4 text-center whitespace-nowrap">اولویت</th>
+                            <th className="p-4 text-center whitespace-nowrap">وضعیت</th>
+                            <th className="p-4 whitespace-nowrap">SLA</th>
+                            <th className="p-4 pl-6 text-left whitespace-nowrap">عملیات</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs text-slate-700 dark:text-slate-300">
+                          {paginatedTickets.map((t) => {
+                            const isSelected = selectedTicketIds.includes(t.id);
+                            const isActive = activeTicketId === t.id;
+                            const isUnread = unreadTicketIds.includes(t.id);
+                            const isStarred = starredTicketIds.includes(t.id);
+                            return (
+                              <tr
+                                key={t.id}
+                                onClick={() => {
+                                  setActiveTicketId(t.id);
+                                  setSelectedDrawerTicketId(t.id);
+                                  fetchTicketMessages(t.id);
+                                }}
+                                className={`group cursor-pointer hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition-colors duration-150 ${
+                                  isSelected ? 'bg-brand-500/5 dark:bg-brand-500/10' : isActive ? 'bg-brand-500/5 dark:bg-brand-500/10' : ''
+                                }`}
+                              >
+                                {/* Checkbox column */}
+                                <td className="p-4 pr-6">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      if (isSelected) {
+                                        setSelectedTicketIds(selectedTicketIds.filter(id => id !== t.id));
+                                      } else {
+                                        setSelectedTicketIds([...selectedTicketIds, t.id]);
+                                      }
+                                    }}
+                                    className="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                                  />
+                                </td>
 
-                  {/* INBOX ITEMS STREAM */}
-                  <div className="space-y-2.5 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
-                    {filteredInboxTickets.length === 0 ? (
-                      /* EMPTY STATE */
-                      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-12 text-center space-y-3">
-                        <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
-                          <Inbox className="w-7 h-7" />
-                        </div>
-                        <div>
-                          <h3 className="text-base font-black text-slate-900 dark:text-white">
-                            هیچ تیکتی در این فیلتر یا جستجو وجود ندارد
-                          </h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed max-w-sm mx-auto">
-                            با تغییر فیلترهای بالای صفحه یا پاک کردن عبارت جستجو، لیست کامل تیکت‌ها را مشاهده فرمایید.
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setInboxFilter('همه');
-                            setInboxSearch('');
-                          }}
-                          className="px-4 py-2 rounded-xl bg-brand-500 text-white font-bold text-xs shadow-md cursor-pointer hover:bg-brand-600 transition-all inline-flex items-center gap-1.5"
-                        >
-                          <span>نمایش همه تیکت‌ها</span>
-                        </button>
-                      </div>
-                    ) : (
-                      filteredInboxTickets.map(t => {
-                        const isSelected = activeTicketId === t.id;
-                        const isChecked = selectedTicketIds.includes(t.id);
+                                {/* ID */}
+                                <td className="p-4 whitespace-nowrap">
+                                  <div className="flex items-center gap-1.5">
+                                    {isUnread && <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />}
+                                    <span className="font-mono font-bold text-slate-400 dark:text-slate-500 hover:text-brand-500 transition-colors cursor-pointer">
+                                      #{t.ticketNumber}
+                                    </span>
+                                    {t.pinned && <Pin className="w-3 h-3 text-brand-500 fill-brand-500" />}
+                                    {t.assignedToMe && (
+                                      <span className="flex items-center gap-0.5 text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0" title="به شما تخصیص داده شده">
+                                        <UserCheck className="w-2.5 h-2.5" />
+                                        <span>من</span>
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+
+                                {/* Title / Subject */}
+                                <td className="p-4 pr-1 max-w-xs md:max-w-md">
+                                  <div className="space-y-1">
+                                    <span className={`block leading-relaxed line-clamp-1 ${isUnread ? 'font-black text-slate-900 dark:text-white' : 'font-bold text-slate-900 dark:text-slate-200'}`}>
+                                      {t.title}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block">
+                                      {t.customerTier} • {t.messages.length} گفتگو
+                                    </span>
+                                  </div>
+                                </td>
+
+                                {/* Customer */}
+                                <td className="p-4 whitespace-nowrap">
+                                  <div className="font-extrabold text-slate-800 dark:text-slate-200">
+                                    {t.customer}
+                                  </div>
+                                </td>
+
+                                {/* Product */}
+                                <td className="p-4 whitespace-nowrap">
+                                  <span className="bg-slate-100 dark:bg-slate-800/80 text-slate-650 dark:text-slate-400 px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-slate-150 dark:border-slate-700/50">
+                                    {t.product}
+                                  </span>
+                                </td>
+
+                                {/* Priority */}
+                                <td className="p-4 text-center whitespace-nowrap">
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${getPriorityBadge(t.priority)}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                      t.priority === 'بحرانی' ? 'bg-rose-500' :
+                                      t.priority === 'بالا' ? 'bg-orange-500' :
+                                      t.priority === 'متوسط' ? 'bg-blue-500' : 'bg-slate-400'
+                                    }`} />
+                                    {t.priority}
+                                  </span>
+                                </td>
+
+                                {/* Status */}
+                                <td className="p-4 text-center whitespace-nowrap">
+                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black border ${getStatusBadge(t.status)}`}>
+                                    {t.status}
+                                  </span>
+                                </td>
+
+                                {/* SLA */}
+                                <td className="p-4 whitespace-nowrap">
+                                  {t.slaRisk ? (
+                                    <span className="flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg font-mono font-bold border border-rose-500/20">
+                                      <Clock className="w-3 h-3 animate-pulse" />
+                                      {t.slaRemaining}
+                                    </span>
+                                  ) : (
+                                    <span className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg font-mono font-bold border border-emerald-500/20">
+                                      <Clock className="w-3 h-3" />
+                                      {t.slaRemaining}
+                                    </span>
+                                  )}
+                                </td>
+
+                                {/* Actions menu */}
+                                <td className="p-4 pl-6 text-left whitespace-nowrap">
+                                  <div className="flex items-center justify-end gap-1">
+                                    {!t.assignedToMe && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          acceptTicket(t.id);
+                                        }}
+                                        className="px-2 py-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 rounded-lg text-[10px] font-black transition-colors cursor-pointer"
+                                        title="پذیرش تیکت و افزودن به تیکت‌های من"
+                                      >
+                                        <UserPlus className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (isStarred) {
+                                          setStarredTicketIds(starredTicketIds.filter(id => id !== t.id));
+                                        } else {
+                                          setStarredTicketIds([...starredTicketIds, t.id]);
+                                        }
+                                      }}
+                                      className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-450 hover:text-amber-500 transition-colors cursor-pointer"
+                                      title="ستاره‌دار"
+                                    >
+                                      <Star className={`w-4 h-4 ${isStarred ? 'fill-amber-500 text-amber-500' : ''}`} />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setAgentTickets(prev =>
+                                          prev.map(x => (x.id === t.id ? { ...x, pinned: !x.pinned } : x))
+                                        );
+                                      }}
+                                      className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-450 hover:text-brand-500 transition-colors cursor-pointer"
+                                      title="سنجاق‌کردن"
+                                    >
+                                      <Pin className={`w-4 h-4 ${t.pinned ? 'fill-brand-500 text-brand-500' : ''}`} />
+                                    </button>
+                                    <span className="flex items-center gap-1 text-[10px] font-bold text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      گفتگو
+                                      <MessageSquare className="w-3.5 h-3.5" />
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* CARDS GRID: Shown on Mobile (sm: hidden) */}
+                    <div className="block sm:hidden p-4 space-y-4">
+                      {paginatedTickets.map((t) => {
+                        const isSelected = selectedTicketIds.includes(t.id);
                         const isUnread = unreadTicketIds.includes(t.id);
-                        const isStarred = starredTicketIds.includes(t.id);
-
                         return (
                           <div
                             key={t.id}
@@ -1400,140 +1679,176 @@ export default function SupportAgentPortalView({
                               setSelectedDrawerTicketId(t.id);
                               fetchTicketMessages(t.id);
                             }}
-                            className={`p-4 rounded-2xl border transition-all cursor-pointer relative group ${
+                            className={`p-4 rounded-2xl border transition-all space-y-3.5 text-right relative cursor-pointer ${
                               isSelected
-                                ? 'bg-brand-50/70 dark:bg-brand-500/10 border-brand-500 shadow-xs ring-1 ring-brand-500/30'
-                                : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800/80 hover:border-brand-500/40 hover:bg-slate-50/60 dark:hover:bg-slate-950/40'
+                                ? 'bg-brand-500/5 border-brand-500/40 shadow-xs'
+                                : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/80'
                             }`}
                           >
-                            {/* Unread Indicator Pill */}
-                            {isUnread && (
-                              <span className="absolute top-4 right-3 w-2.5 h-2.5 rounded-full bg-brand-500 ring-2 ring-white dark:ring-slate-900" />
-                            )}
-
-                            <div className="space-y-2.5 pr-3">
-                              {/* Top Row: Checkbox, ID, Customer, Status, Priority */}
-                              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                                <div className="flex items-center gap-2.5">
-                                  <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    onChange={e => {
-                                      e.stopPropagation();
-                                      if (isChecked) {
-                                        setSelectedTicketIds(selectedTicketIds.filter(id => id !== t.id));
-                                      } else {
-                                        setSelectedTicketIds([...selectedTicketIds, t.id]);
-                                      }
-                                    }}
-                                    className="rounded accent-brand-500 cursor-pointer w-4 h-4"
-                                  />
-                                  <span className="font-mono font-bold text-slate-400 dark:text-slate-500 hover:text-brand-500 transition-colors">
-                                    #{t.ticketNumber}
-                                  </span>
-                                  <span className="font-bold text-slate-800 dark:text-slate-200">
-                                    {t.customer}
-                                  </span>
-                                  <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md font-extrabold border border-amber-500/20">
-                                    {t.customerTier}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  <span className={`px-2.5 py-0.5 rounded-md border text-[11px] font-bold ${getPriorityBadge(t.priority)}`}>
-                                    {t.priority}
-                                  </span>
-                                  <span className={`px-2.5 py-0.5 rounded-md border text-[11px] font-bold ${getStatusBadge(t.status)}`}>
-                                    {t.status}
-                                  </span>
-                                </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {isUnread && <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />}
+                                <span className="font-mono text-[10px] font-bold text-slate-400">#{t.ticketNumber}</span>
                               </div>
+                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border ${getPriorityBadge(t.priority)}`}>
+                                {t.priority}
+                              </span>
+                            </div>
 
-                              {/* Middle Row: Title & Latest Message Preview */}
-                              <div>
-                                <h3 className={`text-sm ${isUnread ? 'font-black text-slate-900 dark:text-white' : 'font-bold text-slate-800 dark:text-slate-200'} leading-relaxed`}>
-                                  {t.title}
-                                </h3>
-                                {inboxViewMode === 'detailed' && t.messages.length > 0 && (
-                                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1 mt-1 dir-rtl">
-                                    <span className="font-bold text-slate-700 dark:text-slate-300">{t.messages[t.messages.length - 1].senderName}:</span> {t.messages[t.messages.length - 1].text}
-                                  </p>
+                            <div className="space-y-1">
+                              <h4 className="text-xs font-black text-slate-900 dark:text-white leading-relaxed">
+                                {t.title}
+                              </h4>
+                              <p className="text-[10px] text-slate-400 font-bold">{t.customer} • {t.product}</p>
+                            </div>
+
+                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
+                              <span className={`px-2 py-0.5 rounded-md text-[9px] font-black border ${getStatusBadge(t.status)}`}>
+                                {t.status}
+                              </span>
+                              <span className="font-mono text-slate-400 font-bold">{t.waitingTime}</span>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  if (isSelected) {
+                                    setSelectedTicketIds(selectedTicketIds.filter(id => id !== t.id));
+                                  } else {
+                                    setSelectedTicketIds([...selectedTicketIds, t.id]);
+                                  }
+                                }}
+                                className="rounded accent-brand-500 cursor-pointer w-4 h-4"
+                              />
+                              <div className="flex items-center gap-2">
+                                {!t.assignedToMe && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      acceptTicket(t.id);
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 text-[10px] font-black transition-colors cursor-pointer flex items-center gap-1"
+                                    title="پذیرش تیکت و افزودن به تیکت‌های من"
+                                  >
+                                    <UserPlus className="w-3 h-3" />
+                                    <span>پذیرش</span>
+                                  </button>
                                 )}
-                              </div>
-
-                              {/* Bottom Row: Tags, SLA, Time & Action Hint */}
-                              <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2 text-xs text-slate-400 font-medium">
-                                <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-                                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded">
-                                    {t.product}
-                                  </span>
-
-                                  {t.slaRisk && (
-                                    <span className="flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded font-mono font-bold border border-rose-500/20 shrink-0">
-                                      <Clock className="w-3 h-3 animate-pulse" />
-                                      <span>SLA: {t.slaRemaining}</span>
-                                    </span>
-                                  )}
-
-                                  {t.pinned && (
-                                    <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
-                                  )}
-
-                                  <span className="font-mono text-[11px] text-slate-400 shrink-0">{t.waitingTime}</span>
-                                </div>
-
-                                {/* Item Quick Action Buttons */}
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[11px] text-brand-500 font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                    <span>مشاهده و گفتگو</span>
-                                    <MessageSquare className="w-3.5 h-3.5" />
-                                  </span>
-
-                                  <button
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      if (isStarred) {
-                                        setStarredTicketIds(starredTicketIds.filter(id => id !== t.id));
-                                      } else {
-                                        setStarredTicketIds([...starredTicketIds, t.id]);
-                                      }
-                                    }}
-                                    className="p-1 text-slate-400 hover:text-amber-500 cursor-pointer"
-                                    title="ستاره‌دار"
-                                  >
-                                    <Star className={`w-4 h-4 ${isStarred ? 'fill-amber-500 text-amber-500' : ''}`} />
-                                  </button>
-
-                                  <button
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      setAgentTickets(prev =>
-                                        prev.map(x => (x.id === t.id ? { ...x, pinned: !x.pinned } : x))
-                                      );
-                                    }}
-                                    className="p-1 text-slate-400 hover:text-brand-500 cursor-pointer"
-                                    title="سنجاق‌کردن"
-                                  >
-                                    <Pin className={`w-4 h-4 ${t.pinned ? 'fill-brand-500 text-brand-500' : ''}`} />
-                                  </button>
-                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setAgentTickets(prev =>
+                                      prev.map(x => (x.id === t.id ? { ...x, pinned: !x.pinned } : x))
+                                    );
+                                  }}
+                                  className="p-1 text-slate-300 dark:text-slate-600 hover:text-brand-500 cursor-pointer"
+                                  title="سنجاق‌کردن"
+                                >
+                                  <Pin className={`w-4 h-4 ${t.pinned ? 'fill-brand-500 text-brand-500' : ''}`} />
+                                </button>
+                                <span className="flex items-center gap-1 text-[11px] text-brand-500 font-bold">
+                                  گفتگو
+                                  <MessageSquare className="w-3.5 h-3.5" />
+                                </span>
                               </div>
                             </div>
                           </div>
                         );
-                      })
-                    )}
-                  </div>
-
-                  {/* SHORTCUTS HINT BAR */}
-                  <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/60 dark:border-slate-800 text-xs text-slate-400 font-bold flex flex-wrap items-center justify-between gap-2 dir-rtl">
-                    <div className="flex items-center gap-3">
-                      <span>راهنمای تعاملی:</span>
-                      <span className="text-slate-600 dark:text-slate-300">کلیک روی هر تیکت = باز شدن کشوی پیام‌ها و چت سریع</span>
+                      })}
                     </div>
-                    <span><kbd className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[10px]">Esc</kbd> بستن کشو</span>
+
+                    {/* PAGINATION CONTAINER */}
+                    <div className="bg-slate-50/50 dark:bg-slate-950/20 border-t border-slate-100 dark:border-slate-800/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="text-xs text-slate-550 dark:text-slate-450 font-bold self-center">
+                        نمایش <span className="font-mono text-slate-800 dark:text-white">{startIndex}</span> تا{' '}
+                        <span className="font-mono text-slate-800 dark:text-white">{endIndex}</span> از{' '}
+                        <span className="font-mono text-slate-800 dark:text-white">{filteredInboxTickets.length}</span> تیکت پشتیبانی
+                      </div>
+                      <div className="flex items-center gap-4 justify-center sm:justify-end">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
+                          <span>تعداد در صفحه:</span>
+                          <select
+                            value={itemsPerPage}
+                            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                            className="text-xs border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 px-2 py-1 outline-none cursor-pointer font-bold"
+                          >
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value={5}>۵ تیکت</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value={10}>۱۰ تیکت</option>
+                            <option className="dark:bg-slate-800 dark:text-slate-200" value={20}>۲۰ تیکت</option>
+                          </select>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 hover:text-slate-700 disabled:opacity-40 disabled:hover:text-slate-500 transition-colors cursor-pointer"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                          {Array.from({ length: totalPages }).map((_, i) => (
+                            <button
+                              key={i + 1}
+                              onClick={() => setCurrentPage(i + 1)}
+                              className={`w-7.5 h-7.5 text-xs font-black font-mono rounded-lg transition-all cursor-pointer ${
+                                currentPage === i + 1
+                                  ? 'bg-brand-600 text-white shadow-xs'
+                                  : 'border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
+                              }`}
+                            >
+                              {i + 1}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 hover:text-slate-700 disabled:opacity-40 disabled:hover:text-slate-500 transition-colors cursor-pointer"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* EMPTY STATE VIEW */
+                  <div className="p-16 text-center text-slate-450 dark:text-slate-500 space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/40 text-slate-450 flex items-center justify-center mx-auto shadow-inner border border-slate-100 dark:border-slate-800">
+                      <Inbox className="w-8 h-8 opacity-60" />
+                    </div>
+                    <div className="space-y-1.5 max-w-sm mx-auto">
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white">هیچ تیکتی پیدا نشد</h3>
+                      <p className="text-xs text-slate-450 dark:text-slate-500 leading-relaxed font-bold">
+                        فیلترهای اعمال شده یا جستجوهای جاری شما هیچ تیکتی را برنگرداند. فیلترها را حذف کنید یا نسبت به تعریف تیکت جدید اقدام ورزید.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex justify-center gap-3">
+                      <button
+                        onClick={() => {
+                          setInboxFilter('همه');
+                          setInboxStatusFilter('همه');
+                          setInboxPriorityFilter('همه');
+                          setInboxSearch('');
+                          setActiveQuickFilter('all');
+                          setCurrentPage(1);
+                        }}
+                        className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-black rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                      >
+                        ریست کردن فیلترها
+                      </button>
+                      <button
+                        onClick={() => setShowNewTicketModal(true)}
+                        className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black rounded-xl shadow-md shadow-brand-500/15 transition-all cursor-pointer"
+                      >
+                        ایجاد تیکت پشتیبانی جدید
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
+              </div>
 
                 {/* SLIDE-OVER DRAWER FOR MESSAGES & CHAT (DRAWER) */}
                 <AnimatePresence>
@@ -1571,6 +1886,16 @@ export default function SupportAgentPortalView({
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {!activeTicket.assignedToMe && (
+                              <button
+                                onClick={() => acceptTicket(activeTicket.id)}
+                                className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                                title="پذیرش تیکت و افزودن به تیکت‌های من"
+                              >
+                                <UserPlus className="w-3.5 h-3.5" />
+                                <span>پذیرش تیکت</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setSelectedDrawerTicketId(null);
@@ -1742,7 +2067,6 @@ export default function SupportAgentPortalView({
                     </>
                   )}
                 </AnimatePresence>
-              </div>
             </div>
           )}
 
