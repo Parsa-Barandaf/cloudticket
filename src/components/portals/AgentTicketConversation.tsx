@@ -36,7 +36,7 @@ interface AgentTicketConversationProps {
   departments: ApiDepartment[];
   agentsList: ApiUser[];
   onBack: () => void;
-  showToast: (msg: string) => void;
+  showToast: (msg: string, type?: 'success' | 'error') => void;
   onTicketUpdated: (updated: AgentTicketItem) => void;
 }
 
@@ -219,6 +219,9 @@ export default function AgentTicketConversation({
   const [transferAgentId, setTransferAgentId] = useState('');
   const [transferReason, setTransferReason] = useState('');
   const [isTransferring, setIsTransferring] = useState(false);
+
+  // ── Close ticket confirmation ──
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
   const transferDepartmentAgents = useMemo(() => {
     if (!transferDepartmentId) return [] as typeof agentsList;
@@ -408,7 +411,7 @@ export default function AgentTicketConversation({
             </button>
 
             <button
-              onClick={() => handleChangeStatus(currentTicket.status === 'بسته شده' ? currentTicket.status : 'بسته شده')}
+              onClick={() => setShowCloseConfirm(true)}
               className={`px-4 py-2.5 border rounded-xl text-xs font-black transition-all cursor-pointer ${
                 currentTicket.status === 'بسته شده'
                   ? 'bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-600 border-slate-200 dark:border-slate-700 cursor-not-allowed'
@@ -806,6 +809,53 @@ export default function AgentTicketConversation({
                   className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-black cursor-pointer shadow-md shadow-brand-500/15 disabled:opacity-50"
                 >
                   {isTransferring ? 'در حال ارجاع...' : 'تایید و ارجاع'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CLOSE TICKET CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showCloseConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl p-6 text-right space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">بستن تیکت #{currentTicket.ticketNumber}</h3>
+                <button
+                  onClick={() => setShowCloseConfirm(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 text-xs space-y-1">
+                <p className="font-black text-rose-600 dark:text-rose-400">آیا از بستن این تیکت مطمئن هستید؟</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">با بستن تیکت، چرخه پشتیبانی این درخواست به پایان می‌رسد.</p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  onClick={() => setShowCloseConfirm(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCloseConfirm(false);
+                    handleChangeStatus('بسته شده');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-black cursor-pointer shadow-md shadow-rose-500/15"
+                >
+                  تایید بستن تیکت
                 </button>
               </div>
             </motion.div>

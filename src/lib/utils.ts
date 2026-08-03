@@ -6,6 +6,7 @@ export function cn(...classes: ClassInput[]): string {
 
 export function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
   return new Intl.DateTimeFormat('fa-IR', {
     year: 'numeric',
     month: '2-digit',
@@ -15,6 +16,7 @@ export function formatDate(dateStr: string): string {
 
 export function formatDateTime(dateStr: string): string {
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
   const date = new Intl.DateTimeFormat('fa-IR', {
     year: 'numeric',
     month: '2-digit',
@@ -28,8 +30,9 @@ export function formatDateTime(dateStr: string): string {
 }
 
 export function formatTimeAgo(dateStr: string): string {
-  const now = Date.now();
   const then = new Date(dateStr).getTime();
+  if (isNaN(then)) return '—';
+  const now = Date.now();
   const diff = now - then;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'همین حالا';

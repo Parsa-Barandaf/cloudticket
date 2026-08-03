@@ -176,7 +176,7 @@ export default function SupportAgentPortalView({
   const [newTicketFields, setNewTicketFields] = useState({ title: '', customerId: '', productId: '', priority: 'متوسط' });
   const [viewingTicketModal, setViewingTicketModal] = useState<AgentTicketItem | null>(null);
   const [fullConversationTicketId, setFullConversationTicketId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   // Leaving the inbox/my-tickets tab closes the full conversation page
   useEffect(() => {
@@ -370,6 +370,7 @@ export default function SupportAgentPortalView({
   const [showBulkAssignModal, setShowBulkAssignModal] = useState<boolean>(false);
   const [showBulkStatusModal, setShowBulkStatusModal] = useState<boolean>(false);
   const [showBulkTagModal, setShowBulkTagModal] = useState<boolean>(false);
+  const [showBulkCloseConfirm, setShowBulkCloseConfirm] = useState<boolean>(false);
   const [isRefreshingInbox, setIsRefreshingInbox] = useState<boolean>(false);
   const [previewQuickReplyMode, setPreviewQuickReplyMode] = useState<'reply' | 'note'>('reply');
   const [previewQuickReplyText, setPreviewQuickReplyText] = useState<string>('');
@@ -622,8 +623,8 @@ export default function SupportAgentPortalView({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ message: msg, type });
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -678,6 +679,7 @@ export default function SupportAgentPortalView({
     setAgentTickets(prev =>
       prev.map(t => (t.id === ticketId ? { ...t, important: !was, pinned: t.pinned } : t))
     );
+    showToast(was ? 'تیکت از فهرست ستاره‌دار حذف شد.' : 'تیکت به فهرست ستاره‌دار اضافه شد.');
   };
 
   // Handle Send Reply / Note
@@ -719,10 +721,10 @@ export default function SupportAgentPortalView({
         'بسته شده': 'CLOSED',
       };
       await gql(UPDATE_TICKET_STATUS, { input: { id: activeTicket.id, status: statusToApi[status] || status } });
+      showToast(`وضعیت تیکت به "${status}" تغییر یافت.`);
     } catch {
-      showToast('خطا در بروزرسانی وضعیت. لطفاً دوباره تلاش کنید.');
+      showToast('خطا در بروزرسانی وضعیت. لطفاً دوباره تلاش کنید.', 'error');
     }
-    showToast(`وضعیت تیکت به "${status}" تغییر یافت.`);
   };
 
   // Insert Saved Reply / KB text
@@ -769,10 +771,18 @@ export default function SupportAgentPortalView({
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-5 py-2.5 rounded-2xl shadow-xl border border-slate-700/60 flex items-center gap-2.5 text-xs font-bold"
+            className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-2xl shadow-xl border flex items-center gap-2.5 text-xs font-bold ${
+              toastMessage.type === 'error'
+                ? 'bg-rose-600 text-white border-rose-500'
+                : 'bg-slate-900 text-white border-slate-700/60'
+            }`}
           >
-            <Sparkles className="w-4 h-4 text-brand-400 animate-pulse" />
-            <span>{toastMessage}</span>
+            {toastMessage.type === 'error' ? (
+              <AlertCircle className="w-4 h-4 text-white animate-pulse" />
+            ) : (
+              <Sparkles className="w-4 h-4 text-brand-400 animate-pulse" />
+            )}
+            <span>{toastMessage.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1075,7 +1085,11 @@ export default function SupportAgentPortalView({
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2 sticky bottom-5">
             {/* Logout Button */}
             <button
-              onClick={onLogout}
+              onClick={() => {
+                if (window.confirm('آیا از حساب کاربری خود خارج می‌شوید؟')) {
+                  onLogout();
+                }
+              }}
               className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-2 px-3'} py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
@@ -1400,7 +1414,10 @@ export default function SupportAgentPortalView({
                   <button
                     onClick={() => {
                       setIsRefreshingInbox(true);
-                      setTimeout(() => setIsRefreshingInbox(false), 600);
+                      setTimeout(() => {
+                        setIsRefreshingInbox(false);
+                        showToast('صندوق ورودی تیکت‌ها همگام‌سازی شد.');
+                      }, 600);
                     }}
                     title="همگام‌سازی اطلاعات"
                     className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750 rounded-xl transition-all text-slate-550 dark:text-slate-300 cursor-pointer"
@@ -1656,10 +1673,7 @@ export default function SupportAgentPortalView({
                         برچسب
                       </button>
                       <button
-                        onClick={() => {
-                          setSelectedTicketIds([]);
-                          showToast('عملیات بستن گروهی اجرا گردید.');
-                        }}
+                        onClick={() => setShowBulkCloseConfirm(true)}
                         className="px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-emerald-400 hover:text-emerald-300 rounded-xl transition-all cursor-pointer"
                       >
                         بستن تیکت‌ها
@@ -2227,7 +2241,6 @@ export default function SupportAgentPortalView({
                               <button
                                 onClick={() => {
                                   handleChangeStatus('حل شده');
-                                  showToast(`تیکت ${activeTicket.id} علامت‌گذاری شد به عنوان حل‌شده.`);
                                 }}
                                 className="px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-500 hover:text-white text-emerald-600 dark:text-emerald-400 font-bold transition-colors cursor-pointer border border-emerald-500/20"
                               >
@@ -3028,6 +3041,56 @@ export default function SupportAgentPortalView({
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* BULK CLOSE TICKETS CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showBulkCloseConfirm && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl p-6 text-right space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">بستن گروهی تیکت‌ها</h3>
+                <button
+                  onClick={() => setShowBulkCloseConfirm(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 text-xs space-y-1">
+                <p className="font-black text-rose-600 dark:text-rose-400">آیا از بستن گروهی تیکت‌های انتخاب‌شده مطمئن هستید؟</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  {selectedTicketIds.length.toLocaleString('fa-IR')} تیکت انتخاب شده به حالت «بسته شده» منتقل خواهند شد.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  onClick={() => setShowBulkCloseConfirm(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold cursor-pointer"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBulkCloseConfirm(false);
+                    setSelectedTicketIds([]);
+                    showToast('عملیات بستن گروهی با موفقیت اجرا گردید.');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-black cursor-pointer shadow-md shadow-rose-500/15"
+                >
+                  تایید بستن گروهی
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

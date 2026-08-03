@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Layers,
+  Package,
   Ticket as TicketIcon,
   BookOpen,
   Bell,
@@ -272,7 +273,7 @@ export default function CustomerPortalView({
       product: ticketProduct,
       status: 'جدید',
       priority: ticketPriority,
-      date: new Date().toLocaleDateString('fa-IR'),
+      date: new Date().toISOString(),
       lastUpdate: 'هم‌اکنون',
       messagesCount: 1
     };
@@ -502,7 +503,7 @@ export default function CustomerPortalView({
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <Layers className="w-4.5 h-4.5 shrink-0" />
+              <Package className="w-4.5 h-4.5 shrink-0" />
               {!sidebarCollapsed && <span>محصولات و لایسنس‌ها</span>}
             </button>
 
@@ -768,7 +769,15 @@ export default function CustomerPortalView({
                           {recentTickets.slice(0, recentTicketsLimit).map(tkt => (
                             <tr
                               key={tkt.id}
-                              className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 text-xs text-slate-700 dark:text-slate-300 transition-colors"
+                              onClick={() => {
+                                setTicketSearch(tkt.ticketNumber ? `#${tkt.ticketNumber}` : tkt.id);
+                                setTicketStatusFilter('همه');
+                                setTicketPriorityFilter('همه');
+                                setTicketPage(1);
+                                setActiveTab('my-tickets');
+                                setMobileMenuOpen(false);
+                              }}
+                              className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 text-xs text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
                             >
                               <td className="p-4 pr-5">
                                 <div className="flex items-center gap-2 min-w-0">
