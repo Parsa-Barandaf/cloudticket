@@ -44,8 +44,8 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
   const [selectedRole, setSelectedRole] = useState<PortalRole>('admin');
 
   // Input states
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
@@ -171,51 +171,6 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
         <div className="mb-8">
           <h2 className="text-2xl font-black text-slate-950 dark:text-white tracking-tight mb-2">ورود به سامانه</h2>
           <p className="text-xs text-slate-400 dark:text-slate-500">برای دسترسی به پنل کاربری وارد حساب خود شوید</p>
-        </div>
-
-        {/* Portal Role Selector Bar */}
-        <div className="mb-6 space-y-2">
-          <label className="block text-xs font-black text-slate-700 dark:text-slate-300">انتخاب پرتال و نقش ورود:</label>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => handleRoleSelect('admin')}
-              className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
-                selectedRole === 'admin'
-                  ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20'
-                  : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span className="text-[11px] font-bold">مدیریت</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleRoleSelect('agent')}
-              className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
-                selectedRole === 'agent'
-                  ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20'
-                  : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Headphones className="w-4 h-4" />
-              <span className="text-[11px] font-bold">پشتیبانی</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleRoleSelect('customer')}
-              className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
-                selectedRole === 'customer'
-                  ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20'
-                  : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              <span className="text-[11px] font-bold">مشتریان</span>
-            </button>
-          </div>
         </div>
 
         <form onSubmit={handleLoginSubmit} className="space-y-5">
