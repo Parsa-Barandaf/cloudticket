@@ -31,7 +31,7 @@ export function mapTicketToCustomerItem(t: Ticket): CustomerTicketItem {
     status: t.status,
     priority: t.priority,
     date: t.date,
-    lastUpdate: t.date,
+    lastUpdate: t.updatedAt || t.date,
     messagesCount: 0,
   };
 }

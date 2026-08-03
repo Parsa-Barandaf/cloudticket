@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
@@ -75,7 +75,8 @@ export default function CustomerPortalView({
   const [ticketProduct, setTicketProduct] = useState('Cloud Security Platform');
   const [ticketPriority, setTicketPriority] = useState('متوسط');
   const [ticketMessage, setTicketMessage] = useState('');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [recentTicketsLimit, setRecentTicketsLimit] = useState(5);
 
   // My-tickets filters
@@ -103,6 +104,19 @@ export default function CustomerPortalView({
   const [customerConnections, setCustomerConnections] = useState<ProductCustomerConnection[]>([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastMessage({ message: msg, type });
+    toastTimerRef.current = setTimeout(() => setToastMessage(null), 4000);
+  }, []);
+
+  // Format a date as Jalali (Persian) with Persian digits; pass through non-date text like "هم‌اکنون"
+  const formatLastUpdate = useCallback((value: string): string => {
+    if (!value) return '—';
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? value : formatDateTime(value);
+  }, []);
 
   const myCustomerId =
     (customersList.find(c => c.id === currentCustomerId) || customersList.find(c => c.managerEmail === userEmail))?.id || '';
@@ -132,10 +146,13 @@ export default function CustomerPortalView({
           logoInitials: c.product?.logoInitials || c.product?.name?.substring(0, 2).toUpperCase(),
         }));
         setCustomerConnections(conns);
+        if (refreshKey > 0) showToast('لیست لایسنس‌ها با موفقیت بروزرسانی شد.');
       })
-      .catch(() => { /* keep existing state */ })
+      .catch(() => {
+        if (refreshKey > 0) showToast('خطا در دریافت لایسنس‌ها؛ دوباره تلاش کنید.', 'error');
+      })
       .finally(() => setConnectionsLoading(false));
-  }, [myCustomerId, refreshKey]);
+  }, [myCustomerId, refreshKey, showToast]);
 
   const activeProducts: ActiveProductItem[] = customerConnections.map(c => ({
     id: c.productId,
@@ -199,11 +216,6 @@ export default function CustomerPortalView({
     }
   }, [ticketsList, customersList, currentCustomerId, userEmail]);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const priorityToApi: Record<string, string> = { 'بحرانی': 'CRITICAL', 'بالا': 'HIGH', 'متوسط': 'MEDIUM', 'پایین': 'LOW' };
 
   const handleCreateTicket = async (e: React.FormEvent) => {
@@ -220,6 +232,7 @@ export default function CustomerPortalView({
     const productId = selectedProduct?.id || productsList.find(p => p.name === ticketProduct)?.id || undefined;
 
     let createdTicketId: string | null = null;
+    let createFailed = false;
     if (customerId) {
       try {
         const data = await gql<{ createTicket: { id: string } }>(CREATE_TICKET, {
@@ -246,7 +259,9 @@ export default function CustomerPortalView({
             });
           } catch { /* message creation is best-effort */ }
         }
-      } catch { /* fall through — local state still updated */ }
+      } catch {
+        createFailed = true;
+      }
     }
 
     const newTkt = {
@@ -264,7 +279,11 @@ export default function CustomerPortalView({
     setCustomerTickets([newTkt, ...customerTickets]);
     setTicketSubject('');
     setTicketMessage('');
-    showToast('تیکت پشتیبانی شما با موفقیت ثبت شد و به کارشناسان ارشد ارجاع گردید.');
+    if (createFailed) {
+      showToast('خطا در ثبت تیکت در سامانه؛ درخواست به‌صورت موقت ذخیره شد.', 'error');
+    } else {
+      showToast('تیکت پشتیبانی شما با موفقیت ثبت شد و به کارشناسان ارشد ارجاع گردید.');
+    }
     setActiveTab('my-tickets');
   };
 
@@ -325,7 +344,7 @@ export default function CustomerPortalView({
       setTicketAction(null);
       setActiveActionTicket(null);
     } catch {
-      showToast('خطا در ویرایش تیکت.');
+      showToast('خطا در ویرایش تیکت.', 'error');
     } finally {
       setActionBusy(false);
     }
@@ -361,7 +380,7 @@ export default function CustomerPortalView({
       setTicketAction(null);
       setActiveActionTicket(null);
     } catch {
-      showToast('خطا در ارسال پاسخ.');
+      showToast('خطا در ارسال پاسخ.', 'error');
     } finally {
       setActionBusy(false);
     }
@@ -382,7 +401,7 @@ export default function CustomerPortalView({
       setTicketAction(null);
       setActiveActionTicket(null);
     } catch {
-      showToast('خطا در تغییر وضعیت تیکت.');
+      showToast('خطا در تغییر وضعیت تیکت.', 'error');
     } finally {
       setActionBusy(false);
     }
@@ -399,7 +418,7 @@ export default function CustomerPortalView({
       setTicketAction(null);
       setActiveActionTicket(null);
     } catch {
-      showToast('خطا در حذف تیکت.');
+      showToast('خطا در حذف تیکت.', 'error');
     } finally {
       setActionBusy(false);
     }
@@ -414,10 +433,16 @@ export default function CustomerPortalView({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white font-bold text-xs px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2"
+            className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 text-white font-bold text-xs px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 ${
+              toastMessage.type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
+            }`}
           >
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{toastMessage}</span>
+            {toastMessage.type === 'error' ? (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            )}
+            <span>{toastMessage.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -529,41 +554,7 @@ export default function CustomerPortalView({
         </div>
 
         {/* Sidebar Footer: Portal Switcher & Logout */}
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          {/* Quick Portal Role Switcher */}
-          <div className="relative">
-            <button
-              onClick={() => setShowRoleMenu(!showRoleMenu)}
-              className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition-all cursor-pointer`}
-            >
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-brand-500 shrink-0" />
-                {!sidebarCollapsed && <span>پرتال مشتریان</span>}
-              </div>
-              {!sidebarCollapsed && <span className="text-[9px] bg-brand-500/10 text-brand-500 px-1.5 py-0.5 rounded">تغییر پرتال</span>}
-            </button>
-
-            {showRoleMenu && (
-              <div className="absolute bottom-12 right-0 left-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-1.5 space-y-1 z-50 text-right">
-                <div className="text-[10px] text-slate-400 px-2 py-1 font-bold">تغییر پرتال فعال:</div>
-                <button
-                  onClick={() => { onSwitchPortalRole?.('admin'); setShowRoleMenu(false); }}
-                  className="w-full text-right p-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                >
-                  <Building className="w-3.5 h-3.5 text-blue-500" />
-                  <span>پرتال مدیریت سیستم</span>
-                </button>
-                <button
-                  onClick={() => { onSwitchPortalRole?.('agent'); setShowRoleMenu(false); }}
-                  className="w-full text-right p-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                >
-                  <Headphones className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>پرتال کارشناسان پشتیبانی</span>
-                </button>
-              </div>
-            )}
-          </div>
-
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2 sticky bottom-5">
           {/* Logout Button */}
           <button
             onClick={onLogout}
@@ -778,7 +769,7 @@ export default function CustomerPortalView({
                             >
                               <td className="p-4 pr-5">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="font-mono font-bold text-slate-400 dark:text-slate-500 text-[10px] shrink-0">{tkt.ticketNumber ? `#${tkt.ticketNumber}` : tkt.id}</span>
+                                  <span className="font-mono font-bold text-slate-400 dark:text-slate-500 text-xs shrink-0">{tkt.ticketNumber ? `#${tkt.ticketNumber}` : tkt.id}</span>
                                   <span className="font-semibold text-slate-900 dark:text-white max-w-[200px] truncate">{tkt.subject}</span>
                                 </div>
                               </td>
@@ -810,7 +801,7 @@ export default function CustomerPortalView({
                                   {tkt.status}
                                 </span>
                               </td>
-                              <td className="p-4 pl-5 text-slate-400 dark:text-slate-500 font-bold">{formatDateTime(tkt.date)}</td>
+                              <td className="p-4 pl-5 text-sm text-slate-400 dark:text-slate-500 font-bold">{formatDateTime(tkt.date)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1247,7 +1238,7 @@ export default function CustomerPortalView({
                             <tr key={tkt.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 text-xs text-slate-700 dark:text-slate-300 transition-colors">
                               <td className="p-4 pr-5">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="font-mono font-bold text-slate-400 dark:text-slate-500 text-[10px] shrink-0">{tkt.ticketNumber ? `#${tkt.ticketNumber}` : tkt.id}</span>
+                                  <span className="font-mono font-bold text-slate-400 dark:text-slate-500 text-xs shrink-0">{tkt.ticketNumber ? `#${tkt.ticketNumber}` : tkt.id}</span>
                                   <span className="font-semibold text-slate-900 dark:text-white max-w-[200px] truncate">{tkt.subject}</span>
                                 </div>
                               </td>
@@ -1279,39 +1270,39 @@ export default function CustomerPortalView({
                                   {tkt.status}
                                 </span>
                               </td>
-                              <td className="p-4 text-slate-500 dark:text-slate-400 font-bold">{formatDateTime(tkt.date)}</td>
-                              <td className="p-4 text-slate-400 dark:text-slate-500 font-bold">{tkt.lastUpdate}</td>
+                              <td className="p-4 text-sm text-slate-500 dark:text-slate-400 font-bold">{formatDateTime(tkt.date)}</td>
+                              <td className="p-4 text-sm text-slate-400 dark:text-slate-500 font-bold">{formatLastUpdate(tkt.lastUpdate)}</td>
                               <td className="p-4 pl-5">
                                 <div className="flex items-center justify-end gap-1">
                                   <button
                                     onClick={() => openTicketAction('respond', tkt)}
-                                    className="p-1.5 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                    className="p-2 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                     title="ارسال پاسخ به پشتیبانی"
                                   >
-                                    <MessageSquare className="w-3.5 h-3.5" />
+                                    <MessageSquare className="w-4.5 h-4.5" />
                                   </button>
                                   <button
                                     onClick={() => openTicketAction('edit', tkt)}
-                                    className="p-1.5 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                    className="p-2 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                     title="ویرایش تیکت"
                                   >
-                                    <Edit className="w-3.5 h-3.5" />
+                                    <Edit className="w-4.5 h-4.5" />
                                   </button>
                                   {(tkt.status !== 'حل شده' && tkt.status !== 'بسته شده') && (
                                     <button
                                       onClick={() => openTicketAction('close', tkt)}
-                                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                      className="p-2 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                       title="علامت‌گذاری به‌عنوان حل‌شده / بستن"
                                     >
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      <CheckCircle2 className="w-4.5 h-4.5" />
                                     </button>
                                   )}
                                   <button
                                     onClick={() => openTicketAction('delete', tkt)}
-                                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                    className="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                     title="حذف تیکت"
                                   >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-4.5 h-4.5" />
                                   </button>
                                 </div>
                               </td>
@@ -1363,7 +1354,7 @@ export default function CustomerPortalView({
                   <doc.icon className="w-8 h-8 text-brand-500" />
                   <span className="text-[10px] font-bold text-slate-400 block">{doc.category}</span>
                   <h4 className="text-xs font-black text-slate-900 dark:text-white leading-relaxed">{doc.title}</h4>
-                  <button className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 pt-2 cursor-pointer">
+                  <button onClick={() => showToast(`مستندات «${doc.title}» در حال باز شدن است.`)} className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 pt-2 cursor-pointer">
                     <span>مطالعه مستندات</span>
                     <ExternalLink className="w-3 h-3" />
                   </button>
