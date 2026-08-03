@@ -22,6 +22,7 @@ import {
   Headphones,
   Send,
   ChevronLeft,
+  ChevronRight,
   X,
   Menu,
   Key,
@@ -451,10 +452,19 @@ export default function CustomerPortalView({
       <aside className={`fixed lg:sticky lg:top-0 inset-y-0 right-0 z-40 bg-white dark:bg-slate-900 border-l border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between transition-all duration-300 ${
         sidebarCollapsed ? 'w-20' : 'w-64'
       } ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
-        
+
+        {/* Collapse/Expand Toggle Button (Desktop Only) */}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="hidden lg:flex absolute top-14 -left-3.5 z-50 w-7 h-7 bg-white dark:bg-slate-900 border border-brand-500/50 dark:border-brand-500/50 rounded-full items-center justify-center text-brand-600 hover:text-white hover:bg-brand-500 dark:text-brand-400 dark:hover:text-white dark:hover:bg-brand-500 shadow-md shadow-brand-500/10 hover:scale-110 transition-all cursor-pointer"
+          title={sidebarCollapsed ? "گسترش منو" : "جمع کردن منو"}
+        >
+          {sidebarCollapsed ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        </button>
+
         {/* Sidebar Header */}
         <div>
-          <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center">
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
                 <Sparkles className="w-5 h-5" />
@@ -468,13 +478,6 @@ export default function CustomerPortalView({
                 </div>
               )}
             </div>
-
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              <ChevronLeft className={`w-4 h-4 transition-transform duration-200 ${sidebarCollapsed ? 'rotate-180' : ''}`} />
-            </button>
           </div>
 
           {/* Customer Navigation Menu */}
