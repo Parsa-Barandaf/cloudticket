@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNotifications } from '../../hooks/useNotifications';
+import type { NotificationItem } from '../../types';
 import { 
   Bell, 
   Check, 
@@ -40,26 +42,6 @@ import {
   ToggleRight
 } from 'lucide-react';
 
-export interface NotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  relativeGroup: 'new' | 'today' | 'yesterday' | 'older';
-  type: 'tickets' | 'users' | 'products' | 'licenses' | 'system';
-  priority: 'normal' | 'important' | 'critical';
-  read: boolean;
-  archived: boolean;
-  linkedObject?: {
-    type: string;
-    id: string;
-    name: string;
-  };
-  authorName?: string;
-  authorAvatarBg?: string;
-  detailedContent?: string;
-}
-
 export interface ActivityFeedItem {
   id: string;
   actor: string;
@@ -81,125 +63,20 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
   // Sub-tabs in Notification Center Page
   const [activeSubTab, setActiveSubTab] = useState<'timeline' | 'activity' | 'mentions' | 'preferences'>('timeline');
 
-  // Master Notifications State
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 'NTF-901',
-      title: 'پاسخ جدید برای تیکت #TK-28451',
-      description: 'مهندس آرش کریمی یک پاسخ جدید و فایل لوگ‌های سیستم را پیوست کرده است.',
-      time: '۱۰ دقیقه پیش',
-      relativeGroup: 'new',
-      type: 'tickets',
-      priority: 'important',
-      read: false,
-      archived: false,
-      linkedObject: { type: 'تیکت', id: 'TKT-1025', name: 'قطعی متناوب گره‌های مانیتورینگ' },
-      authorName: 'آرش کریمی',
-      authorAvatarBg: 'bg-indigo-600',
-      detailedContent: 'توضیحات تکمیلی: بررسی‌های اولیه نشان می‌دهد مشکل مربوط به پورت سرویس DNS گره پردیس بوده و پچ امنیتی v2.4.2 اعمال گردید.'
-    },
-    {
-      id: 'NTF-902',
-      title: 'هشدار بحرانی: لایسنس در حال انقضا',
-      description: 'لایسنس پلتفرم ابری Cloud Security Platform برای مشتری «» ۳ روز دیگر منقضی می‌شود.',
-      time: '۴۵ دقیقه پیش',
-      relativeGroup: 'new',
-      type: 'licenses',
-      priority: 'critical',
-      read: false,
-      archived: false,
-      linkedObject: { type: 'لایسنس', id: 'LIC-88392', name: 'Cloud Security Platform' },
-      authorName: 'سیستم لایسنس',
-      authorAvatarBg: 'bg-rose-600',
-      detailedContent: 'اقدام پیشنهادی: ارسال صورتحساب تمدید به مدیریت مالی  یا تمدید اتوماتیک با کد تخفیف سازمانی.'
-    },
-    {
-      id: 'NTF-903',
-      title: 'شما در یک یادداشت منشن شده‌اید',
-      description: 'سارا صادقی: «@علی رضایی لطفاً تاییدیه فنی لایسنس جدید شرکت نوین تکنولوژی را بررسی بفرمایید.»',
-      time: '۲ ساعت پیش',
-      relativeGroup: 'today',
-      type: 'users',
-      priority: 'important',
-      read: false,
-      archived: false,
-      linkedObject: { type: 'یادداشت', id: 'NTE-442', name: 'پیکربندی قرارداد نوین تکنولوژی' },
-      authorName: 'سارا صادقی',
-      authorAvatarBg: 'bg-emerald-600',
-      detailedContent: 'یادداشت داخلی در بخش مشتریان / شرکت فناوری نوین ثبت شده است.'
-    },
-    {
-      id: 'NTF-904',
-      title: 'محصول جدید به کاتالوگ اضافه شد',
-      description: 'نسخه ۲.۰ محصول Global Edge CDN با موفقیت روی سرورهای ابری مستقر و فعال گردید.',
-      time: '۵ ساعت پیش',
-      relativeGroup: 'today',
-      type: 'products',
-      priority: 'normal',
-      read: true,
-      archived: false,
-      linkedObject: { type: 'محصول', id: 'PRD-05', name: 'Global Edge CDN' },
-      authorName: 'تیم DevOps',
-      authorAvatarBg: 'bg-purple-600',
-      detailedContent: 'تغییرات نسخه: پشتیبانی از پروتکل HTTP/3 و مکانیزم Caching هوشمند ویدیویی.'
-    },
-    {
-      id: 'NTF-905',
-      title: 'کاربر جدید به سازمان دعوت شد',
-      description: 'پویا راد با نقش «مشاهده‌گر» دعوت‌نامه عضویت در پنل پشتیبانی را دریافت کرد.',
-      time: 'دیروز - ۱۶:۳۰',
-      relativeGroup: 'yesterday',
-      type: 'users',
-      priority: 'normal',
-      read: true,
-      archived: false,
-      linkedObject: { type: 'کاربر', id: 'USR-106', name: 'پویا راد' },
-      authorName: 'علیرضا مجیدی',
-      authorAvatarBg: 'bg-amber-600'
-    },
-    {
-      id: 'NTF-906',
-      title: 'ارتقای سطح SLA تیکت #TK-1029',
-      description: 'وضعیت تیکت به علت عدم پاسخگویی در مهلت مقرر به سطح «بحرانی» ارتقا یافت.',
-      time: 'دیروز - ۱۰:۱۵',
-      relativeGroup: 'yesterday',
-      type: 'tickets',
-      priority: 'critical',
-      read: true,
-      archived: false,
-      linkedObject: { type: 'تیکت', id: 'TKT-1029', name: 'اختلال در API بانک ملت' },
-      authorName: 'موتور SLA ',
-      authorAvatarBg: 'bg-red-600'
-    },
-    {
-      id: 'NTF-907',
-      title: 'بروزرسانی لایسنس هلدینگ عمران مهر',
-      description: 'ظرفیت کاربر همزمان سامانه Identity Protection به ۱۰۰ کاربر افزایش پیدا کرد.',
-      time: '۳ روز پیش',
-      relativeGroup: 'older',
-      type: 'licenses',
-      priority: 'normal',
-      read: true,
-      archived: false,
-      linkedObject: { type: 'لایسنس', id: 'LIC-10029', name: 'Identity Protection Server' },
-      authorName: 'واحد فروش',
-      authorAvatarBg: 'bg-blue-600'
-    },
-    {
-      id: 'NTF-908',
-      title: 'گزارش ممیزی سیستم صادر شد',
-      description: 'گزارش کامل فعالیت‌های ماهانه کاربران و نشست‌های امنیتی برای دانلود آماده است.',
-      time: '۵ روز پیش',
-      relativeGroup: 'older',
-      type: 'system',
-      priority: 'normal',
-      read: true,
-      archived: false,
-      linkedObject: { type: 'گزارش', id: 'REP-2026', name: 'گزارش ممیزی ماهانه' },
-      authorName: 'سیستم مرکزی',
-      authorAvatarBg: 'bg-slate-600'
-    }
-  ]);
+  // Real notifications from API
+  const [showArchived, setShowArchived] = useState<boolean>(false);
+  const {
+    notifications,
+    loading,
+    error: notificationsError,
+    refetch: refetchNotifications,
+    createNotification,
+    markRead,
+    markAllRead,
+    toggleArchive,
+    remove,
+    removeMany,
+  } = useNotifications(100, showArchived);
 
   // Activity Feed State
   const [activities] = useState<ActivityFeedItem[]>([
@@ -216,7 +93,6 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
   const [filterType, setFilterType] = useState<string>('همه');
   const [filterStatus, setFilterStatus] = useState<string>('همه');
   const [filterPriority, setFilterPriority] = useState<string>('همه');
-  const [showArchived, setShowArchived] = useState<boolean>(false);
 
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -303,62 +179,60 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
   };
 
   const handleBulkMarkRead = () => {
-    setNotifications(notifications.map(n => selectedIds.includes(n.id) ? { ...n, read: true } : n));
+    selectedIds.forEach(id => markRead(id));
     showToast(`${selectedIds.length} اعلان انتخاب شده به عنوان خوانده شده علامت‌گذاری شدند.`, 'success');
     setSelectedIds([]);
   };
 
   const handleBulkArchive = () => {
-    setNotifications(notifications.map(n => selectedIds.includes(n.id) ? { ...n, archived: !showArchived } : n));
+    selectedIds.forEach(id => toggleArchive(id));
     showToast(`${selectedIds.length} اعلان منتقل شدند.`, 'success');
     setSelectedIds([]);
   };
 
   const handleBulkDelete = () => {
-    setNotifications(notifications.filter(n => !selectedIds.includes(n.id)));
+    removeMany(selectedIds);
     showToast(`${selectedIds.length} اعلان با موفقیت حذف شدند.`, 'error');
     setSelectedIds([]);
   };
 
   const handleMarkSingleRead = (id: string) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+    markRead(id);
   };
 
   const handleArchiveSingle = (id: string) => {
     const item = notifications.find(n => n.id === id);
     if (!item) return;
-    setNotifications(notifications.map(n => n.id === id ? { ...n, archived: !n.archived } : n));
+    toggleArchive(id);
     showToast(item.archived ? 'اعلان به صندوق اصلی بازگردانده شد.' : 'اعلان بایگانی شد.', 'success');
   };
 
   const handleDeleteSingle = (id: string) => {
-    setNotifications(notifications.filter(n => n.id !== id));
+    remove(id);
     showToast('اعلان با موفقیت حذف گردید.', 'error');
   };
 
   const handleMarkAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    markAllRead();
     showToast('تمامی اعلان‌های پلتفرم خوانده شده تلقی شدند.', 'success');
   };
 
-  // Toast simulation
-  const triggerSimulatedToast = (title: string, desc: string, type: 'info' | 'alert' | 'success') => {
+  // Live toast: creates a real notification through the API
+  const triggerSimulatedToast = async (title: string, desc: string, type: 'info' | 'alert' | 'success') => {
     setLiveToast({ title, desc, type });
-    // Add to notifications list
-    const newNotif: NotificationItem = {
-      id: `NTF-${Math.floor(910 + Math.random() * 100)}`,
-      title,
-      description: desc,
-      time: 'هم‌اکنون',
-      relativeGroup: 'new',
-      type: type === 'alert' ? 'licenses' : 'tickets',
-      priority: type === 'alert' ? 'critical' : 'important',
-      read: false,
-      archived: false,
-      authorName: 'سیستم زنده ',
-      authorAvatarBg: 'bg-brand-600'
-    };
-    setNotifications([newNotif, ...notifications]);
+    try {
+      await createNotification({
+        title,
+        description: desc,
+        type: type === 'alert' ? 'licenses' : 'tickets',
+        priority: type === 'alert' ? 'critical' : 'important',
+        authorName: 'سیستم زنده',
+        authorAvatarBg: 'bg-brand-600',
+      });
+      await refetchNotifications();
+    } catch (e) {
+      showToast('خطا در ثبت اعلان: ' + (e as Error).message, 'error');
+    }
 
     setTimeout(() => {
       setLiveToast(null);
@@ -679,7 +553,27 @@ export default function NotificationCenterView({ showToast }: NotificationCenter
             )}
 
             {/* Notification Cards List */}
-            {filteredNotifications.length === 0 ? (
+            {loading && filteredNotifications.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 p-10 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-center space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mx-auto animate-pulse">
+                  <Bell className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">در حال بارگذاری اعلان‌ها...</h3>
+                <p className="text-xs text-slate-400">در حال دریافت داده‌های زنده از سامانه</p>
+              </div>
+            ) : notificationsError ? (
+              <div className="bg-rose-50 dark:bg-rose-950/30 p-10 rounded-2xl border border-rose-200/60 dark:border-rose-800/50 text-center space-y-3">
+                <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto" />
+                <h3 className="text-sm font-black text-rose-700 dark:text-rose-300">خطا در دریافت اعلان‌ها</h3>
+                <p className="text-xs text-slate-400">{notificationsError}</p>
+                <button
+                  onClick={() => refetchNotifications()}
+                  className="px-4 py-2 text-xs font-black bg-rose-500 hover:bg-rose-600 text-white rounded-xl transition-colors cursor-pointer"
+                >
+                  تلاش مجدد
+                </button>
+              </div>
+            ) : filteredNotifications.length === 0 ? (
               <div className="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-center space-y-3">
                 <Bell className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" />
                 <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">هیچ اعلانی با این مشخصات پیدا نشد!</h3>

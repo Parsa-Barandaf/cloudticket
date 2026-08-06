@@ -1,5 +1,5 @@
-import type { ApiActivity, ApiTicket, ApiProduct, ApiCustomer, ApiConnection, ApiUser } from './types';
-import type { ActivityItem, Ticket, Product, Customer, ProductCustomerConnection } from '../types';
+import type { ApiActivity, ApiNotification, ApiTicket, ApiProduct, ApiCustomer, ApiConnection, ApiUser } from './types';
+import type { ActivityItem, NotificationItem, Ticket, Product, Customer, ProductCustomerConnection } from '../types';
 import { formatDate, formatTimeAgo } from '../lib/utils';
 
 const priorityMap: Record<string, 'بحرانی' | 'بالا' | 'متوسط' | 'پایین'> = {
@@ -86,6 +86,55 @@ export function mapActivity(a: ApiActivity): ActivityItem {
     title: a.title,
     subtitle: a.subtitle,
     time: formatTimeAgo(a.createdAt),
+  };
+}
+
+function notificationType(raw: string): NotificationItem['type'] {
+  if (raw === 'tickets' || raw === 'users' || raw === 'products' || raw === 'licenses' || raw === 'system') {
+    return raw;
+  }
+  if (raw === 'alert') return 'system';
+  if (raw === 'update') return 'products';
+  if (raw === 'sla') return 'tickets';
+  return 'system';
+}
+
+function notificationPriority(raw: string): NotificationItem['priority'] {
+  if (raw === 'important' || raw === 'critical') return raw;
+  return 'normal';
+}
+
+function notificationRelativeGroup(createdAt: string): NotificationItem['relativeGroup'] {
+  const then = new Date(createdAt).getTime();
+  if (isNaN(then)) return 'older';
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startYesterday = startToday - 86400000;
+  if (then >= startToday) {
+    if (now.getTime() - then < 3600000) return 'new';
+    return 'today';
+  }
+  if (then >= startYesterday) return 'yesterday';
+  return 'older';
+}
+
+export function mapNotification(n: ApiNotification): NotificationItem {
+  return {
+    id: n.id,
+    title: n.title,
+    description: n.description,
+    time: formatTimeAgo(n.createdAt),
+    relativeGroup: notificationRelativeGroup(n.createdAt),
+    type: notificationType(n.type),
+    priority: notificationPriority(n.priority),
+    read: n.read,
+    archived: n.archived,
+    linkedObject: n.linkedName
+      ? { type: n.linkedType || '', id: n.linkedId || '', name: n.linkedName }
+      : undefined,
+    authorName: n.authorName,
+    authorAvatarBg: n.authorAvatarBg,
+    detailedContent: n.detailedContent,
   };
 }
 

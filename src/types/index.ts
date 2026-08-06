@@ -78,8 +78,19 @@ export interface NotificationItem {
   title: string;
   description: string;
   time: string;
-  type: 'alert' | 'update' | 'sla';
+  relativeGroup: 'new' | 'today' | 'yesterday' | 'older';
+  type: 'tickets' | 'users' | 'products' | 'licenses' | 'system';
+  priority: 'normal' | 'important' | 'critical';
   read: boolean;
+  archived: boolean;
+  linkedObject?: {
+    type: string;
+    id: string;
+    name: string;
+  };
+  authorName?: string;
+  authorAvatarBg?: string;
+  detailedContent?: string;
 }
 
 export interface ProductCustomerConnection {

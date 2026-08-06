@@ -76,6 +76,19 @@ input CreateDepartmentInput {
   name: String!
 }
 
+input CreateNotificationInput {
+  authorAvatarBg: String
+  authorName: String
+  description: String!
+  detailedContent: String
+  linkedId: String
+  linkedName: String
+  linkedType: String
+  priority: String! = "normal"
+  title: String!
+  type: String!
+}
+
 input CreateProductInput {
   category: String!
   description: String
@@ -160,6 +173,10 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input DeleteNotificationsInput {
+  ids: [String!]!
+}
+
 input DeleteTicketsInput {
   ids: [String!]!
 }
@@ -187,6 +204,7 @@ type Mutation {
   createConnection(input: CreateConnectionInput!): ProductCustomerConnection!
   createCustomer(input: CreateCustomerInput!): Customer!
   createDepartment(input: CreateDepartmentInput!): Department!
+  createNotification(input: CreateNotificationInput!): Notification!
   createProduct(input: CreateProductInput!): Product!
   createRole(input: CreateRoleInput!): RoleEntity!
   createTicket(input: CreateTicketInput!): Ticket!
@@ -195,6 +213,8 @@ type Mutation {
   deleteConnection(id: String!): Boolean!
   deleteCustomer(id: String!): Boolean!
   deleteDepartment(id: String!): Boolean!
+  deleteNotification(id: String!): Boolean!
+  deleteNotifications(input: DeleteNotificationsInput!): Boolean!
   deleteProduct(id: String!): Boolean!
   deleteRole(id: String!, reassignRoleId: String): Boolean!
   deleteTicket(id: String!): Boolean!
@@ -202,9 +222,12 @@ type Mutation {
   deleteTickets(input: DeleteTicketsInput!): Boolean!
   deleteUser(id: String!): Boolean!
   login(email: String!, password: String!): AuthPayload!
+  markAllNotificationsRead: Boolean!
+  markNotificationRead(id: String!): Notification!
   register(email: String!, name: String!, password: String!): AuthPayload!
   rejectAccessRequest(input: RejectAccessRequestInput!): AccessRequest!
   requestAccess(input: RequestAccessInput!): AccessRequest!
+  toggleNotificationArchive(id: String!): Notification
   unassignRoleFromUser(input: UnassignRoleInput!): [RoleEntity!]!
   updateConnection(input: UpdateConnectionInput!): ProductCustomerConnection!
   updateCustomer(input: UpdateCustomerInput!): Customer!
@@ -215,6 +238,23 @@ type Mutation {
   updateTicketMessage(id: String!, text: String!): TicketMessage!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
   updateUser(input: UpdateUserInput!): User!
+}
+
+type Notification {
+  archived: Boolean!
+  authorAvatarBg: String
+  authorName: String
+  createdAt: DateTime!
+  description: String!
+  detailedContent: String
+  id: String!
+  linkedId: String
+  linkedName: String
+  linkedType: String
+  priority: String!
+  read: Boolean!
+  title: String!
+  type: String!
 }
 
 type Permission {
@@ -296,6 +336,7 @@ type Query {
   department(id: String!): Department
   departments: [Department!]!
   me: MePayload!
+  notifications(includeArchived: Boolean = false, limit: Float): [Notification!]!
   pendingAccessRequests: [AccessRequest!]!
   permissions: [Permission!]!
   permissionsByPortal(portalId: String!): [Permission!]!

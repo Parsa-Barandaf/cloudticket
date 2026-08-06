@@ -7,6 +7,59 @@ export const GET_ACTIVITIES = `
   }
 `;
 
+// ── Notifications ──
+const NOTIFICATION_FIELDS = `id title description type priority read archived authorName authorAvatarBg detailedContent linkedType linkedId linkedName createdAt`;
+
+export const GET_NOTIFICATIONS = `
+  query Notifications($limit: Float, $includeArchived: Boolean) {
+    notifications(limit: $limit, includeArchived: $includeArchived) {
+      ${NOTIFICATION_FIELDS}
+    }
+  }
+`;
+
+export const CREATE_NOTIFICATION = `
+  mutation CreateNotification($input: CreateNotificationInput!) {
+    createNotification(input: $input) {
+      ${NOTIFICATION_FIELDS}
+    }
+  }
+`;
+
+export const MARK_NOTIFICATION_READ = `
+  mutation MarkNotificationRead($id: String!) {
+    markNotificationRead(id: $id) {
+      id title read
+    }
+  }
+`;
+
+export const MARK_ALL_NOTIFICATIONS_READ = `
+  mutation MarkAllNotificationsRead {
+    markAllNotificationsRead
+  }
+`;
+
+export const TOGGLE_NOTIFICATION_ARCHIVE = `
+  mutation ToggleNotificationArchive($id: String!) {
+    toggleNotificationArchive(id: $id) {
+      id archived
+    }
+  }
+`;
+
+export const DELETE_NOTIFICATION = `
+  mutation DeleteNotification($id: String!) {
+    deleteNotification(id: $id)
+  }
+`;
+
+export const DELETE_NOTIFICATIONS = `
+  mutation DeleteNotifications($input: DeleteNotificationsInput!) {
+    deleteNotifications(input: $input)
+  }
+`;
+
 // ── Auth ──
 export const LOGIN_MUTATION = `
   mutation Login($email: String!, $password: String!) {

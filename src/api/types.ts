@@ -169,6 +169,23 @@ export interface ApiActivity {
   createdAt: string;
 }
 
+export interface ApiNotification {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  priority: string;
+  read: boolean;
+  archived: boolean;
+  authorName?: string;
+  authorAvatarBg?: string;
+  detailedContent?: string;
+  linkedType?: string;
+  linkedId?: string;
+  linkedName?: string;
+  createdAt: string;
+}
+
 export interface ApiTicket {
   id: string;
   ticketNumber: number;

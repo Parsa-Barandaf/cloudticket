@@ -200,12 +200,20 @@ model Activity {
 }
 
 model Notification {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  type        String
-  read        Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  type            String
+  priority        String   @default("normal")
+  read            Boolean  @default(false)
+  archived        Boolean  @default(false)
+  authorName      String?
+  authorAvatarBg  String?
+  detailedContent String?
+  linkedType      String?
+  linkedId        String?
+  linkedName      String?
+  createdAt       DateTime @default(now())
 }
 
 enum AccessRequestStatus {

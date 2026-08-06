@@ -11,6 +11,7 @@ import { AccessRequestsModule } from './access-requests/access-requests.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { DatabaseModule } from './common/database.module';
 import { RolesModule } from './roles/roles.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RolesModule } from './roles/roles.module';
     AccessRequestsModule,
     ActivitiesModule,
     RolesModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
