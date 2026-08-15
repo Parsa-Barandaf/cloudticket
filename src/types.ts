@@ -9,5 +9,7 @@ export type {
   Customer,
   ActivityItem,
   NotificationItem,
+  TaskItem,
+  TaskCommentItem,
   ProductCustomerConnection,
 } from './types/index';

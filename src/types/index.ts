@@ -112,6 +112,40 @@ export interface ProductCustomerConnection {
   logoInitials?: string;
 }
 
+export type TaskPriorityFA = 'بحرانی' | 'بالا' | 'متوسط' | 'پایین';
+export type TaskStatusFA = 'در انتظار' | 'در حال انجام' | 'انجام شده' | 'لغو شده';
+
+export interface TaskCommentItem {
+  id: string;
+  taskId: string;
+  text: string;
+  type: 'note' | 'timeline';
+  authorId: string;
+  authorName: string;
+  createdAt: string;
+  time: string;
+}
+
+export interface TaskItem {
+  id: string;
+  title: string;
+  description?: string;
+  priority: TaskPriorityFA;
+  priorityRaw: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  status: TaskStatusFA;
+  statusRaw: 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
+  dueDate?: string;
+  overdue: boolean;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdById: string;
+  createdByName: string;
+  assigneeId?: string;
+  assigneeName?: string;
+  comments: TaskCommentItem[];
+}
+
 declare global {
   interface ImportMeta {
     readonly env: Record<string, string>;

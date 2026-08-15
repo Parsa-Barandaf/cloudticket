@@ -68,6 +68,7 @@ import TicketInboxView from './TicketInbox';
 import UserManagementView from './UserManagement';
 import NotificationCenterView from './NotificationCenter';
 import SupportAgentPortalView from './AgentPortal';
+import TaskManagerView from './TaskManager';
 import { useTickets } from '../../hooks/useTickets';
 import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
@@ -193,7 +194,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
 
   // Active Tab state
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'access-requests' | 'users' | 'reports' | 'notifications' | 'settings' | 'profile' | 'customer-details' | 'agent-portal'
+    'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'access-requests' | 'users' | 'reports' | 'notifications' | 'task-manager' | 'settings' | 'profile' | 'customer-details' | 'agent-portal'
   >('dashboard');
 
   const [selectedCustomerWorkspace, setSelectedCustomerWorkspace] = useState<Customer | null>(null);
@@ -1070,6 +1071,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                 {activeTab === 'users' && 'کاربران'}
                 {activeTab === 'reports' && 'گزارش‌ها'}
                 {activeTab === 'notifications' && 'اعلان‌ها'}
+                {activeTab === 'task-manager' && 'مدیریت وظایف'}
                 {activeTab === 'settings' && 'تنظیمات'}
                 {activeTab === 'profile' && 'پروفایل'}
               </span>
@@ -1086,6 +1088,7 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               {activeTab === 'users' && 'تیم پشتیبانی و کاربران'}
               {activeTab === 'reports' && 'گزارش‌ها و تحلیل عملکرد'}
               {activeTab === 'notifications' && 'مرکز اعلان‌های سیستم'}
+              {activeTab === 'task-manager' && 'مدیریت وظایف و تقویم کاری'}
               {activeTab === 'settings' && 'تنظیمات پیکربندی '}
               {activeTab === 'profile' && 'پروفایل کاربری'}
             </h1>
@@ -1382,6 +1385,19 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                   {unreadNotificationCount}
                 </span>
               )}
+            </button>
+
+            <button
+              onClick={() => { setActiveTab('task-manager'); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center transition-all duration-200 ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'} rounded-xl text-xs font-semibold ${
+                activeTab === 'task-manager' 
+                  ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border-r-4 border-brand-500' 
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+              title={sidebarCollapsed ? "مدیریت وظایف" : undefined}
+            >
+              <ClipboardList className="w-4.5 h-4.5 shrink-0" />
+              {!sidebarCollapsed && <span className="whitespace-nowrap">مدیریت وظایف</span>}
             </button>
 
             <button
@@ -4199,6 +4215,24 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
                   onNavigateToTicket={(tId) => {
                     setActiveTab('tickets');
                   }}
+                />
+              </motion.div>
+            )}
+
+            {/* TAB: TASK MANAGER */}
+            {activeTab === 'task-manager' && (
+              <motion.div
+                key="task-manager-tab"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+              >
+                <TaskManagerView
+                  mode="admin"
+                  currentUserId={currentUserData?.id || ''}
+                  currentUserName={currentUserName}
+                  users={apiUsers}
+                  showToast={showWorkspaceToast}
                 />
               </motion.div>
             )}

@@ -28,6 +28,13 @@ type Activity {
   type: String!
 }
 
+input AddTaskCommentInput {
+  authorId: String!
+  taskId: String!
+  text: String!
+  type: String = "note"
+}
+
 input ApproveAccessRequestInput {
   id: String!
   industry: String
@@ -104,6 +111,15 @@ input CreateRoleInput {
   permissionIds: [String!]
   portalIds: [String!]
   scope: String = "internal"
+}
+
+input CreateTaskInput {
+  assigneeId: String
+  createdById: String!
+  description: String
+  dueDate: DateTime
+  priority: TaskPriority
+  title: String!
 }
 
 input CreateTicketInput {
@@ -199,6 +215,7 @@ type MePayload {
 }
 
 type Mutation {
+  addTaskComment(input: AddTaskCommentInput!): TaskComment!
   approveAccessRequest(input: ApproveAccessRequestInput!): AccessRequest!
   assignRoleToUser(input: AssignRoleInput!): [RoleEntity!]!
   createConnection(input: CreateConnectionInput!): ProductCustomerConnection!
@@ -207,6 +224,7 @@ type Mutation {
   createNotification(input: CreateNotificationInput!): Notification!
   createProduct(input: CreateProductInput!): Product!
   createRole(input: CreateRoleInput!): RoleEntity!
+  createTask(input: CreateTaskInput!): Task!
   createTicket(input: CreateTicketInput!): Ticket!
   createTicketMessage(input: CreateTicketMessageInput!): TicketMessage!
   createUser(input: CreateUserInput!): User!
@@ -217,6 +235,7 @@ type Mutation {
   deleteNotifications(input: DeleteNotificationsInput!): Boolean!
   deleteProduct(id: String!): Boolean!
   deleteRole(id: String!, reassignRoleId: String): Boolean!
+  deleteTask(id: String!): Boolean!
   deleteTicket(id: String!): Boolean!
   deleteTicketMessage(id: String!): Boolean!
   deleteTickets(input: DeleteTicketsInput!): Boolean!
@@ -234,6 +253,8 @@ type Mutation {
   updateDepartment(input: UpdateDepartmentInput!): Department!
   updateProduct(input: UpdateProductInput!): Product!
   updateRole(input: UpdateRoleInput!): RoleEntity!
+  updateTask(input: UpdateTaskInput!): Task!
+  updateTaskStatus(input: UpdateTaskStatusInput!): Task!
   updateTicket(input: UpdateTicketInput!): Ticket!
   updateTicketMessage(id: String!, text: String!): TicketMessage!
   updateTicketStatus(input: UpdateTicketStatusInput!): Ticket!
@@ -336,6 +357,7 @@ type Query {
   department(id: String!): Department
   departments: [Department!]!
   me: MePayload!
+  myTasks(userId: String!): [Task!]!
   notifications(includeArchived: Boolean = false, limit: Float): [Notification!]!
   pendingAccessRequests: [AccessRequest!]!
   permissions: [Permission!]!
@@ -345,6 +367,8 @@ type Query {
   products: [Product!]!
   role(id: String!): RoleEntity!
   roles: [RoleEntity!]!
+  task(id: String!): Task
+  tasks(filter: TaskFilterInput): [Task!]!
   ticket(id: String!): Ticket
   tickets: [Ticket!]!
   user(id: String!): User
@@ -393,6 +417,53 @@ type RolePortalEntity {
 
 type RoleUserCount {
   userRoles: Float!
+}
+
+type Task {
+  assignee: User
+  assigneeId: String
+  comments: [TaskComment!]!
+  completedAt: DateTime
+  createdAt: DateTime!
+  createdBy: User!
+  createdById: String!
+  description: String
+  dueDate: DateTime
+  id: String!
+  priority: TaskPriority!
+  status: TaskStatus!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type TaskComment {
+  author: User!
+  authorId: String!
+  createdAt: DateTime!
+  id: String!
+  taskId: String!
+  text: String!
+  type: String!
+}
+
+input TaskFilterInput {
+  assigneeId: String
+  priority: TaskPriority
+  status: TaskStatus
+}
+
+enum TaskPriority {
+  CRITICAL
+  HIGH
+  LOW
+  MEDIUM
+}
+
+enum TaskStatus {
+  CANCELLED
+  DONE
+  IN_PROGRESS
+  PENDING
 }
 
 type Ticket {
@@ -492,6 +563,21 @@ input UpdateRoleInput {
   name: String
   permissionIds: [String!]
   portalIds: [String!]
+}
+
+input UpdateTaskInput {
+  assigneeId: String
+  description: String
+  dueDate: DateTime
+  id: String!
+  priority: TaskPriority
+  status: TaskStatus
+  title: String
+}
+
+input UpdateTaskStatusInput {
+  id: String!
+  status: TaskStatus!
 }
 
 input UpdateTicketInput {

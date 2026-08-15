@@ -60,6 +60,73 @@ export const DELETE_NOTIFICATIONS = `
   }
 `;
 
+// ── Tasks ──
+const TASK_COMMENT_FIELDS = `id taskId text type createdAt authorId author { id name email role }`;
+
+const TASK_FIELDS = `id title description priority status dueDate completedAt createdAt updatedAt createdById assigneeId createdBy { id name email role } assignee { id name email role } comments { ${TASK_COMMENT_FIELDS} }`;
+
+export const GET_TASKS = `
+  query Tasks($filter: TaskFilterInput) {
+    tasks(filter: $filter) {
+      ${TASK_FIELDS}
+    }
+  }
+`;
+
+export const GET_MY_TASKS = `
+  query MyTasks($userId: String!) {
+    myTasks(userId: $userId) {
+      ${TASK_FIELDS}
+    }
+  }
+`;
+
+export const GET_TASK = `
+  query Task($id: String!) {
+    task(id: $id) {
+      ${TASK_FIELDS}
+    }
+  }
+`;
+
+export const CREATE_TASK = `
+  mutation CreateTask($input: CreateTaskInput!) {
+    createTask(input: $input) {
+      ${TASK_FIELDS}
+    }
+  }
+`;
+
+export const UPDATE_TASK = `
+  mutation UpdateTask($input: UpdateTaskInput!) {
+    updateTask(input: $input) {
+      ${TASK_FIELDS}
+    }
+  }
+`;
+
+export const UPDATE_TASK_STATUS = `
+  mutation UpdateTaskStatus($input: UpdateTaskStatusInput!) {
+    updateTaskStatus(input: $input) {
+      id title status priority dueDate updatedAt
+    }
+  }
+`;
+
+export const DELETE_TASK = `
+  mutation DeleteTask($id: String!) {
+    deleteTask(id: $id)
+  }
+`;
+
+export const ADD_TASK_COMMENT = `
+  mutation AddTaskComment($input: AddTaskCommentInput!) {
+    addTaskComment(input: $input) {
+      ${TASK_COMMENT_FIELDS}
+    }
+  }
+`;
+
 // ── Auth ──
 export const LOGIN_MUTATION = `
   mutation Login($email: String!, $password: String!) {

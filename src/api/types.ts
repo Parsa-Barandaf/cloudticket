@@ -5,6 +5,8 @@ export type CustomerTier = 'GOLD' | 'SILVER' | 'BRONZE';
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
 export type UserRole = 'ADMIN' | 'AGENT' | 'CUSTOMER';
 export type AccessRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
 
 export interface ApiUser {
   id: string;
@@ -184,6 +186,33 @@ export interface ApiNotification {
   linkedId?: string;
   linkedName?: string;
   createdAt: string;
+}
+
+export interface ApiTaskComment {
+  id: string;
+  taskId: string;
+  text: string;
+  type: string;
+  authorId: string;
+  author: ApiUser;
+  createdAt: string;
+}
+
+export interface ApiTask {
+  id: string;
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dueDate?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdById: string;
+  createdBy: ApiUser;
+  assigneeId?: string;
+  assignee?: ApiUser;
+  comments: ApiTaskComment[];
 }
 
 export interface ApiTicket {

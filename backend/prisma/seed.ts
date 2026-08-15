@@ -370,6 +370,43 @@ async function main() {
     ],
   });
 
+  // ── Demo Tasks ──
+  const now = new Date();
+  const day = 86400000;
+  const dueOverdue = new Date(now.getTime() - day);
+  const todayEnd = new Date(now);
+  todayEnd.setHours(23, 0, 0, 0);
+  const dueToday = todayEnd;
+  const dueTomorrow = new Date(now.getTime() + day);
+  const dueLater = new Date(now.getTime() + 5 * day);
+
+  const demoTasks = [
+    { id: 'task-001', title: 'بررسی کامل لاگ‌های امنیتی هفته', description: 'بررسی لاگ‌های سرویس Cloud Security Platform برای شناسایی حملات احتمالی.', priority: 'HIGH' as const, status: 'IN_PROGRESS' as const, dueDate: dueToday, assigneeId: agent1.id, createdById: admin.id },
+    { id: 'task-002', title: 'به‌روزرسانی نسخه پچ گره‌های مانیتورینگ', description: 'اعمال پچ امنیتی v2.4.2 روی تمام گره‌های شعبه پردیس.', priority: 'CRITICAL' as const, status: 'PENDING' as const, dueDate: dueOverdue, assigneeId: agent2.id, createdById: admin.id },
+    { id: 'task-003', title: 'تهیه گزارش عملکرد تیم پشتیبانی', description: 'گزارش ماهانه تعداد تیکت‌های پاسخ داده شده و زمان میانگین پاسخگویی.', priority: 'MEDIUM' as const, status: 'DONE' as const, dueDate: dueTomorrow, assigneeId: agent3.id, createdById: admin.id, completedAt: new Date(now.getTime() - day) },
+    { id: 'task-004', title: 'بازبینی قرارداد تمدید لایسنس آریا', description: 'بررسی شرایط تمدید لایسنس Cloud Security Platform پیش از ارسال پیش‌فاکتور.', priority: 'MEDIUM' as const, status: 'PENDING' as const, dueDate: dueLater, assigneeId: agent4.id, createdById: admin.id },
+    { id: 'task-005', title: 'مستندسازی رویه پاسخگویی به حوادث', description: 'تدوین چک‌لیست و مستند فرآیند مدیریت حوادث امنیتی.', priority: 'LOW' as const, status: 'IN_PROGRESS' as const, dueDate: dueTomorrow, assigneeId: agent1.id, createdById: agent2.id },
+  ];
+
+  for (const t of demoTasks) {
+    const { id, ...data } = t;
+    await prisma.task.upsert({
+      where: { id },
+      update: {},
+      create: { id, ...data },
+    });
+  }
+
+  await prisma.taskComment.createMany({
+    data: [
+      { taskId: 'task-001', text: 'بررسی اولیه انجام شد؛ دو مورد ورود مشکوک شناسایی شد.', type: 'timeline', authorId: agent1.id },
+      { taskId: 'task-001', text: 'لطفاً نتایج نهایی را تا پایان وقت امروز ارسال کنید.', type: 'note', authorId: admin.id },
+      { taskId: 'task-002', text: 'پچ بر روی گره اصلی اعمال شد و در انتظار هماهنگی برای گره‌های دیگر هستیم.', type: 'timeline', authorId: agent2.id },
+      { taskId: 'task-003', text: 'گزارش نهایی تنظیم و تحویل شد.', type: 'timeline', authorId: agent3.id },
+      { taskId: 'task-005', text: 'بخش‌های اولیه مستند آماده شده است.', type: 'timeline', authorId: agent1.id },
+    ],
+  });
+
   console.log('Seed complete.');
 }
 

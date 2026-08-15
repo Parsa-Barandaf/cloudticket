@@ -1,5 +1,5 @@
-import type { ApiActivity, ApiNotification, ApiTicket, ApiProduct, ApiCustomer, ApiConnection, ApiUser } from './types';
-import type { ActivityItem, NotificationItem, Ticket, Product, Customer, ProductCustomerConnection } from '../types';
+import type { ApiActivity, ApiNotification, ApiTask, ApiTaskComment, ApiTicket, ApiProduct, ApiCustomer, ApiConnection, ApiUser } from './types';
+import type { ActivityItem, NotificationItem, TaskItem, TaskCommentItem, Ticket, Product, Customer, ProductCustomerConnection } from '../types';
 import { formatDate, formatTimeAgo } from '../lib/utils';
 
 const priorityMap: Record<string, 'بحرانی' | 'بالا' | 'متوسط' | 'پایین'> = {
@@ -76,6 +76,53 @@ export function mapCustomer(c: ApiCustomer): Customer {
     lastActivity: c.lastActivity,
     activeProductsCount: c.activeProductsCount,
     partnershipStartDate: c.partnershipStartDate,
+  };
+}
+
+const taskPriorityMap: Record<string, TaskItem['priority']> = {
+  CRITICAL: 'بحرانی', HIGH: 'بالا', MEDIUM: 'متوسط', LOW: 'پایین',
+};
+
+const taskStatusMap: Record<string, TaskItem['status']> = {
+  PENDING: 'در انتظار', IN_PROGRESS: 'در حال انجام', DONE: 'انجام شده', CANCELLED: 'لغو شده',
+};
+
+export function mapTaskComment(c: ApiTaskComment): TaskCommentItem {
+  return {
+    id: c.id,
+    taskId: c.taskId,
+    text: c.text,
+    type: c.type === 'timeline' ? 'timeline' : 'note',
+    authorId: c.authorId,
+    authorName: c.author?.name || 'کاربر',
+    createdAt: c.createdAt,
+    time: formatTimeAgo(c.createdAt),
+  };
+}
+
+export function mapTask(t: ApiTask): TaskItem {
+  const now = new Date().getTime();
+  const due = t.dueDate ? new Date(t.dueDate).getTime() : null;
+  const overdue = t.status !== 'DONE' && t.status !== 'CANCELLED' && due !== null && due < now;
+
+  return {
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    priority: taskPriorityMap[t.priority] || 'متوسط',
+    priorityRaw: t.priority,
+    status: taskStatusMap[t.status] || 'در انتظار',
+    statusRaw: t.status,
+    dueDate: t.dueDate,
+    overdue,
+    completedAt: t.completedAt,
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
+    createdById: t.createdById,
+    createdByName: t.createdBy?.name || 'کاربر',
+    assigneeId: t.assigneeId,
+    assigneeName: t.assignee?.name,
+    comments: (t.comments || []).map(mapTaskComment),
   };
 }
 

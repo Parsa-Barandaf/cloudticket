@@ -58,7 +58,8 @@ import {
   Sliders,
   UserPlus,
   ExternalLink,
-  Pencil
+  Pencil,
+  ClipboardList
 } from 'lucide-react';
 import type { Ticket, Product, Customer } from '../../types';
 import { PortalRole } from '../../types';
@@ -67,6 +68,7 @@ import { mergeAgentTicketData } from '../../api/transform-agent';
 import { useDepartments } from '../../hooks/useDepartments';
 import { useUsers } from '../../hooks/useUsers';
 import AgentTicketConversation from './AgentTicketConversation';
+import TaskManagerView from './TaskManager';
 import { gql } from '../../api/graphql';
 import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET, UPDATE_TICKET_STATUS } from '../../api/queries';
 import type { ApiTicket, ApiTicketMessage } from '../../api/types';
@@ -153,7 +155,7 @@ export default function SupportAgentPortalView({
   onOpenCustomerWorkspace
 }: SupportAgentPortalViewProps) {
   // Support Agent Navigation Tab
-  const [agentTab, setAgentTab] = useState<'dashboard' | 'inbox' | 'my-tickets' | 'related-customers' | 'knowledge-base' | 'saved-replies' | 'team-activity' | 'notifications' | 'profile'>('dashboard');
+  const [agentTab, setAgentTab] = useState<'dashboard' | 'inbox' | 'my-tickets' | 'related-customers' | 'knowledge-base' | 'saved-replies' | 'team-activity' | 'notifications' | 'task-manager' | 'profile'>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPortalSwitchMenu, setShowPortalSwitchMenu] = useState(false);
@@ -812,6 +814,7 @@ export default function SupportAgentPortalView({
                 {agentTab === 'saved-replies' && 'پاسخهای آماده'}
                 {agentTab === 'team-activity' && 'فعالیت تیم'}
                 {agentTab === 'notifications' && 'اعلان‌ها'}
+                {agentTab === 'task-manager' && 'مدیریت وظایف'}
                 {agentTab === 'profile' && 'پروفایل کارشناس'}
               </span>
             </div>
@@ -824,6 +827,7 @@ export default function SupportAgentPortalView({
               {agentTab === 'saved-replies' && 'پاسخهای آماده'}
               {agentTab === 'team-activity' && 'فعالیت تیم'}
               {agentTab === 'notifications' && 'مرکز اعلان‌های سیستم'}
+              {agentTab === 'task-manager' && 'مدیریت وظایف من'}
               {agentTab === 'profile' && 'پروفایل کارشناس'}
             </h1>
           </div>
@@ -999,6 +1003,19 @@ export default function SupportAgentPortalView({
                     {myTickets.filter(t => t.status !== 'بسته شده').length}
                   </span>
                 )}
+              </button>
+
+              <button
+                onClick={() => { setAgentTab('task-manager'); setMobileMenuOpen(false); }}
+                className={`w-full flex items-center transition-all duration-200 ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'} rounded-xl text-xs font-semibold cursor-pointer ${
+                  agentTab === 'task-manager' 
+                    ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border-r-4 border-brand-500' 
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title={sidebarCollapsed ? "مدیریت وظایف" : undefined}
+              >
+                <ClipboardList className="w-4.5 h-4.5 shrink-0" />
+                {!sidebarCollapsed && <span className="whitespace-nowrap">مدیریت وظایف</span>}
               </button>
 
               <button
@@ -2479,6 +2496,17 @@ export default function SupportAgentPortalView({
                 </div>
               </div>
             </div>
+          )}
+
+          {/* TASK MANAGER TAB */}
+          {agentTab === 'task-manager' && (
+            <TaskManagerView
+              mode="agent"
+              currentUserId={currentUserId}
+              currentUserName={currentUserName}
+              users={agentsList}
+              showToast={showToast}
+            />
           )}
           </>)}
 
