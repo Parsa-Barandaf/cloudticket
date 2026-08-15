@@ -1176,7 +1176,7 @@ export default function SupportAgentPortalView({
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">SLA نزدیک</span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-rose-600 dark:text-rose-400">{dashboardKpis.slaRisk.toLocaleString('fa-IR')}</span>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.slaRisk.toLocaleString('fa-IR')}</span>
                       <span className="text-[10px] text-rose-600 dark:text-rose-400 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
                         کمتر از ۱ ساعت
                       </span>
@@ -1214,7 +1214,7 @@ export default function SupportAgentPortalView({
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">حل شده</span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{dashboardKpis.resolved.toLocaleString('fa-IR')}</span>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.resolved.toLocaleString('fa-IR')}</span>
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                         تکمیل شده
                       </span>

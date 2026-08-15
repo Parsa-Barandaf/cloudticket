@@ -667,7 +667,7 @@ export default function CustomerPortalView({
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">منتظر پاسخ</span>
-                      <h4 className="text-2xl font-black text-amber-500">{awaitingCustomer.toLocaleString('fa-IR')}</h4>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white">{awaitingCustomer.toLocaleString('fa-IR')}</h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                       <Clock className="w-5 h-5" />
@@ -683,7 +683,7 @@ export default function CustomerPortalView({
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">حل شده</span>
-                      <h4 className="text-2xl font-black text-emerald-500">{resolvedTickets.toLocaleString('fa-IR')}</h4>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white">{resolvedTickets.toLocaleString('fa-IR')}</h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                       <CheckCircle2 className="w-5 h-5" />
@@ -699,7 +699,7 @@ export default function CustomerPortalView({
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">محصولات فعال</span>
-                      <h4 className="text-2xl font-black text-indigo-500">{activeProductsCount.toLocaleString('fa-IR')}</h4>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white">{activeProductsCount.toLocaleString('fa-IR')}</h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
                       <Layers className="w-5 h-5" />
@@ -1120,7 +1120,7 @@ export default function CustomerPortalView({
                 >
                   <div className="space-y-1">
                     <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block">در حال بررسی</span>
-                    <h4 className="text-2xl font-black text-amber-500 leading-none">{customerTickets.filter(t => t.status === 'در حال بررسی').length.toLocaleString('fa-IR')}</h4>
+                    <h4 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{customerTickets.filter(t => t.status === 'در حال بررسی').length.toLocaleString('fa-IR')}</h4>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                     <Clock className="w-5 h-5" />
@@ -1137,7 +1137,7 @@ export default function CustomerPortalView({
                 >
                   <div className="space-y-1">
                     <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block">حل شده</span>
-                    <h4 className="text-2xl font-black text-emerald-500 leading-none">{customerTickets.filter(t => t.status === 'حل شده' || t.status === 'بسته شده').length.toLocaleString('fa-IR')}</h4>
+                    <h4 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{customerTickets.filter(t => t.status === 'حل شده' || t.status === 'بسته شده').length.toLocaleString('fa-IR')}</h4>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                     <CheckCircle2 className="w-5 h-5" />
