@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sun, Moon, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import type { AuthScreen, PortalRole, Ticket, Product, Customer } from './types';
-import { useTheme } from './hooks/useTheme';
 import { useAuth } from './hooks/useAuth';
 import { useTickets } from './hooks/useTickets';
 import { useProducts } from './hooks/useProducts';
@@ -21,7 +20,6 @@ function AppContent() {
     if (saved === 'true' && token) return 'dashboard';
     return 'login';
   });
-  const { isDark, toggleTheme } = useTheme(true);
   const [userEmail, setUserEmail] = useState<string>(() => {
     return localStorage.getItem('cmp_user_email') || 'admin@example.com';
   });
@@ -106,7 +104,7 @@ function AppContent() {
   if (screen === 'dashboard') {
     if (portalRole === 'customer') {
       return (
-        <div className={isDark ? 'dark' : ''}>
+        <div className="dark">
           <CustomerPortalView
             userEmail={userEmail}
             currentCustomerId={currentCustomerId}
@@ -114,8 +112,6 @@ function AppContent() {
             productsList={realProducts}
             customersList={realCustomers}
             onLogout={handleLogout}
-            isDark={isDark}
-            onToggleTheme={toggleTheme}
             onSwitchPortalRole={handleSwitchPortalRole}
           />
         </div>
@@ -124,7 +120,7 @@ function AppContent() {
 
     if (portalRole === 'agent') {
       return (
-        <div className={isDark ? 'dark' : ''}>
+        <div className="dark">
           <SupportAgentPortalView
             userEmail={userEmail}
             currentUserId={currentUserId}
@@ -133,8 +129,6 @@ function AppContent() {
             productsList={realProducts}
             customersList={realCustomers}
             onLogout={handleLogout}
-            isDark={isDark}
-            onToggleTheme={toggleTheme}
             onSwitchPortalRole={handleSwitchPortalRole}
           />
         </div>
@@ -142,12 +136,10 @@ function AppContent() {
     }
 
     return (
-      <div className={isDark ? 'dark' : ''}>
+      <div className="dark">
         <DashboardPreview 
           userEmail={userEmail} 
           onLogout={handleLogout} 
-          isDark={isDark}
-          onToggleTheme={toggleTheme}
           onSwitchPortalRole={handleSwitchPortalRole}
         />
       </div>
@@ -176,14 +168,7 @@ function AppContent() {
               </div>
             </div>
 
-            {/* Dark / Light switch button */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200/50 dark:border-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all cursor-pointer"
-              title={isDark ? "تغییر به پوسته روشن" : "تغییر به پوسته تاریک"}
-            >
-              {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-brand-600" />}
-            </button>
+            <div className="w-8 h-8" />
           </div>
 
           {/* Form Content container */}
@@ -222,7 +207,7 @@ function AppContent() {
 
         {/* LEFT SECTION: Stunning Animated Abstract Geometric Graphic (Hidden on mobile for responsiveness) */}
         <section className="hidden lg:flex lg:w-[50%] bg-slate-50 dark:bg-slate-900 border-l border-slate-200/50 dark:border-slate-800/30 flex-col justify-between relative overflow-hidden transition-colors duration-200">
-          <AbstractIllustration isDark={isDark} />
+          <AbstractIllustration />
         </section>
 
       </div>

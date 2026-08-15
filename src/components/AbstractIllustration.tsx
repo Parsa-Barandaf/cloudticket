@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Shield, Sparkles, MessageSquare, Users, Cpu, FileText, CheckCircle2, TrendingUp } from 'lucide-react';
 
-export default function AbstractIllustration({ isDark }: { isDark: boolean }) {
+export default function AbstractIllustration() {
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-12 overflow-hidden select-none">
       {/* Background radial glow */}

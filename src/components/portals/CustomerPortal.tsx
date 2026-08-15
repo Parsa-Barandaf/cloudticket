@@ -8,8 +8,6 @@ import {
   BookOpen,
   Bell,
   User,
-  Sun,
-  Moon,
   LogOut,
   Plus,
   Search,
@@ -51,8 +49,6 @@ interface CustomerPortalViewProps {
   productsList?: Product[];
   customersList?: Customer[];
   onLogout: () => void;
-  isDark: boolean;
-  onToggleTheme: () => void;
   onSwitchPortalRole?: (role: PortalRole) => void;
 }
 
@@ -63,8 +59,6 @@ export default function CustomerPortalView({
   productsList = [],
   customersList = [],
   onLogout,
-  isDark,
-  onToggleTheme,
   onSwitchPortalRole
 }: CustomerPortalViewProps) {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'create-ticket' | 'my-tickets' | 'docs' | 'notifications' | 'profile'>('dashboard');
@@ -433,7 +427,7 @@ export default function CustomerPortalView({
   };
 
   return (
-    <div className={`min-h-screen ${isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'} font-sans flex text-right transition-colors duration-200`} dir="rtl">
+    <div className="min-h-screen dark bg-slate-950 text-slate-100 font-sans flex text-right transition-colors duration-200" dir="rtl">
       {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
@@ -602,14 +596,6 @@ export default function CustomerPortalView({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Dark / Light Toggle */}
-            <button
-              onClick={onToggleTheme}
-              className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-colors cursor-pointer"
-            >
-              {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-brand-600" />}
-            </button>
-
             {/* Customer User Profile Badge */}
             <div className="flex items-center gap-2.5 pr-3 border-r border-slate-200 dark:border-slate-800">
               <div className="w-8 h-8 rounded-full bg-brand-500 text-white font-black text-xs flex items-center justify-center shadow-md shadow-brand-500/20">

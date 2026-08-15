@@ -31,8 +31,6 @@ import {
   Sliders, 
   Eye, 
   Trash2,
-  Sun,
-  Moon,
   MoreHorizontal,
   Edit,
   Filter,
@@ -158,12 +156,10 @@ interface ProductCustomerConnection {
 interface DashboardPreviewProps {
   userEmail: string;
   onLogout: () => void;
-  isDark: boolean;
-  onToggleTheme: () => void;
   onSwitchPortalRole?: (role: PortalRole) => void;
 }
 
-export default function DashboardPreview({ userEmail, onLogout, isDark, onToggleTheme, onSwitchPortalRole }: DashboardPreviewProps) {
+export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRole }: DashboardPreviewProps) {
   // Sidebar collapsed state (desktop)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1113,16 +1109,6 @@ export default function DashboardPreview({ userEmail, onLogout, isDark, onToggle
               }}
             />
           </div>
-
-          {/* Theme Switcher Button */}
-          <button
-            onClick={onToggleTheme}
-            className="p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            title={isDark ? "پوسته روشن" : "پوسته تاریک"}
-            id="theme-toggle-header"
-          >
-            {isDark ? <Sun className="w-4.5 h-4.5 text-amber-500" /> : <Moon className="w-4.5 h-4.5 text-brand-600" />}
-          </button>
 
           {/* Notifications Trigger with Unread Badge */}
           <div className="relative">

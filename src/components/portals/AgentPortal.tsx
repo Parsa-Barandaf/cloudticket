@@ -40,8 +40,6 @@ import {
   LayoutDashboard,
   Inbox,
   Bell,
-  Sun,
-  Moon,
   LogOut,
   Menu,
   Building,
@@ -133,8 +131,6 @@ interface SupportAgentPortalViewProps {
   productsList: Product[];
   customersList: Customer[];
   onLogout: () => void;
-  isDark: boolean;
-  onToggleTheme: () => void;
   onSwitchPortalRole?: (role: PortalRole) => void;
   onOpenTicketDetails?: (ticketId: string) => void;
   onOpenCustomerWorkspace?: (customerId: string) => void;
@@ -148,8 +144,6 @@ export default function SupportAgentPortalView({
   productsList,
   customersList,
   onLogout,
-  isDark,
-  onToggleTheme,
   onSwitchPortalRole,
   onOpenTicketDetails,
   onOpenCustomerWorkspace
@@ -768,7 +762,7 @@ export default function SupportAgentPortalView({
   };
 
   return (
-    <div className={`min-h-screen ${isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'} font-sans flex flex-col text-right transition-colors duration-200`} dir="rtl" id="agent-portal-root">
+    <div className="min-h-screen dark bg-slate-950 text-slate-100 font-sans flex flex-col text-right transition-colors duration-200" dir="rtl" id="agent-portal-root">
       {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
@@ -886,16 +880,6 @@ export default function SupportAgentPortalView({
               onChange={(e) => setQueueSearch(e.target.value)}
             />
           </div>
-
-          {/* Theme Switcher Button */}
-          <button
-            onClick={onToggleTheme}
-            className="p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            title={isDark ? "پوسته روشن" : "پوسته تاریک"}
-            id="theme-toggle-header"
-          >
-            {isDark ? <Sun className="w-4.5 h-4.5 text-amber-500" /> : <Moon className="w-4.5 h-4.5 text-brand-600" />}
-          </button>
 
           {/* Notifications Trigger with Unread Badge */}
           <div className="relative">
