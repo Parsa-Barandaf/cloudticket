@@ -184,7 +184,13 @@ export default function CustomerPortalView({
       t.id.toLowerCase().includes(q) ||
       (t.ticketNumber ? `#${t.ticketNumber}`.toLowerCase().includes(q) : false) ||
       t.product.toLowerCase().includes(q);
-    const matchesStatus = ticketStatusFilter === 'همه' || t.status === ticketStatusFilter;
+    const matchesStatus =
+      ticketStatusFilter === 'همه' ||
+      (ticketStatusFilter === 'باز'
+        ? ['باز', 'در حال بررسی', 'منتظر پاسخ مشتری'].includes(t.status)
+        : ticketStatusFilter === 'حل شده'
+        ? t.status === 'حل شده' || t.status === 'بسته شده'
+        : t.status === ticketStatusFilter);
     const matchesPriority = ticketPriorityFilter === 'همه' || t.priority === ticketPriorityFilter;
     return matchesSearch && matchesStatus && matchesPriority;
   }).sort((a, b) => {
@@ -645,7 +651,7 @@ export default function CustomerPortalView({
               {/* KPI Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button
-                  onClick={() => setActiveTab('my-tickets')}
+                  onClick={() => { setTicketStatusFilter('باز'); setTicketPriorityFilter('همه'); setTicketSearch(''); setTicketPage(1); setActiveTab('my-tickets'); }}
                   className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/40 shadow-xs transition-all text-right cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -661,7 +667,7 @@ export default function CustomerPortalView({
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('my-tickets')}
+                  onClick={() => { setTicketStatusFilter('منتظر پاسخ مشتری'); setTicketPriorityFilter('همه'); setTicketSearch(''); setTicketPage(1); setActiveTab('my-tickets'); }}
                   className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-amber-500/40 shadow-xs transition-all text-right cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -677,7 +683,7 @@ export default function CustomerPortalView({
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('my-tickets')}
+                  onClick={() => { setTicketStatusFilter('حل شده'); setTicketPriorityFilter('همه'); setTicketSearch(''); setTicketPage(1); setActiveTab('my-tickets'); }}
                   className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-emerald-500/40 shadow-xs transition-all text-right cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -1168,6 +1174,7 @@ export default function CustomerPortalView({
                           className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 cursor-pointer font-bold"
                         >
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه</option>
+                          <option className="dark:bg-slate-800 dark:text-slate-200" value="باز">باز</option>
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="جدید">جدید</option>
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="در حال بررسی">در حال بررسی</option>
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="منتظر پاسخ مشتری">منتظر پاسخ مشتری</option>
