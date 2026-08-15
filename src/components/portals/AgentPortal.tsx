@@ -507,6 +507,7 @@ export default function SupportAgentPortalView({
       recentUpdated: scopedTickets.length,
       slaRisk: scopedTickets.filter(t => t.slaRisk).length,
       pinned: scopedTickets.filter(t => t.pinned).length,
+      starred: scopedTickets.filter(t => t.important).length,
     };
   }, [scopedTickets]);
 
@@ -544,6 +545,8 @@ export default function SupportAgentPortalView({
           return ticket.slaRisk;
         case 'سنجاق‌شده':
           return ticket.pinned;
+        case 'ستاره‌دار':
+          return ticket.important;
         case 'همه':
         default:
           return true;
@@ -1488,8 +1491,8 @@ export default function SupportAgentPortalView({
                 >
                   <div className="space-y-1">
                     <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">در انتظار پاسخ</span>
-                    <h4 className="text-2xl font-black text-amber-500 font-mono leading-none">{totalWaitingResponse}</h4>
-                    <span className="text-[10px] font-bold text-amber-500">نیاز به اقدام و مانیتورینگ</span>
+                    <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalWaitingResponse}</h4>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">نیاز به اقدام و مانیتورینگ</span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5" />
@@ -1506,8 +1509,8 @@ export default function SupportAgentPortalView({
                 >
                   <div className="space-y-1">
                     <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">حل شده</span>
-                    <h4 className="text-2xl font-black text-emerald-500 font-mono leading-none">{totalResolved}</h4>
-                    <span className="text-[10px] font-bold text-emerald-500">تیکت‌های خاتمه‌یافته نهایی</span>
+                    <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalResolved}</h4>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">تیکت‌های خاتمه‌یافته نهایی</span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-5 h-5" />
@@ -1524,8 +1527,8 @@ export default function SupportAgentPortalView({
                 >
                   <div className="space-y-1">
                     <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">SLA در خطر</span>
-                    <h4 className="text-2xl font-black text-rose-500 font-mono leading-none">{totalSlaRisk}</h4>
-                    <span className="text-[10px] font-bold text-rose-500">نیازمند پیگیری فوری</span>
+                    <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalSlaRisk}</h4>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">نیازمند پیگیری فوری</span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
                     <AlertTriangle className="w-5 h-5" />
@@ -1618,7 +1621,8 @@ export default function SupportAgentPortalView({
                   { id: 'critical', label: 'وضعیت بحرانی', count: filterCounts.urgent },
                   { id: 'unanswered', label: 'پاسخ داده نشده', count: filterCounts.unanswered },
                   { id: 'sla', label: 'SLA در خطر', count: filterCounts.slaRisk },
-                  { id: 'pinned', label: 'سنجاق‌شده', count: filterCounts.pinned }
+                  { id: 'pinned', label: 'سنجاق‌شده', count: filterCounts.pinned },
+                  { id: 'starred', label: 'ستاره‌دار', count: filterCounts.starred }
                 ].map(c => {
                   const isActive = activeQuickFilter === c.id;
                   return (
@@ -1635,6 +1639,7 @@ export default function SupportAgentPortalView({
                           case 'unanswered': setInboxFilter('بدون پاسخ'); break;
                           case 'sla': setInboxFilter('SLA در خطر'); break;
                           case 'pinned': setInboxFilter('سنجاق‌شده'); break;
+                          case 'starred': setInboxFilter('ستاره‌دار'); break;
                           default: setInboxFilter('همه');
                         }
                       }}
