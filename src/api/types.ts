@@ -206,6 +206,7 @@ export interface ApiTask {
   status: TaskStatus;
   dueDate?: string;
   completedAt?: string;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
   createdById: string;

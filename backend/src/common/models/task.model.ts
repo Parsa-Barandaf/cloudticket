@@ -42,6 +42,9 @@ export class Task {
   completedAt?: Date;
 
   @Field()
+  sortOrder: number;
+
+  @Field()
   createdAt: Date;
 
   @Field()

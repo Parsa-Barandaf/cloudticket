@@ -116,6 +116,7 @@ export function mapTask(t: ApiTask): TaskItem {
     dueDate: t.dueDate,
     overdue,
     completedAt: t.completedAt,
+    sortOrder: t.sortOrder,
     createdAt: t.createdAt,
     updatedAt: t.updatedAt,
     createdById: t.createdById,
@@ -129,7 +130,7 @@ export function mapTask(t: ApiTask): TaskItem {
 export function mapActivity(a: ApiActivity): ActivityItem {
   return {
     id: a.id,
-    type: a.type as ActivityItem['type'],
+    type: (a.type === 'tasks' ? 'task' : a.type) as ActivityItem['type'],
     title: a.title,
     subtitle: a.subtitle,
     time: formatTimeAgo(a.createdAt),
@@ -137,7 +138,7 @@ export function mapActivity(a: ApiActivity): ActivityItem {
 }
 
 function notificationType(raw: string): NotificationItem['type'] {
-  if (raw === 'tickets' || raw === 'users' || raw === 'products' || raw === 'licenses' || raw === 'system') {
+  if (raw === 'tickets' || raw === 'tasks' || raw === 'users' || raw === 'products' || raw === 'licenses' || raw === 'system') {
     return raw;
   }
   if (raw === 'alert') return 'system';

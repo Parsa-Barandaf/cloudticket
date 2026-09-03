@@ -56,6 +56,12 @@ export class UpdateTaskStatusInput {
 }
 
 @InputType()
+export class ReorderTasksInput {
+  @Field(() => [String])
+  ids: string[];
+}
+
+@InputType()
 export class AddTaskCommentInput {
   @Field()
   taskId: string;

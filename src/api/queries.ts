@@ -63,7 +63,7 @@ export const DELETE_NOTIFICATIONS = `
 // ── Tasks ──
 const TASK_COMMENT_FIELDS = `id taskId text type createdAt authorId author { id name email role }`;
 
-const TASK_FIELDS = `id title description priority status dueDate completedAt createdAt updatedAt createdById assigneeId createdBy { id name email role } assignee { id name email role } comments { ${TASK_COMMENT_FIELDS} }`;
+const TASK_FIELDS = `id title description priority status dueDate completedAt sortOrder createdAt updatedAt createdById assigneeId createdBy { id name email role } assignee { id name email role } comments { ${TASK_COMMENT_FIELDS} }`;
 
 export const GET_TASKS = `
   query Tasks($filter: TaskFilterInput) {
@@ -119,6 +119,12 @@ export const DELETE_TASK = `
   }
 `;
 
+export const REORDER_TASKS = `
+  mutation ReorderTasks($input: ReorderTasksInput!) {
+    reorderTasks(input: $input)
+  }
+`;
+
 export const ADD_TASK_COMMENT = `
   mutation AddTaskComment($input: AddTaskCommentInput!) {
     addTaskComment(input: $input) {
@@ -129,8 +135,8 @@ export const ADD_TASK_COMMENT = `
 
 // ── Auth ──
 export const LOGIN_MUTATION = `
-  mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
+  mutation Login($email: String!, $password: String!, $rememberMe: Boolean) {
+    login(email: $email, password: $password, rememberMe: $rememberMe) {
       accessToken
       accessiblePortals
       permissions

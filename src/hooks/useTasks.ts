@@ -7,6 +7,7 @@ import {
   UPDATE_TASK,
   UPDATE_TASK_STATUS,
   DELETE_TASK,
+  REORDER_TASKS,
   ADD_TASK_COMMENT,
 } from '../api/queries';
 import type { ApiTask, TaskPriority, TaskStatus } from '../api/types';
@@ -105,7 +106,24 @@ export function useTasks(scope: 'all' | 'mine' = 'all', userId = '') {
     return data.addTaskComment;
   }, [fetchTasks]);
 
+  const reorderTasks = useCallback(async (ids: string[]) => {
+    setTasks(prev => {
+      const byId = new Map(prev.map(task => [task.id, task]));
+      const ordered = ids.map(id => byId.get(id)).filter((task): task is TaskItem => Boolean(task));
+      const rest = prev.filter(task => !ids.includes(task.id));
+      return [...ordered, ...rest];
+    });
+
+    try {
+      await gql(REORDER_TASKS, { input: { ids } });
+      await fetchTasks();
+    } catch (e) {
+      setError((e as Error).message);
+      await fetchTasks();
+    }
+  }, [fetchTasks]);
+
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment };
+  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks };
 }

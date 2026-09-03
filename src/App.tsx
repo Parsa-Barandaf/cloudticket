@@ -6,6 +6,7 @@ import { useAuth } from './hooks/useAuth';
 import { useTickets } from './hooks/useTickets';
 import { useProducts } from './hooks/useProducts';
 import { useCustomers } from './hooks/useCustomers';
+import { getAuthItem, setAuthItem, removeAuthItem } from './api/storage';
 import ErrorBoundary from './components/ErrorBoundary';
 import AbstractIllustration from './components/AbstractIllustration';
 import LoginForm from './components/LoginForm';
@@ -15,25 +16,25 @@ import SupportAgentPortalView from './components/portals/AgentPortal';
 
 function AppContent() {
   const [screen, setScreen] = useState<AuthScreen>(() => {
-    const saved = localStorage.getItem('cmp_logged_in');
-    const token = localStorage.getItem('cmp_access_token');
+    const saved = getAuthItem('cmp_logged_in');
+    const token = getAuthItem('cmp_access_token');
     if (saved === 'true' && token) return 'dashboard';
     return 'login';
   });
   const [userEmail, setUserEmail] = useState<string>(() => {
-    return localStorage.getItem('cmp_user_email') || 'admin@example.com';
+    return getAuthItem('cmp_user_email') || 'admin@example.com';
   });
   const [currentUserId, setCurrentUserId] = useState<string>(() => {
-    return localStorage.getItem('cmp_user_id') || '';
+    return getAuthItem('cmp_user_id') || '';
   });
   const [currentCustomerId, setCurrentCustomerId] = useState<string>(() => {
-    return localStorage.getItem('cmp_customer_id') || '';
+    return getAuthItem('cmp_customer_id') || '';
   });
   const [currentDepartmentId, setCurrentDepartmentId] = useState<string>(() => {
-    return localStorage.getItem('cmp_department_id') || '';
+    return getAuthItem('cmp_department_id') || '';
   });
   const [portalRole, setPortalRole] = useState<PortalRole>(() => {
-    return (localStorage.getItem('cmp_portal_role') as PortalRole) || 'admin';
+    return (getAuthItem('cmp_portal_role') as PortalRole) || 'admin';
   });
   const { tickets: realTickets, refetch: refetchTickets } = useTickets();
   const { products: realProducts, refetch: refetchProducts } = useProducts();
@@ -47,7 +48,7 @@ function AppContent() {
   }, [refetchTickets, refetchProducts, refetchCustomers]);
 
   useEffect(() => {
-    const token = localStorage.getItem('cmp_access_token');
+    const token = getAuthItem('cmp_access_token');
     if (!token) return;
     getCurrentUser().then(result => {
       if (result) {
@@ -56,17 +57,18 @@ function AppContent() {
         setCurrentCustomerId(result.customerId || '');
         setCurrentDepartmentId(result.departmentId || '');
         setPortalRole(result.role);
-        localStorage.setItem('cmp_logged_in', 'true');
+        const persistent = !!getAuthItem('cmp_access_token');
+        setAuthItem('cmp_logged_in', 'true', persistent);
         setScreen('dashboard');
         refreshAllData();
       } else {
-        localStorage.removeItem('cmp_access_token');
-        localStorage.removeItem('cmp_user_email');
-        localStorage.removeItem('cmp_user_id');
-        localStorage.removeItem('cmp_customer_id');
-        localStorage.removeItem('cmp_department_id');
-        localStorage.removeItem('cmp_portal_role');
-        localStorage.removeItem('cmp_logged_in');
+        removeAuthItem('cmp_access_token');
+        removeAuthItem('cmp_user_email');
+        removeAuthItem('cmp_user_id');
+        removeAuthItem('cmp_customer_id');
+        removeAuthItem('cmp_department_id');
+        removeAuthItem('cmp_portal_role');
+        removeAuthItem('cmp_logged_in');
         setScreen('login');
       }
     });
@@ -80,12 +82,6 @@ function AppContent() {
     setCurrentUserId(result.userId || '');
     setCurrentCustomerId(result.customerId || '');
     setCurrentDepartmentId(result.departmentId || '');
-    localStorage.setItem('cmp_logged_in', 'true');
-    localStorage.setItem('cmp_user_email', mail);
-    localStorage.setItem('cmp_portal_role', activeRole);
-    if (result.userId) localStorage.setItem('cmp_user_id', result.userId);
-    if (result.customerId) localStorage.setItem('cmp_customer_id', result.customerId);
-    if (result.departmentId) localStorage.setItem('cmp_department_id', result.departmentId);
     setScreen('dashboard');
     refreshAllData();
   };
@@ -97,7 +93,7 @@ function AppContent() {
 
   const handleSwitchPortalRole = (newRole: PortalRole) => {
     setPortalRole(newRole);
-    localStorage.setItem('cmp_portal_role', newRole);
+    setAuthItem('cmp_portal_role', newRole, !!getAuthItem('cmp_access_token'));
   };
 
   // If logged in, render according to active portalRole

@@ -67,7 +67,7 @@ export interface Customer {
 
 export interface ActivityItem {
   id: string;
-  type: 'ticket' | 'reply' | 'product' | 'customer';
+  type: 'ticket' | 'reply' | 'product' | 'customer' | 'task' | 'tasks';
   title: string;
   subtitle: string;
   time: string;
@@ -79,7 +79,7 @@ export interface NotificationItem {
   description: string;
   time: string;
   relativeGroup: 'new' | 'today' | 'yesterday' | 'older';
-  type: 'tickets' | 'users' | 'products' | 'licenses' | 'system';
+  type: 'tickets' | 'tasks' | 'users' | 'products' | 'licenses' | 'system';
   priority: 'normal' | 'important' | 'critical';
   read: boolean;
   archived: boolean;
@@ -137,6 +137,7 @@ export interface TaskItem {
   dueDate?: string;
   overdue: boolean;
   completedAt?: string;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
   createdById: string;

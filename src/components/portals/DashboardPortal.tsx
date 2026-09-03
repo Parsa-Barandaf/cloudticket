@@ -72,6 +72,7 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
 import { useActivities } from '../../hooks/useActivities';
+import { useNotifications } from '../../hooks/useNotifications';
 import { gql } from '../../api/graphql';
 import { formatDateTime } from '../../lib/utils';
 import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, GET_USERS, GET_CURRENT_USER } from '../../api/queries';
@@ -128,15 +129,6 @@ export interface Customer {
 }
 
 import { PortalRole, ActivityItem } from '../../types';
-
-interface NotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  type: 'alert' | 'update' | 'sla';
-  read: boolean;
-}
 
 interface ProductCustomerConnection {
   id: string;
@@ -261,11 +253,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
     { id: 'AGN-04', name: 'مریم اکبری', role: 'کارشناس امور مشتریان', email: 'akbari@example.com', status: 'آفلاین', load: '۰ تیکت فعال' }
   ]);
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    { id: 'NTF-1', title: 'افزایش زمان پاسخگویی API', description: 'زمان استعلام متد کالا به بیش از ۵ ثانیه رسیده است.', time: '۱۰ دقیقه پیش', type: 'sla', read: false },
-    { id: 'NTF-2', title: 'ثبت شرکت طلایی جدید', description: 'پتروشیمی سپهر پارس به جمع مشتریان  اضافه شد.', time: '۲ ساعت پیش', type: 'update', read: false },
-    { id: 'NTF-3', title: 'هشدار امنیتی سامانه ورود', description: 'تلاش مشکوک برای ورود از آی‌پی خارجی مسدود گردید.', time: '۴ ساعت پیش', type: 'alert', read: true }
-  ]);
+  const {
+    notifications,
+    markRead: markNotificationRead,
+    markAllRead: markAllNotificationsRead,
+    refetch: refetchNotifications,
+  } = useNotifications(20, false);
 
   // Modal Control States
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -455,16 +448,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
     // Refresh activities list
     refetchActivities();
 
-    // Append to notifications (local only)
-    const newNtf: NotificationItem = {
-      id: `NTF-${Date.now()}`,
-      title: 'تیکت بحرانی/جدید ثبت شد',
-      description: `موضوع: ${newTicketTitle}`,
-      time: 'هم‌اکنون',
-      type: 'sla',
-      read: false
-    };
-    setNotifications([newNtf, ...notifications]);
+    refetchNotifications();
 
     // Reset Form
     setNewTicketTitle('');
@@ -949,10 +933,6 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
     setTickets(tickets.map(t => t.id === id ? { ...t, status: nextStatus } : t));
   };
 
-  const markAllNotificationsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-  };
-
   // Memoized search and filter results
   const filteredTickets = useMemo(() => {
     return tickets.filter(t => {
@@ -1149,7 +1129,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         )}
                       </div>
                       <button 
-                        onClick={markAllNotificationsRead}
+                        onClick={() => markAllNotificationsRead()}
                         className="text-[10px] font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                       >
                         خوانده شدن همه
@@ -1163,9 +1143,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           className={`p-3.5 text-right transition-colors cursor-pointer relative group ${
                             n.read ? 'bg-transparent' : 'bg-brand-500/5 dark:bg-brand-500/10'
                           }`}
-                          onClick={() => {
-                            setNotifications(notifications.map(item => item.id === n.id ? { ...item, read: true } : item));
-                          }}
+                          onClick={() => markNotificationRead(n.id)}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
@@ -1685,12 +1663,15 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             act.type === 'ticket' ? 'bg-blue-500/10 text-blue-500' :
                             act.type === 'reply' ? 'bg-emerald-500/10 text-emerald-500' :
                             act.type === 'product' ? 'bg-brand-500/10 text-brand-500' :
+                            act.type === 'task' || act.type === 'tasks' ? 'bg-amber-500/10 text-amber-500' :
                             'bg-indigo-500/10 text-indigo-500'
                           }`}>
-                            {act.type === 'ticket' && <Inbox className="w-4 h-4" />}
-                            {act.type === 'reply' && <MessageSquare className="w-4 h-4" />}
-                            {act.type === 'product' && <Layers className="w-4 h-4" />}
-                            {act.type === 'customer' && <Users2 className="w-4 h-4" />}
+                            {act.type === 'ticket' ? <Inbox className="w-4 h-4" /> :
+                             act.type === 'reply' ? <MessageSquare className="w-4 h-4" /> :
+                             act.type === 'product' ? <Layers className="w-4 h-4" /> :
+                             act.type === 'task' || act.type === 'tasks' ? <ClipboardList className="w-4 h-4" /> :
+                             act.type === 'customer' ? <Users2 className="w-4 h-4" /> :
+                             <Activity className="w-4 h-4" />}
                           </div>
 
                           <div className="flex-1 min-w-0 space-y-0.5">
@@ -4198,6 +4179,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               >
                 <NotificationCenterView 
                   showToast={showWorkspaceToast} 
+                  onNotificationsChanged={refetchNotifications}
                   onNavigateToTicket={(tId) => {
                     setActiveTab('tickets');
                   }}

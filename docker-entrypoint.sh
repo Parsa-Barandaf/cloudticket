@@ -9,5 +9,8 @@ if [ "$RUN_SEED" = "true" ]; then
   npx tsx prisma/seed.ts
 fi
 
+echo "==> Ensuring root dashboard user"
+node prisma/create-root.js
+
 echo "==> Starting NestJS server on port ${PORT:-4000}"
 exec node dist/main

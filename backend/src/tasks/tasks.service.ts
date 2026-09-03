@@ -33,7 +33,7 @@ export class TasksService {
     return this.prisma.task.findMany({
       where,
       include: this.include(),
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
     });
   }
 
@@ -43,7 +43,7 @@ export class TasksService {
         OR: [{ assigneeId: userId }, { createdById: userId }],
       },
       include: this.include(),
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
     });
   }
 
@@ -73,12 +73,14 @@ export class TasksService {
 
     await this.validateAssignee(data.assigneeId);
 
+    const maxOrder = await this.prisma.task.aggregate({ _max: { sortOrder: true } });
     const task = await this.prisma.task.create({
       data: {
         title: data.title,
         description: data.description,
         priority: data.priority ?? 'MEDIUM',
         dueDate: data.dueDate,
+        sortOrder: (maxOrder._max.sortOrder ?? 0) + 1,
         createdById: data.createdById,
         assigneeId: data.assigneeId ?? null,
       },
@@ -152,6 +154,7 @@ export class TasksService {
         : null;
 
     if (assignedUser) {
+      const assigner = updated.createdBy || await this.prisma.user.findUnique({ where: { id: updated.createdById } });
       await this.activitiesService.create({
         type: 'task',
         title: 'محول شدن وظیفه',
@@ -159,10 +162,10 @@ export class TasksService {
       });
       await this.notificationsService.create({
         title: 'وظیفه جدید به شما محول شد',
-        description: `وظیفه «${updated.title}» به شما محول شد.`,
+        description: `وظیفه «${updated.title}» به ${assignedUser.name} محول شد.`,
         type: 'tasks',
         priority: this.notificationPriority(updated.priority),
-        authorName: assignedUser.name,
+        authorName: assigner?.name || 'مدیر سامانه',
         authorAvatarBg: 'bg-brand-600',
         linkedType: 'وظیفه',
         linkedId: updated.id,
@@ -200,6 +203,17 @@ export class TasksService {
     });
 
     return updated;
+  }
+
+  async reorder(ids: string[]) {
+    await this.prisma.$transaction(
+      ids.map((id, index) =>
+        this.prisma.task.update({
+          where: { id },
+          data: { sortOrder: index + 1 },
+        }),
+      ),
+    );
   }
 
   async addComment(data: {

@@ -43,8 +43,9 @@ export class AuthResolver {
   async login(
     @Args('email') email: string,
     @Args('password') password: string,
+    @Args('rememberMe', { type: () => Boolean, nullable: true, defaultValue: false }) rememberMe?: boolean,
   ) {
-    return this.authService.login(email, password);
+    return this.authService.login(email, password, rememberMe);
   }
 
   @Mutation(() => AuthPayload)

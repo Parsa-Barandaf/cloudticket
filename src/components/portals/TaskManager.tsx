@@ -21,6 +21,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Flag,
+  GripVertical,
 } from 'lucide-react';
 import { useTasks } from '../../hooks/useTasks';
 import { mapTaskComment } from '../../api/transform';
@@ -81,7 +82,7 @@ function sameDay(a: Date, b: Date): boolean {
 
 export default function TaskManager({ mode, currentUserId, currentUserName, users, showToast }: TaskManagerProps) {
   const isAdmin = mode === 'admin';
-  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment } =
+  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks } =
     useTasks(isAdmin ? 'all' : 'mine', isAdmin ? '' : currentUserId);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -109,6 +110,8 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'status'; task: TaskItem; status?: TaskStatus } | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(t => {
@@ -117,6 +120,40 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
       return true;
     });
   }, [tasks, statusFilter, assigneeFilter]);
+
+  const handleTaskDrop = async (targetId: string) => {
+    if (!draggedTaskId || draggedTaskId === targetId) {
+      setDraggedTaskId(null);
+      setDragOverTaskId(null);
+      return;
+    }
+
+    const visibleIds = filteredTasks.map(task => task.id);
+    const fromIndex = visibleIds.indexOf(draggedTaskId);
+    const toIndex = visibleIds.indexOf(targetId);
+    if (fromIndex === -1 || toIndex === -1) {
+      setDraggedTaskId(null);
+      setDragOverTaskId(null);
+      return;
+    }
+
+    const nextVisibleIds = [...visibleIds];
+    const [movedId] = nextVisibleIds.splice(fromIndex, 1);
+    nextVisibleIds.splice(toIndex, 0, movedId);
+
+    let visibleCursor = 0;
+    const nextAllIds = tasks.map(task => {
+      if (!visibleIds.includes(task.id)) return task.id;
+      const nextId = nextVisibleIds[visibleCursor];
+      visibleCursor += 1;
+      return nextId;
+    });
+
+    setDraggedTaskId(null);
+    setDragOverTaskId(null);
+    await reorderTasks(nextAllIds);
+    showToast('ترتیب وظایف ذخیره شد.', 'success');
+  };
 
   const openCreate = () => {
     setForm({ ...emptyForm, assigneeId: isAdmin ? '' : currentUserId });
@@ -410,14 +447,42 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   <motion.div
                     key={t.id}
                     layout
+                    draggable={viewMode === 'list'}
+                    onDragStart={() => setDraggedTaskId(t.id)}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverTaskId(t.id);
+                    }}
+                    onDragLeave={() => setDragOverTaskId(current => current === t.id ? null : current)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      handleTaskDrop(t.id);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedTaskId(null);
+                      setDragOverTaskId(null);
+                    }}
                     onClick={() => openDetail(t)}
                     className={`p-5 rounded-2xl border transition-all cursor-pointer text-right flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-brand-500/40 ${
+                      dragOverTaskId === t.id && draggedTaskId !== t.id
+                        ? 'ring-2 ring-brand-500/40 border-brand-500/60 translate-y-0.5'
+                        : ''
+                    } ${
+                      draggedTaskId === t.id ? 'opacity-60 scale-[0.99]' : ''
+                    } ${
                       t.overdue
                         ? 'bg-rose-500/5 dark:bg-rose-500/10 border-rose-500/30'
                         : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60'
                     }`}
                   >
                     <div className="flex items-start gap-3.5 flex-1">
+                      <div
+                        className="mt-2 text-slate-300 dark:text-slate-600 hover:text-brand-500 dark:hover:text-brand-400 cursor-grab active:cursor-grabbing"
+                        title="برای تغییر ترتیب بکشید"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <GripVertical className="w-4.5 h-4.5" />
+                      </div>
                       <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center ${statusMeta[t.statusRaw].iconCls} bg-slate-100 dark:bg-slate-800`}>
                         <CheckCircle2 className="w-5 h-5" />
                       </div>

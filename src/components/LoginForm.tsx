@@ -111,7 +111,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
     setErrors({});
     setIsLoading(true);
 
-    const result = await apiLogin(email, password);
+    const result = await apiLogin(email, password, rememberMe);
     setIsLoading(false);
 
     if (result) {

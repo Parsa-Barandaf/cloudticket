@@ -5,6 +5,7 @@ import {
   CreateTaskInput,
   UpdateTaskInput,
   UpdateTaskStatusInput,
+  ReorderTasksInput,
   AddTaskCommentInput,
   TaskFilterInput,
 } from '../common/dto/task.input';
@@ -41,6 +42,12 @@ export class TasksResolver {
   @Mutation(() => Task)
   async updateTaskStatus(@Args('input') input: UpdateTaskStatusInput) {
     return this.tasksService.updateStatus(input.id, input.status);
+  }
+
+  @Mutation(() => Boolean)
+  async reorderTasks(@Args('input') input: ReorderTasksInput) {
+    await this.tasksService.reorder(input.ids);
+    return true;
   }
 
   @Mutation(() => Boolean)

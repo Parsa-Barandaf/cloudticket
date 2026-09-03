@@ -1,0 +1,143 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  IMAGE_NAME: cmp-crm
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_PORT: ${{ secrets.SERVER_PORT }}
+  SERVER_USER: ${{ secrets.SERVER_USER }}
+  DEPLOY_PATH: /opt/crm
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Frontend type check
+        run: npm run lint
+
+      - name: Frontend tests
+        run: npm run test
+
+      - name: Setup backend
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend lint
+        working-directory: backend
+        run: npm run lint
+
+      - name: Backend tests
+        working-directory: backend
+        run: npm run test
+
+  build:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: docker build -t ${{ env.IMAGE_NAME }}:latest .
+
+      - name: Save Docker image
+        run: docker save ${{ env.IMAGE_NAME }}:latest | gzip > ${{ env.IMAGE_NAME }}.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: ${{ env.IMAGE_NAME }}.tar.gz
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Upload source to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.SERVER_HOST }}
+          port: ${{ env.SERVER_PORT }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: ${{ env.DEPLOY_PATH }}
+          strip_components: 0
+          overwrite: true
+
+      - name: Upload Docker image to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.SERVER_HOST }}
+          port: ${{ env.SERVER_PORT }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "${{ env.IMAGE_NAME }}.tar.gz"
+          target: ${{ env.DEPLOY_PATH }}
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.SERVER_HOST }}
+          port: ${{ env.SERVER_PORT }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ${{ env.DEPLOY_PATH }}
+
+            echo "Loading Docker image..."
+            docker load < ${{ env.IMAGE_NAME }}.tar.gz
+
+            echo "Restarting services..."
+            sudo docker compose -f docker-compose.prod.yml up -d --force-recreate app
+
+            echo "Waiting for health check..."
+            sleep 10
+
+            echo "Verifying..."
+            if curl -sf http://localhost:4000 > /dev/null; then
+              echo "Deployment successful!"
+            else
+              echo "Health check failed!"
+              sudo docker compose -f docker-compose.prod.yml logs --tail=30 app
+              exit 1
+            fi
+
+            echo "Cleaning up..."
+            rm -f ${{ env.IMAGE_NAME }}.tar.gz
+
+      - name: Cleanup local artifacts
+        if: always()
+        run: rm -f ${{ env.IMAGE_NAME }}.tar.gz

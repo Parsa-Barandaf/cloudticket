@@ -14,14 +14,14 @@ export class AuthService {
     private prisma: PrismaService,
   ) {}
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, rememberMe?: boolean) {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    return this.generateToken(user);
+    return this.generateToken(user, rememberMe);
   }
 
   async register(email: string, password: string, name: string) {
@@ -36,11 +36,12 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private async generateToken(user: { id: string; email: string; name: string; role: string; isCustomer: boolean }) {
+  private async generateToken(user: { id: string; email: string; name: string; role: string; isCustomer: boolean }, rememberMe?: boolean) {
     const payload = { sub: user.id, email: user.email };
     const effective = await this.rolesService.getUserEffectivePermissions(user.id);
+    const expiresIn = rememberMe ? '30d' : '1d';
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, { expiresIn }),
       accessiblePortals: effective.accessiblePortals,
       permissions: effective.permissions.map((p: { key: string }) => p.key),
       user: {
