@@ -138,6 +138,7 @@ export class TasksService {
     if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
     if (data.assigneeId !== undefined) {
       updateData.assignee = data.assigneeId ? { connect: { id: data.assigneeId } } : { disconnect: true };
+      if (data.assigneeId !== existing.assigneeId) updateData.seenAt = null;
     }
     if (data.status === 'DONE') updateData.completedAt = new Date();
     if (data.status === 'PENDING' || data.status === 'IN_PROGRESS') updateData.completedAt = null;
@@ -214,6 +215,18 @@ export class TasksService {
         }),
       ),
     );
+  }
+
+  async markSeen(id: string, userId: string) {
+    const task = await this.prisma.task.findUnique({ where: { id } });
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.assigneeId !== userId) return this.findById(id);
+
+    return this.prisma.task.update({
+      where: { id },
+      data: { seenAt: task.seenAt ?? new Date() },
+      include: this.include(),
+    });
   }
 
   async addComment(data: {

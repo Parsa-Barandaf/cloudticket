@@ -62,6 +62,15 @@ export class ReorderTasksInput {
 }
 
 @InputType()
+export class MarkTaskSeenInput {
+  @Field()
+  id: string;
+
+  @Field()
+  userId: string;
+}
+
+@InputType()
 export class AddTaskCommentInput {
   @Field()
   taskId: string;

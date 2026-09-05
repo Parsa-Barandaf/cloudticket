@@ -229,6 +229,7 @@ model Task {
   dueDate     DateTime?
   completedAt DateTime?
   sortOrder   Int          @default(0)
+  seenAt      DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 

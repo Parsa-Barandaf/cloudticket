@@ -20,6 +20,8 @@ import {
   CalendarClock,
   ChevronRight,
   ChevronLeft,
+  Check,
+  CheckCheck,
   Flag,
   GripVertical,
 } from 'lucide-react';
@@ -82,7 +84,7 @@ function sameDay(a: Date, b: Date): boolean {
 
 export default function TaskManager({ mode, currentUserId, currentUserName, users, showToast }: TaskManagerProps) {
   const isAdmin = mode === 'admin';
-  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks } =
+  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen } =
     useTasks(isAdmin ? 'all' : 'mine', isAdmin ? '' : currentUserId);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -272,7 +274,15 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
     }
   };
 
-  const openDetail = (t: TaskItem) => setSelectedTask(t);
+  const isUnseenTask = (task: TaskItem) => task.assigneeId === currentUserId && !task.seenAt;
+
+  const openDetail = async (t: TaskItem) => {
+    setSelectedTask(t);
+    if (!isUnseenTask(t)) return;
+
+    const seenTask = await markSeen(t.id, currentUserId);
+    if (seenTask) setSelectedTask(seenTask);
+  };
 
   // Board computation
   const boardCells = useMemo(() => {
@@ -443,7 +453,9 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredTasks.map((t) => (
+                {filteredTasks.map((t) => {
+                  const unseen = isUnseenTask(t);
+                  return (
                   <motion.div
                     key={t.id}
                     layout
@@ -472,7 +484,9 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     } ${
                       t.overdue
                         ? 'bg-rose-500/5 dark:bg-rose-500/10 border-rose-500/30'
-                        : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60'
+                        : unseen
+                          ? 'bg-brand-500/5 dark:bg-brand-500/10 border-brand-500/30 shadow-xs'
+                          : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 opacity-90'
                     }`}
                   >
                     <div className="flex items-start gap-3.5 flex-1">
@@ -483,12 +497,15 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                       >
                         <GripVertical className="w-4.5 h-4.5" />
                       </div>
-                      <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center ${statusMeta[t.statusRaw].iconCls} bg-slate-100 dark:bg-slate-800`}>
+                      <div className="w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center bg-brand-500/10 dark:bg-brand-500/15 text-brand-500">
                         <CheckCircle2 className="w-5 h-5" />
                       </div>
                       <div className="space-y-1 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="text-xs font-black text-slate-950 dark:text-white">{t.title}</h4>
+                          <h4 className={`font-black ${unseen ? 'text-sm text-slate-950 dark:text-white' : 'text-xs text-slate-950 dark:text-white'}`}>{t.title}</h4>
+                          <span className={unseen ? 'text-sky-500' : 'text-emerald-500'} title={unseen ? 'دیده نشده' : 'دیده شده'}>
+                            {unseen ? <Check className="w-3.5 h-3.5" /> : <CheckCheck className="w-3.5 h-3.5" />}
+                          </span>
                           {t.overdue && (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
                               <AlertTriangle className="w-3 h-3" />
@@ -532,7 +549,8 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                       )}
                     </div>
                   </motion.div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </motion.div>
@@ -852,6 +870,9 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${statusMeta[selectedTask.statusRaw].cls}`}>{selectedTask.status}</span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${priorityMeta[selectedTask.priorityRaw].cls}`}>{selectedTask.priority}</span>
+                    <span className={isUnseenTask(selectedTask) ? 'text-sky-500' : 'text-emerald-500'} title={isUnseenTask(selectedTask) ? 'دیده نشده' : 'دیده شده'}>
+                      {isUnseenTask(selectedTask) ? <Check className="w-3.5 h-3.5" /> : <CheckCheck className="w-3.5 h-3.5" />}
+                    </span>
                     {selectedTask.overdue && (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />

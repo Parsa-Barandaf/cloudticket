@@ -8,6 +8,7 @@ import {
   UPDATE_TASK_STATUS,
   DELETE_TASK,
   REORDER_TASKS,
+  MARK_TASK_SEEN,
   ADD_TASK_COMMENT,
 } from '../api/queries';
 import type { ApiTask, TaskPriority, TaskStatus } from '../api/types';
@@ -123,7 +124,19 @@ export function useTasks(scope: 'all' | 'mine' = 'all', userId = '') {
     }
   }, [fetchTasks]);
 
+  const markSeen = useCallback(async (id: string, userId: string) => {
+    try {
+      const data = await gql<{ markTaskSeen: ApiTask }>(MARK_TASK_SEEN, { input: { id, userId } });
+      const task = mapTask(data.markTaskSeen);
+      setTasks(prev => prev.map(item => item.id === id ? task : item));
+      return task;
+    } catch (e) {
+      setError((e as Error).message);
+      return null;
+    }
+  }, []);
+
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks };
+  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen };
 }

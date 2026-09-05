@@ -44,6 +44,9 @@ export class Task {
   @Field()
   sortOrder: number;
 
+  @Field({ nullable: true })
+  seenAt?: Date;
+
   @Field()
   createdAt: Date;
 

@@ -117,6 +117,7 @@ export function mapTask(t: ApiTask): TaskItem {
     overdue,
     completedAt: t.completedAt,
     sortOrder: t.sortOrder,
+    seenAt: t.seenAt,
     createdAt: t.createdAt,
     updatedAt: t.updatedAt,
     createdById: t.createdById,

@@ -207,6 +207,7 @@ export interface ApiTask {
   dueDate?: string;
   completedAt?: string;
   sortOrder: number;
+  seenAt?: string;
   createdAt: string;
   updatedAt: string;
   createdById: string;
