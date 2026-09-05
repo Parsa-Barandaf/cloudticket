@@ -96,7 +96,7 @@ export class TasksService {
     if (task.assigneeId) {
       await this.notificationsService.create({
         title: 'وظیفه جدید به شما محول شد',
-        description: `${creator.name} وظیفه «${task.title}» را به شما محول کرد.`,
+        description: `${creator.name} وظیفه «${task.title}» را به ${task.assignee?.name || 'کاربر مسئول'} محول کرد.`,
         type: 'tasks',
         priority: this.notificationPriority(task.priority),
         authorName: creator.name,
@@ -163,7 +163,7 @@ export class TasksService {
       });
       await this.notificationsService.create({
         title: 'وظیفه جدید به شما محول شد',
-        description: `وظیفه «${updated.title}» به ${assignedUser.name} محول شد.`,
+        description: `${assigner?.name || 'مدیر سامانه'} وظیفه «${updated.title}» را به ${assignedUser.name} محول کرد.`,
         type: 'tasks',
         priority: this.notificationPriority(updated.priority),
         authorName: assigner?.name || 'مدیر سامانه',
