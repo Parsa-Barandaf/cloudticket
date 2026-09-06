@@ -50,6 +50,9 @@ export class User {
   @Field()
   createdAt: Date;
 
+  @Field({ nullable: true })
+  lastLoginAt?: Date;
+
   @Field()
   updatedAt: Date;
 }

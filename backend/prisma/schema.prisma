@@ -71,6 +71,7 @@ model User {
   company    String?
   isCustomer Boolean  @default(false)
   createdAt  DateTime @default(now())
+  lastLoginAt DateTime?
   updatedAt DateTime @updatedAt
 
   departmentId String?

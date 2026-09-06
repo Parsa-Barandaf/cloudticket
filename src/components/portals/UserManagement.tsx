@@ -4,7 +4,7 @@ import { useDepartments } from '../../hooks/useDepartments';
 import { useRoles } from '../../hooks/useRoles';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useProducts } from '../../hooks/useProducts';
-import { formatDate } from '../../lib/utils';
+import { formatDate, formatTimeAgo } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, 
@@ -60,11 +60,59 @@ interface UserItem {
   role: string;
   status: 'فعال' | 'غیرفعال' | 'دعوت شده';
   lastLogin: string;
+  lastLoginAt?: string;
   createdDate: string;
   avatarColor: string;
   isCustomer: boolean;
   departmentId?: string;
   roleId?: string;
+}
+
+function getPasswordStrength(password: string) {
+  const checks = [
+    password.length >= 6,
+    /[a-z]/.test(password),
+    /[A-Z]/.test(password),
+    /\d/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ];
+  const score = checks.filter(Boolean).length;
+  if (!password) return { score: 0, percent: 0, label: 'وارد نشده', color: 'bg-slate-300 dark:bg-slate-700' };
+  if (score <= 2) return { score, percent: 30, label: 'ضعیف', color: 'bg-rose-500' };
+  if (score === 3) return { score, percent: 60, label: 'متوسط', color: 'bg-amber-500' };
+  if (score === 4) return { score, percent: 80, label: 'خوب', color: 'bg-brand-500' };
+  return { score, percent: 100, label: 'قوی', color: 'bg-emerald-500' };
+}
+
+function isPasswordValid(password: string) {
+  return password.length >= 6 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password);
+}
+
+function generatePassword() {
+  const groups = ['ABCDEFGHJKLMNPQRSTUVWXYZ', 'abcdefghijkmnopqrstuvwxyz', '23456789', '!@#$%&*'];
+  const all = groups.join('');
+  const chars = groups.map(group => group[Math.floor(Math.random() * group.length)]);
+  while (chars.length < 12) chars.push(all[Math.floor(Math.random() * all.length)]);
+  return chars.sort(() => Math.random() - 0.5).join('');
+}
+
+function formatLastLogin(lastLoginAt?: string) {
+  return lastLoginAt ? formatTimeAgo(lastLoginAt) : 'تاکنون وارد نشده';
+}
+
+function isWithinDays(dateStr: string | undefined, days: number) {
+  if (!dateStr) return false;
+  const time = new Date(dateStr).getTime();
+  if (Number.isNaN(time)) return false;
+  return Date.now() - time <= days * 24 * 60 * 60 * 1000;
+}
+
+function isToday(dateStr: string | undefined) {
+  if (!dateStr) return false;
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return false;
+  const today = new Date();
+  return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
 }
 
 interface RoleItem {
@@ -179,7 +227,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         team: departments.find(d => d.id === u.departmentId)?.name || '',
         role: resolveDisplayRole(u),
         status: u.active ? ('فعال' as const) : ('غیرفعال' as const),
-        lastLogin: '',
+        lastLogin: formatLastLogin(u.lastLoginAt),
+        lastLoginAt: u.lastLoginAt,
         createdDate: formatDate(u.createdAt) || '',
         avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600', 'bg-pink-600', 'bg-cyan-600'][Math.floor(Math.random() * 6)],
         isCustomer: u.isCustomer,
@@ -290,6 +339,11 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const [filterStatus, setFilterStatus] = useState('همه');
   const [filterLastLogin, setFilterLastLogin] = useState('همه');
   const [userTypeTab, setUserTypeTab] = useState<'employees' | 'customers'>('employees');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  const roleFilterOptions = useMemo(() => apiRoles.map(role => role.name), [apiRoles]);
+  const teamFilterOptions = useMemo(() => departments.map(department => department.name), [departments]);
+  const statusFilterOptions = useMemo(() => Array.from(new Set(users.map(user => user.status))), [users]);
 
   // Drawer / Modals visibility control
   const [showUserDrawer, setShowUserDrawer] = useState(false);
@@ -309,6 +363,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
   const [formDataSendInvite, setFormDataSendInvite] = useState(true);
   const [formDataImmediateActive, setFormDataImmediateActive] = useState(true);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const effectivePassword = formDataPassword || 'Temp@123456';
+  const passwordStrength = useMemo(() => getPasswordStrength(formDataPassword), [formDataPassword]);
 
   // Row Action Toggle State
   const [activeRowActionId, setActiveRowActionId] = useState<string | null>(null);
@@ -357,16 +413,16 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         user.company.toLowerCase().includes(userSearch.toLowerCase());
       
       const matchesRole = filterRole === 'همه' || user.role === filterRole;
-      const matchesTeam = filterTeam === 'همه' || user.team === filterTeam;
+      const matchesTeam = filterTeam === 'همه' || (filterTeam === 'بدون تیم' ? !user.team : user.team === filterTeam);
       const matchesStatus = filterStatus === 'همه' || user.status === filterStatus;
       
       let matchesLastLogin = true;
       if (filterLastLogin === 'امروز') {
-        matchesLastLogin = user.lastLogin.includes('دقیقه') || user.lastLogin.includes('ساعت') || user.lastLogin.includes('هم‌اکنون');
+        matchesLastLogin = isToday(user.lastLoginAt);
       } else if (filterLastLogin === 'تاکنون وارد نشده') {
-        matchesLastLogin = user.lastLogin.includes('تاکنون');
+        matchesLastLogin = !user.lastLoginAt;
       } else if (filterLastLogin === 'اخیر') {
-        matchesLastLogin = !user.lastLogin.includes('تاکنون') && !user.lastLogin.includes('۲ روز پیش');
+        matchesLastLogin = isWithinDays(user.lastLoginAt, 7);
       }
 
       return matchesSearch && matchesRole && matchesTeam && matchesStatus && matchesLastLogin;
@@ -441,6 +497,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
     if (!formDataEmail.trim() || !formDataEmail.includes('@')) errors.email = 'ایمیل نامعتبر است.';
     if (!formDataPhone.trim()) errors.phone = 'شماره تماس الزامی است.';
     if (userType === 'customer' && !formDataCompany.trim()) errors.company = 'انتخاب شرکت برای کاربر مشتری الزامی است.';
+    if (userDrawerMode === 'create' && !isPasswordValid(effectivePassword)) {
+      errors.password = 'رمز عبور باید حداقل ۶ کاراکتر و شامل حروف بزرگ، حروف کوچک و عدد باشد.';
+    }
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -470,7 +529,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
           team: departments.find(d => d.id === newUser.departmentId)?.name || '',
           role: resolveDisplayRole(newUser),
           status: formDataImmediateActive ? 'فعال' : 'دعوت شده',
-          lastLogin: '',
+          lastLogin: formatLastLogin(newUser.lastLoginAt),
+          lastLoginAt: newUser.lastLoginAt,
           createdDate: formatDate(newUser.createdAt) || '',
           avatarColor: ['bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-violet-600', 'bg-rose-600', 'bg-indigo-600'][Math.floor(Math.random() * 6)],
           isCustomer: newUser.isCustomer,
@@ -861,7 +921,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">کاربران فعال</span>
-            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{apiUsers.filter(u => u.active).length.toLocaleString('fa-IR')}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{apiUsers.filter(u => u.active).length.toLocaleString('fa-IR')}</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <UserCheck className="w-5.5 h-5.5" />
@@ -871,7 +931,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">تیم‌های پشتیبانی تخصصی</span>
-            <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{departments.length.toLocaleString('fa-IR')}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{departments.length.toLocaleString('fa-IR')}</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
             <Users2 className="w-5.5 h-5.5" />
@@ -881,7 +941,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">نقش‌های سفارشی تعریف شده</span>
-            <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{apiRoles.length.toLocaleString('fa-IR')}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{apiRoles.length.toLocaleString('fa-IR')}</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <Shield className="w-5.5 h-5.5" />
@@ -909,7 +969,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                 <h3 className="text-xs font-black text-slate-900 dark:text-white">جستجوی هوشمند و فیلترهای کنترلی</h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
                 {/* Search */}
                 <div className="relative">
                   <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -922,6 +982,27 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                   />
                 </div>
 
+                <button
+                  onClick={() => setShowAdvancedFilters(prev => !prev)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-300 text-xs font-black flex items-center justify-center gap-2 cursor-pointer hover:border-brand-300 dark:hover:border-brand-500/50 transition-colors"
+                >
+                  <Sliders className="w-4 h-4" />
+                  فیلترهای پیشرفته
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+
+              <AnimatePresence initial={false}>
+                {showAdvancedFilters && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+
                 {/* Role Filter */}
                 <div className="space-y-1">
                   <select
@@ -930,11 +1011,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">نقش: همه نقش‌ها</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="مدیر کل">مدیر کل</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="مدیر شرکت">مدیر شرکت</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="کارشناس پشتیبانی">کارشناس پشتیبانی</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="کاربر">کاربر</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="مشاهده‌گر">مشاهده‌گر</option>
+                    {roleFilterOptions.map(role => (
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={role} value={role}>{role}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -946,9 +1025,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">تیم: همه تیم‌ها</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="تیم فنی">تیم فنی</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="DevOps">DevOps</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="تیم فروش">تیم فروش</option>
+                    {teamFilterOptions.map(team => (
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={team} value={team}>{team}</option>
+                    ))}
                     <option className="dark:bg-slate-800 dark:text-slate-200" value="بدون تیم">بدون تیم</option>
                   </select>
                 </div>
@@ -961,9 +1040,9 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
                   >
                     <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه موارد</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="فعال">وضعیت: فعال</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="غیرفعال">وضعیت: غیرفعال</option>
-                    <option className="dark:bg-slate-800 dark:text-slate-200" value="دعوت شده">وضعیت: دعوت شده</option>
+                    {statusFilterOptions.map(status => (
+                      <option className="dark:bg-slate-800 dark:text-slate-200" key={status} value={status}>وضعیت: {status}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -980,7 +1059,10 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     <option className="dark:bg-slate-800 dark:text-slate-200" value="تاکنون وارد نشده">تاکنون وارد نشده</option>
                   </select>
                 </div>
-              </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* User Type Tabs */}
               <div className="flex items-center gap-1.5 pb-2">
@@ -1093,7 +1175,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                                 ? 'text-slate-400 bg-slate-50 dark:bg-slate-950/40' 
                                 : 'text-slate-600 bg-slate-100 dark:text-slate-300 dark:bg-slate-800'
                             }`}>
-                              {user.team}
+                              {user.team || 'بدون تیم'}
                             </span>
                           </td>
                           <td className="p-4">
@@ -1120,8 +1202,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                               {user.status}
                             </span>
                           </td>
-                          <td className="p-4 font-bold text-slate-450 dark:text-slate-400 text-[11px]">{user.lastLogin}</td>
-                          <td className="p-4 font-mono text-[11px] text-slate-400">{user.createdDate}</td>
+                          <td className="p-4 font-bold text-slate-500 dark:text-slate-400 text-[11px]">{user.lastLogin}</td>
+                          <td className="p-4 text-xs font-black tracking-normal text-slate-500 dark:text-slate-300">{user.createdDate}</td>
                           <td className="p-4 pl-5 text-left">
                             <button
                               onClick={(e) => { 
@@ -1237,8 +1319,8 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                               {user.status}
                             </span>
                           </td>
-                          <td className="p-4 font-bold text-slate-450 dark:text-slate-400 text-[11px]">{user.lastLogin}</td>
-                          <td className="p-4 font-mono text-[11px] text-slate-400">{user.createdDate}</td>
+                          <td className="p-4 font-bold text-slate-500 dark:text-slate-400 text-[11px]">{user.lastLogin}</td>
+                          <td className="p-4 text-xs font-black tracking-normal text-slate-500 dark:text-slate-300">{user.createdDate}</td>
                           <td className="p-4 pl-5 text-left">
                             <button
                               onClick={(e) => { 
@@ -1808,15 +1890,43 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     </div>
                     {/* Password (only for create) */}
                     {userDrawerMode === 'create' && (
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">رمز عبور اولیه</label>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <label className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold block">رمز عبور اولیه</label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormDataPassword(generatePassword());
+                              if (formErrors.password) setFormErrors({ ...formErrors, password: '' });
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-400 hover:bg-brand-500/20 text-[10px] font-black transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            <Key className="w-3 h-3" />
+                            <span>تولید رمز</span>
+                          </button>
+                        </div>
                         <input
-                          type="password"
+                          type="text"
                           value={formDataPassword}
-                          onChange={(e) => setFormDataPassword(e.target.value)}
+                          onChange={(e) => {
+                            setFormDataPassword(e.target.value);
+                            if (formErrors.password) setFormErrors({ ...formErrors, password: '' });
+                          }}
                           placeholder="پیش‌فرض: Temp@123456"
-                          className="w-full text-xs font-bold px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300"
+                          className={`w-full text-xs font-mono font-bold px-3.5 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/20 outline-none focus:border-brand-500 text-left text-slate-700 dark:text-slate-300 ${
+                            formErrors.password ? 'border-rose-400 dark:border-rose-900/60' : 'border-slate-200 dark:border-slate-800'
+                          }`}
                         />
+                        <div className="space-y-1">
+                          <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div className={`h-full rounded-full transition-all ${passwordStrength.color}`} style={{ width: `${passwordStrength.percent}%` }} />
+                          </div>
+                          <div className="flex items-center justify-between text-[9px] font-bold">
+                            <span className="text-slate-400 dark:text-slate-500">حداقل ۶ کاراکتر، حروف بزرگ، حروف کوچک و عدد</span>
+                            <span className="text-slate-500 dark:text-slate-300">قدرت: {passwordStrength.label}</span>
+                          </div>
+                        </div>
+                        {formErrors.password && <span className="text-[9px] text-rose-500 font-bold block">{formErrors.password}</span>}
                       </div>
                     )}
                   </div>
@@ -2096,7 +2206,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-150 dark:border-slate-800/80">
                         <span className="text-[10px] text-slate-400 block mb-1">دپارتمان / تیم کاری:</span>
-                        <span className="text-slate-900 dark:text-white font-black">{selectedUserProfile.team}</span>
+                        <span className="text-slate-900 dark:text-white font-black">{selectedUserProfile.team || 'بدون تیم'}</span>
                       </div>
                       <div className="p-3 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-150 dark:border-slate-800/80">
                         <span className="text-[10px] text-slate-400 block mb-1">شماره تماس مستقیم:</span>
@@ -2108,7 +2218,7 @@ export default function UserManagementView({ showCustomerToast, initialCustomerC
                       </div>
                       <div className="p-3 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-150 dark:border-slate-800/80">
                         <span className="text-[10px] text-slate-400 block mb-1">تاریخ تعریف کاربر:</span>
-                        <span className="text-slate-900 dark:text-white font-mono font-black">{selectedUserProfile.createdDate}</span>
+                        <span className="text-slate-900 dark:text-white text-xs font-black">{selectedUserProfile.createdDate}</span>
                       </div>
                     </div>
 

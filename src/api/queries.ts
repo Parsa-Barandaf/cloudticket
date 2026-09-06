@@ -422,7 +422,7 @@ export const REJECT_ACCESS_REQUEST = `
 `;
 
 // ── Users ──
-const USER_FIELDS = `id email name role active phone company isCustomer customerId departmentId createdAt updatedAt userRoles { id name }`;
+const USER_FIELDS = `id email name role active phone company isCustomer customerId departmentId createdAt lastLoginAt updatedAt userRoles { id name }`;
 
 export const GET_USERS = `
   query Users {

@@ -27,6 +27,13 @@ export class UsersService {
     };
   }
 
+  private validatePassword(password: string) {
+    const valid = password.length >= 6 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password);
+    if (!valid) {
+      throw new BadRequestException('رمز عبور باید حداقل ۶ کاراکتر و شامل حروف بزرگ، حروف کوچک و عدد باشد.');
+    }
+  }
+
   private mapUser(user: any) {
     return {
       ...user,
@@ -65,6 +72,7 @@ export class UsersService {
     if (input.isCustomer && !input.company) {
       throw new BadRequestException('برای کاربر مشتری، نام شرکت الزامی است.');
     }
+    this.validatePassword(input.password);
     const hashed = await bcrypt.hash(input.password, 10);
 
     let customerId = input.customerId;

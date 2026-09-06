@@ -22,6 +22,7 @@ export interface ApiUser {
   customerId?: string;
   userRoles?: { id: string; name: string }[];
   createdAt: string;
+  lastLoginAt?: string;
   updatedAt: string;
 }
 
