@@ -88,6 +88,9 @@ function AppContent() {
 
   const handleLogout = () => {
     logout();
+    removeAuthItem('cmp_admin_active_tab');
+    removeAuthItem('cmp_agent_active_tab');
+    removeAuthItem('cmp_customer_active_tab');
     setScreen('login');
   };
 
@@ -218,4 +221,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-

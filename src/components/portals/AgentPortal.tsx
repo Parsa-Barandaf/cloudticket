@@ -65,11 +65,16 @@ import type { AgentTicketItem } from '../../api/transform-agent';
 import { mergeAgentTicketData } from '../../api/transform-agent';
 import { useDepartments } from '../../hooks/useDepartments';
 import { useUsers } from '../../hooks/useUsers';
+import { usePersistentState } from '../../hooks/usePersistentState';
 import AgentTicketConversation from './AgentTicketConversation';
 import TaskManagerView from './TaskManager';
 import { gql } from '../../api/graphql';
 import { CREATE_TICKET, GET_TICKET, CREATE_TICKET_MESSAGE, UPDATE_TICKET, UPDATE_TICKET_STATUS } from '../../api/queries';
 import type { ApiTicket, ApiTicketMessage } from '../../api/types';
+
+type AgentTab = 'dashboard' | 'inbox' | 'my-tickets' | 'related-customers' | 'knowledge-base' | 'saved-replies' | 'team-activity' | 'notifications' | 'task-manager' | 'profile';
+
+const AGENT_TABS: readonly AgentTab[] = ['dashboard', 'inbox', 'my-tickets', 'related-customers', 'knowledge-base', 'saved-replies', 'team-activity', 'notifications', 'task-manager', 'profile'];
 
 function loadAgentFlags(userId: string): { pinned: string[]; starred: string[] } {
   const key = `cmp_agent_flags_${userId || 'anon'}`;
@@ -149,7 +154,7 @@ export default function SupportAgentPortalView({
   onOpenCustomerWorkspace
 }: SupportAgentPortalViewProps) {
   // Support Agent Navigation Tab
-  const [agentTab, setAgentTab] = useState<'dashboard' | 'inbox' | 'my-tickets' | 'related-customers' | 'knowledge-base' | 'saved-replies' | 'team-activity' | 'notifications' | 'task-manager' | 'profile'>('dashboard');
+  const [agentTab, setAgentTab] = usePersistentState<AgentTab>('cmp_agent_active_tab', 'dashboard', AGENT_TABS);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPortalSwitchMenu, setShowPortalSwitchMenu] = useState(false);

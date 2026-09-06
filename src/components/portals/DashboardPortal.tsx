@@ -73,6 +73,7 @@ import { useCustomers } from '../../hooks/useCustomers';
 import { useUsers } from '../../hooks/useUsers';
 import { useActivities } from '../../hooks/useActivities';
 import { useNotifications } from '../../hooks/useNotifications';
+import { usePersistentState } from '../../hooks/usePersistentState';
 import { gql } from '../../api/graphql';
 import { formatDateTime } from '../../lib/utils';
 import { CREATE_CUSTOMER, UPDATE_CUSTOMER, DELETE_CUSTOMER, GET_PENDING_ACCESS_REQUESTS, APPROVE_ACCESS_REQUEST, REJECT_ACCESS_REQUEST, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, GET_USERS, GET_CURRENT_USER } from '../../api/queries';
@@ -130,6 +131,10 @@ export interface Customer {
 
 import { PortalRole, ActivityItem } from '../../types';
 
+type AdminTab = 'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'access-requests' | 'users' | 'reports' | 'notifications' | 'task-manager' | 'settings' | 'profile' | 'customer-details' | 'agent-portal';
+
+const RESTORABLE_ADMIN_TABS: readonly AdminTab[] = ['dashboard', 'products', 'tickets', 'customers', 'access-requests', 'users', 'reports', 'notifications', 'task-manager', 'settings', 'profile'];
+
 interface ProductCustomerConnection {
   id: string;
   productId: string;
@@ -181,9 +186,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
   const currentUserRoleLabel = currentUserData?.role === 'ADMIN' ? 'مدیر سامانه' : currentUserData?.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر';
 
   // Active Tab state
-  const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'products' | 'product-details' | 'tickets' | 'customers' | 'access-requests' | 'users' | 'reports' | 'notifications' | 'task-manager' | 'settings' | 'profile' | 'customer-details' | 'agent-portal'
-  >('dashboard');
+  const [activeTab, setActiveTab] = usePersistentState<AdminTab>('cmp_admin_active_tab', 'dashboard', RESTORABLE_ADMIN_TABS);
 
   const [selectedCustomerWorkspace, setSelectedCustomerWorkspace] = useState<Customer | null>(null);
   const [customerWorkspaceTab, setCustomerWorkspaceTab] = useState<'overview' | 'products' | 'users' | 'tickets' | 'licenses' | 'activities' | 'settings'>('overview');

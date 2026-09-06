@@ -41,6 +41,11 @@ import { mapTicketToCustomerItem } from '../../api/transform-customer';
 import { gql } from '../../api/graphql';
 import { CREATE_TICKET, CREATE_TICKET_MESSAGE, GET_CUSTOMER_CONNECTIONS, UPDATE_TICKET, DELETE_TICKET, UPDATE_TICKET_STATUS, GET_TICKET } from '../../api/queries';
 import { formatDateTime } from '../../lib/utils';
+import { usePersistentState } from '../../hooks/usePersistentState';
+
+type CustomerTab = 'dashboard' | 'products' | 'create-ticket' | 'my-tickets' | 'docs' | 'notifications' | 'profile';
+
+const CUSTOMER_TABS: readonly CustomerTab[] = ['dashboard', 'products', 'create-ticket', 'my-tickets', 'docs', 'notifications', 'profile'];
 
 interface CustomerPortalViewProps {
   userEmail: string;
@@ -61,7 +66,7 @@ export default function CustomerPortalView({
   onLogout,
   onSwitchPortalRole
 }: CustomerPortalViewProps) {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'create-ticket' | 'my-tickets' | 'docs' | 'notifications' | 'profile'>('dashboard');
+  const [activeTab, setActiveTab] = usePersistentState<CustomerTab>('cmp_customer_active_tab', 'dashboard', CUSTOMER_TABS);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
