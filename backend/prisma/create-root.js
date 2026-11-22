@@ -53,8 +53,9 @@ async function main() {
   const name = process.env.ROOT_NAME || 'Root Admin';
 
   if (!email || !password) {
-    console.log('Skipping root user bootstrap: ROOT_EMAIL and ROOT_PASSWORD are not set.');
-    return;
+    throw new Error(
+      'ROOT_EMAIL and ROOT_PASSWORD must be configured before running production bootstrap.',
+    );
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -116,7 +117,7 @@ async function main() {
 
   const rootUser = await prisma.user.upsert({
     where: { email },
-    update: { name, password: hashedPassword, role: 'ADMIN', active: true, isCustomer: false },
+    update: { name, role: 'ADMIN', active: true, isCustomer: false },
     create: { email, password: hashedPassword, name, role: 'ADMIN', active: true, isCustomer: false },
   });
 

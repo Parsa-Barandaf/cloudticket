@@ -24,7 +24,14 @@ export class ProductsService {
     });
   }
 
-  async create(data: { name: string; category: string; description?: string; version?: string; logoColor?: string; logoInitials?: string }) {
+  async create(data: {
+    name: string;
+    category: string;
+    description?: string;
+    version?: string;
+    logoColor?: string;
+    logoInitials?: string;
+  }) {
     const product = await this.prisma.product.create({
       data,
       include: { connections: { include: { customer: true, product: true } } },
@@ -39,7 +46,18 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, data: { name?: string; category?: string; description?: string; version?: string; status?: ProductStatus; logoColor?: string; logoInitials?: string }) {
+  async update(
+    id: string,
+    data: {
+      name?: string;
+      category?: string;
+      description?: string;
+      version?: string;
+      status?: ProductStatus;
+      logoColor?: string;
+      logoInitials?: string;
+    },
+  ) {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) throw new Error('Product not found');
 
@@ -51,27 +69,49 @@ export class ProductsService {
   }
 
   async createConnection(data: {
-    productId: string; customerId: string; startDate: string; endDate: string;
-    activationKey: string; subscriptionType: string; licenseStatus?: string;
-    userCount: number; notes?: string;
+    productId: string;
+    customerId: string;
+    startDate: string;
+    endDate: string;
+    activationKey: string;
+    subscriptionType: string;
+    licenseStatus?: string;
+    userCount: number;
+    notes?: string;
   }) {
     return this.prisma.productCustomerConnection.create({
-      data: { ...data, startDate: new Date(data.startDate), endDate: new Date(data.endDate) },
+      data: {
+        ...data,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+      },
       include: { customer: true, product: true },
     });
   }
 
   async deleteConnection(id: string) {
-    const conn = await this.prisma.productCustomerConnection.findUnique({ where: { id } });
+    const conn = await this.prisma.productCustomerConnection.findUnique({
+      where: { id },
+    });
     if (!conn) throw new Error('Connection not found');
     return this.prisma.productCustomerConnection.delete({ where: { id } });
   }
 
-  async updateConnection(id: string, data: {
-    startDate?: string; endDate?: string; licenseStatus?: string;
-    userCount?: number; subscriptionType?: string; activationKey?: string; notes?: string;
-  }) {
-    const conn = await this.prisma.productCustomerConnection.findUnique({ where: { id } });
+  async updateConnection(
+    id: string,
+    data: {
+      startDate?: string;
+      endDate?: string;
+      licenseStatus?: string;
+      userCount?: number;
+      subscriptionType?: string;
+      activationKey?: string;
+      notes?: string;
+    },
+  ) {
+    const conn = await this.prisma.productCustomerConnection.findUnique({
+      where: { id },
+    });
     if (!conn) throw new Error('Connection not found');
 
     const updateData: any = { ...data };
@@ -97,8 +137,13 @@ export class ProductsService {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) throw new Error('Product not found');
 
-    await this.prisma.productCustomerConnection.deleteMany({ where: { productId: id } });
-    await this.prisma.ticket.updateMany({ where: { productId: id }, data: { productId: null } });
+    await this.prisma.productCustomerConnection.deleteMany({
+      where: { productId: id },
+    });
+    await this.prisma.ticket.updateMany({
+      where: { productId: id },
+      data: { productId: null },
+    });
 
     return this.prisma.product.delete({ where: { id } });
   }

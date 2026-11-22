@@ -2,7 +2,13 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { TicketsService } from './tickets.service';
 import { Ticket } from '../common/models/ticket.model';
 import { TicketMessage } from '../common/models/ticket-message.model';
-import { CreateTicketInput, UpdateTicketStatusInput, UpdateTicketInput, CreateTicketMessageInput, DeleteTicketsInput } from '../common/dto/ticket.input';
+import {
+  CreateTicketInput,
+  UpdateTicketStatusInput,
+  UpdateTicketInput,
+  CreateTicketMessageInput,
+  DeleteTicketsInput,
+} from '../common/dto/ticket.input';
 
 @Resolver(() => Ticket)
 export class TicketsResolver {
@@ -39,7 +45,10 @@ export class TicketsResolver {
   }
 
   @Mutation(() => TicketMessage)
-  async updateTicketMessage(@Args('id') id: string, @Args('text') text: string) {
+  async updateTicketMessage(
+    @Args('id') id: string,
+    @Args('text') text: string,
+  ) {
     return this.ticketsService.updateMessage(id, text);
   }
 

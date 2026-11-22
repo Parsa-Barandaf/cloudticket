@@ -1,7 +1,11 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AccessRequestsService } from './access-requests.service';
 import { AccessRequest } from '../common/models/access-request.model';
-import { RequestAccessInput, ApproveAccessRequestInput, RejectAccessRequestInput } from '../common/dto/access-request.input';
+import {
+  RequestAccessInput,
+  ApproveAccessRequestInput,
+  RejectAccessRequestInput,
+} from '../common/dto/access-request.input';
 
 @Resolver(() => AccessRequest)
 export class AccessRequestsResolver {

@@ -37,9 +37,9 @@ ENV PORT=4000
 # openssl CLI lets Prisma detect the libssl version to use for its bundled engines
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Full install: includes prisma CLI (migrations) and tsx (seed)
+# Install dependencies required for runtime and database migrations
 COPY backend/package.json backend/package-lock.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Prisma schema, migrations and the generated GraphQL schema
 COPY backend/prisma ./prisma
@@ -52,7 +52,7 @@ COPY --from=build /app/backend/dist ./dist
 # Built frontend (served by NestJS from /public)
 COPY --from=build /app/frontend/dist ./public
 
-# Entrypoint (migrate deploy + optional seed + start)
+# Entrypoint (start NestJS application)
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 

@@ -28,9 +28,15 @@ export class UsersService {
   }
 
   private validatePassword(password: string) {
-    const valid = password.length >= 6 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password);
+    const valid =
+      password.length >= 6 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /\d/.test(password);
     if (!valid) {
-      throw new BadRequestException('رمز عبور باید حداقل ۶ کاراکتر و شامل حروف بزرگ، حروف کوچک و عدد باشد.');
+      throw new BadRequestException(
+        'رمز عبور باید حداقل ۶ کاراکتر و شامل حروف بزرگ، حروف کوچک و عدد باشد.',
+      );
     }
   }
 
@@ -42,12 +48,19 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email }, include: this.include() });
+    // Email lookup is case-insensitive so users can log in regardless of casing.
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+      include: this.include(),
+    });
     return user ? this.mapUser(user) : null;
   }
 
   async findById(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id }, include: this.include() });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: this.include(),
+    });
     return user ? this.mapUser(user) : null;
   }
 
@@ -77,7 +90,9 @@ export class UsersService {
 
     let customerId = input.customerId;
     if (!customerId && input.company) {
-      const customer = await this.prisma.customer.findFirst({ where: { commercialName: input.company } });
+      const customer = await this.prisma.customer.findFirst({
+        where: { commercialName: input.company },
+      });
       if (customer) customerId = customer.id;
     }
 
@@ -92,12 +107,19 @@ export class UsersService {
         ...(input.role && { role: input.role as any }),
         active: input.active ?? true,
         ...(customerId && { customer: { connect: { id: customerId } } }),
-        ...(input.departmentId && { department: { connect: { id: input.departmentId } } }),
+        ...(input.departmentId && {
+          department: { connect: { id: input.departmentId } },
+        }),
       },
       include: this.include(),
     });
 
-    await this.assignRoleForUser(user.id, input.isCustomer ?? false, input.role, input.roleId);
+    await this.assignRoleForUser(
+      user.id,
+      input.isCustomer ?? false,
+      input.role,
+      input.roleId,
+    );
 
     await this.activitiesService.create({
       type: 'customer',
@@ -105,12 +127,17 @@ export class UsersService {
       subtitle: `${input.name} به سامانه اضافه شد.`,
     });
 
-    const withRoles = await this.prisma.user.findUnique({ where: { id: user.id }, include: this.include() });
+    const withRoles = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: this.include(),
+    });
     return this.mapUser(withRoles);
   }
 
   async update(input: UpdateUserInput) {
-    const existing = await this.prisma.user.findUnique({ where: { id: input.id } });
+    const existing = await this.prisma.user.findUnique({
+      where: { id: input.id },
+    });
     if (!existing) throw new BadRequestException('User not found');
     const willBeCustomer = input.isCustomer ?? existing.isCustomer;
     const company = input.company ?? existing.company;
@@ -128,7 +155,9 @@ export class UsersService {
         ...(input.role !== undefined && { role: input.role as any }),
         ...(input.active !== undefined && { active: input.active }),
         ...(input.departmentId !== undefined && {
-          department: input.departmentId ? { connect: { id: input.departmentId } } : { disconnect: true },
+          department: input.departmentId
+            ? { connect: { id: input.departmentId } }
+            : { disconnect: true },
         }),
       },
       include: this.include(),
@@ -147,38 +176,56 @@ export class UsersService {
       );
     }
 
-    const withRoles = await this.prisma.user.findUnique({ where: { id: input.id }, include: this.include() });
+    const withRoles = await this.prisma.user.findUnique({
+      where: { id: input.id },
+      include: this.include(),
+    });
     return this.mapUser(withRoles);
   }
 
-  private async assignRoleForUser(userId: string, isCustomer: boolean, role?: string, roleId?: string | null) {
+  private async assignRoleForUser(
+    userId: string,
+    isCustomer: boolean,
+    role?: string,
+    roleId?: string | null,
+  ) {
     const oldAssignments = await this.prisma.userRoleAssignment.findMany({
       where: { userId },
       include: { role: true },
     });
-    const oldRoleIds = oldAssignments.map(a => a.role.id);
+    const oldRoleIds = oldAssignments.map((a) => a.role.id);
 
     let newRoleId: string | null = null;
 
     if (roleId) {
-      const roleRow = await this.prisma.role.findUnique({ where: { id: roleId } });
+      const roleRow = await this.prisma.role.findUnique({
+        where: { id: roleId },
+      });
       if (roleRow) {
-        const scopeMatches = roleRow.scope === 'customer'
-          ? isCustomer
-          : !isCustomer;
+        const scopeMatches =
+          roleRow.scope === 'customer' ? isCustomer : !isCustomer;
         if (scopeMatches) newRoleId = roleRow.id;
       }
     }
 
     if (!newRoleId && isCustomer) {
       const roleName = role === 'ADMIN' ? 'Customer Admin' : 'Customer User';
-      const customerRole = await this.prisma.role.findUnique({ where: { id: roleName === 'Customer Admin' ? 'role-customer-admin' : 'role-customer-user' } });
+      const customerRole = await this.prisma.role.findUnique({
+        where: {
+          id:
+            roleName === 'Customer Admin'
+              ? 'role-customer-admin'
+              : 'role-customer-user',
+        },
+      });
       newRoleId = customerRole?.id ?? null;
     }
 
     for (const oldId of oldRoleIds) {
       if (newRoleId !== oldId) {
-        await this.prisma.userRoleAssignment.deleteMany({ where: { userId, roleId: oldId } });
+        await this.prisma.userRoleAssignment.deleteMany({
+          where: { userId, roleId: oldId },
+        });
       }
     }
 
@@ -198,7 +245,9 @@ export class UsersService {
     });
     if (!user) throw new BadRequestException('User not found');
     if (user.customerProfile) {
-      throw new BadRequestException('این کاربر به یک شرکت (مشتری) متصل است. ابتدا مشتری مربوطه را حذف کنید.');
+      throw new BadRequestException(
+        'این کاربر به یک شرکت (مشتری) متصل است. ابتدا مشتری مربوطه را حذف کنید.',
+      );
     }
     await this.prisma.user.delete({ where: { id } });
     return true;

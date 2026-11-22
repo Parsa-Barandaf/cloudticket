@@ -1,4 +1,12 @@
-import { Args, Mutation, Query, Resolver, ObjectType, Field, Context } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Query,
+  Resolver,
+  ObjectType,
+  Field,
+  Context,
+} from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GqlAuthGuard } from './gql-auth.guard';
@@ -43,7 +51,12 @@ export class AuthResolver {
   async login(
     @Args('email') email: string,
     @Args('password') password: string,
-    @Args('rememberMe', { type: () => Boolean, nullable: true, defaultValue: false }) rememberMe?: boolean,
+    @Args('rememberMe', {
+      type: () => Boolean,
+      nullable: true,
+      defaultValue: false,
+    })
+    rememberMe?: boolean,
   ) {
     return this.authService.login(email, password, rememberMe);
   }
@@ -61,7 +74,9 @@ export class AuthResolver {
   @UseGuards(GqlAuthGuard)
   async me(@Context() context: any) {
     const user = context.req.user;
-    const effective = await this.rolesService.getUserEffectivePermissions(user.id);
+    const effective = await this.rolesService.getUserEffectivePermissions(
+      user.id,
+    );
     return {
       user,
       accessiblePortals: effective.accessiblePortals,

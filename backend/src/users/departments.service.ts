@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import { CreateDepartmentInput, UpdateDepartmentInput } from '../common/dto/department.input';
+import {
+  CreateDepartmentInput,
+  UpdateDepartmentInput,
+} from '../common/dto/department.input';
 
 @Injectable()
 export class DepartmentsService {
@@ -34,7 +37,9 @@ export class DepartmentsService {
         ...(input.lead !== undefined && { lead: input.lead }),
         ...(input.icon !== undefined && { icon: input.icon }),
         ...(input.color !== undefined && { color: input.color }),
-        ...(input.assignedProducts !== undefined && { assignedProducts: input.assignedProducts }),
+        ...(input.assignedProducts !== undefined && {
+          assignedProducts: input.assignedProducts,
+        }),
       },
     });
   }

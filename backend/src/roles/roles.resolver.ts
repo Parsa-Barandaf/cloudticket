@@ -3,7 +3,12 @@ import { RolesService } from './roles.service';
 import { RoleEntity } from '../common/models/role.model';
 import { Portal } from '../common/models/portal.model';
 import { Permission } from '../common/models/permission.model';
-import { CreateRoleInput, UpdateRoleInput, AssignRoleInput, UnassignRoleInput } from '../common/dto/role.input';
+import {
+  CreateRoleInput,
+  UpdateRoleInput,
+  AssignRoleInput,
+  UnassignRoleInput,
+} from '../common/dto/role.input';
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
@@ -77,7 +82,10 @@ export class RolesResolver {
   }
 
   @Mutation(() => Boolean)
-  async deleteRole(@Args('id') id: string, @Args('reassignRoleId', { nullable: true }) reassignRoleId?: string) {
+  async deleteRole(
+    @Args('id') id: string,
+    @Args('reassignRoleId', { nullable: true }) reassignRoleId?: string,
+  ) {
     return this.rolesService.deleteRole(id, reassignRoleId);
   }
 
