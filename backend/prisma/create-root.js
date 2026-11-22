@@ -58,8 +58,6 @@ async function main() {
     );
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   const portals = await Promise.all(
     portalDefs.map((portal) =>
       prisma.portal.upsert({ where: { key: portal.key }, update: { name: portal.name }, create: portal }),
@@ -115,19 +113,42 @@ async function main() {
     });
   }
 
-  const rootUser = await prisma.user.upsert({
-    where: { email },
-    update: { name, role: 'ADMIN', active: true, isCustomer: false },
-    create: { email, password: hashedPassword, name, role: 'ADMIN', active: true, isCustomer: false },
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      email: {
+        equals: email,
+        mode: 'insensitive',
+      },
+    },
+    select: { id: true },
   });
 
-  await prisma.userRoleAssignment.upsert({
-    where: { roleId_userId: { roleId: superAdminRole.id, userId: rootUser.id } },
-    update: {},
-    create: { roleId: superAdminRole.id, userId: rootUser.id },
+  if (existingUser) {
+    console.log('Root bootstrap skipped: a user with ROOT_EMAIL already exists. Existing account was not modified.');
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const rootUser = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      name,
+      role: 'ADMIN',
+      active: true,
+      isCustomer: false,
+    },
   });
 
-  console.log(`Root dashboard user ready: ${email}`);
+  await prisma.userRoleAssignment.create({
+    data: {
+      roleId: superAdminRole.id,
+      userId: rootUser.id,
+    },
+  });
+
+  console.log('Root dashboard user created successfully.');
 }
 
 main()
