@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { ActivitiesService } from '../activities/activities.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -16,7 +20,10 @@ export class TasksService {
     return {
       createdBy: true,
       assignee: true,
-      comments: { include: { author: true }, orderBy: { createdAt: 'asc' } as const },
+      comments: {
+        include: { author: true },
+        orderBy: { createdAt: 'asc' } as const,
+      },
     };
   }
 
@@ -48,15 +55,22 @@ export class TasksService {
   }
 
   async findById(id: string) {
-    return this.prisma.task.findUnique({ where: { id }, include: this.include() });
+    return this.prisma.task.findUnique({
+      where: { id },
+      include: this.include(),
+    });
   }
 
   private async validateAssignee(assigneeId?: string) {
     if (!assigneeId) return;
-    const user = await this.prisma.user.findUnique({ where: { id: assigneeId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: assigneeId },
+    });
     if (!user) throw new BadRequestException('Assignee not found');
     if (user.isCustomer) {
-      throw new BadRequestException('وظایف فقط به کاربران داخلی سازمان اختصاص می‌یابد');
+      throw new BadRequestException(
+        'وظایف فقط به کاربران داخلی سازمان اختصاص می‌یابد',
+      );
     }
   }
 
@@ -68,12 +82,16 @@ export class TasksService {
     assigneeId?: string;
     createdById: string;
   }) {
-    const creator = await this.prisma.user.findUnique({ where: { id: data.createdById } });
+    const creator = await this.prisma.user.findUnique({
+      where: { id: data.createdById },
+    });
     if (!creator) throw new BadRequestException('Creator not found');
 
     await this.validateAssignee(data.assigneeId);
 
-    const maxOrder = await this.prisma.task.aggregate({ _max: { sortOrder: true } });
+    const maxOrder = await this.prisma.task.aggregate({
+      _max: { sortOrder: true },
+    });
     const task = await this.prisma.task.create({
       data: {
         title: data.title,
@@ -125,23 +143,30 @@ export class TasksService {
     dueDate?: Date;
     assigneeId?: string;
   }) {
-    const existing = await this.prisma.task.findUnique({ where: { id: data.id } });
+    const existing = await this.prisma.task.findUnique({
+      where: { id: data.id },
+    });
     if (!existing) throw new NotFoundException('Task not found');
 
-    if (data.assigneeId !== undefined) await this.validateAssignee(data.assigneeId);
+    if (data.assigneeId !== undefined)
+      await this.validateAssignee(data.assigneeId);
 
     const updateData: any = {};
     if (data.title !== undefined) updateData.title = data.title;
-    if (data.description !== undefined) updateData.description = data.description;
+    if (data.description !== undefined)
+      updateData.description = data.description;
     if (data.priority !== undefined) updateData.priority = data.priority;
     if (data.status !== undefined) updateData.status = data.status;
     if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
     if (data.assigneeId !== undefined) {
-      updateData.assignee = data.assigneeId ? { connect: { id: data.assigneeId } } : { disconnect: true };
+      updateData.assignee = data.assigneeId
+        ? { connect: { id: data.assigneeId } }
+        : { disconnect: true };
       if (data.assigneeId !== existing.assigneeId) updateData.seenAt = null;
     }
     if (data.status === 'DONE') updateData.completedAt = new Date();
-    if (data.status === 'PENDING' || data.status === 'IN_PROGRESS') updateData.completedAt = null;
+    if (data.status === 'PENDING' || data.status === 'IN_PROGRESS')
+      updateData.completedAt = null;
 
     const updated = await this.prisma.task.update({
       where: { id: data.id },
@@ -155,7 +180,11 @@ export class TasksService {
         : null;
 
     if (assignedUser) {
-      const assigner = updated.createdBy || await this.prisma.user.findUnique({ where: { id: updated.createdById } });
+      const assigner =
+        updated.createdBy ||
+        (await this.prisma.user.findUnique({
+          where: { id: updated.createdById },
+        }));
       await this.activitiesService.create({
         type: 'task',
         title: 'محول شدن وظیفه',
@@ -183,7 +212,8 @@ export class TasksService {
 
     const updateData: any = { status };
     if (status === 'DONE') updateData.completedAt = new Date();
-    if (status === 'PENDING' || status === 'IN_PROGRESS') updateData.completedAt = null;
+    if (status === 'PENDING' || status === 'IN_PROGRESS')
+      updateData.completedAt = null;
 
     const updated = await this.prisma.task.update({
       where: { id },
@@ -235,10 +265,14 @@ export class TasksService {
     type?: string;
     authorId: string;
   }) {
-    const task = await this.prisma.task.findUnique({ where: { id: data.taskId } });
+    const task = await this.prisma.task.findUnique({
+      where: { id: data.taskId },
+    });
     if (!task) throw new NotFoundException('Task not found');
 
-    const author = await this.prisma.user.findUnique({ where: { id: data.authorId } });
+    const author = await this.prisma.user.findUnique({
+      where: { id: data.authorId },
+    });
     if (!author) throw new BadRequestException('Author not found');
 
     const comment = await this.prisma.taskComment.create({
@@ -251,7 +285,8 @@ export class TasksService {
       include: { author: true },
     });
 
-    const typeLabel = data.type === 'timeline' ? 'پیشرفت ثبت شد' : 'یادداشت جدید ثبت شد';
+    const typeLabel =
+      data.type === 'timeline' ? 'پیشرفت ثبت شد' : 'یادداشت جدید ثبت شد';
     await this.activitiesService.create({
       type: 'task',
       title: typeLabel,

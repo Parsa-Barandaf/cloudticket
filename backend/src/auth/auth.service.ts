@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
@@ -41,9 +45,20 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private async generateToken(user: { id: string; email: string; name: string; role: string; isCustomer: boolean }, rememberMe?: boolean) {
+  private async generateToken(
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+      isCustomer: boolean;
+    },
+    rememberMe?: boolean,
+  ) {
     const payload = { sub: user.id, email: user.email };
-    const effective = await this.rolesService.getUserEffectivePermissions(user.id);
+    const effective = await this.rolesService.getUserEffectivePermissions(
+      user.id,
+    );
     const expiresIn = rememberMe ? '30d' : '1d';
     return {
       accessToken: this.jwtService.sign(payload, { expiresIn }),

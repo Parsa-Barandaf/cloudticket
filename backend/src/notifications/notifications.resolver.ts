@@ -1,7 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { NotificationsService } from './notifications.service';
 import { Notification } from '../common/models/notification.model';
-import { CreateNotificationInput, DeleteNotificationsInput } from '../common/dto/notification.input';
+import {
+  CreateNotificationInput,
+  DeleteNotificationsInput,
+} from '../common/dto/notification.input';
 
 @Resolver(() => Notification)
 export class NotificationsResolver {
@@ -10,7 +13,8 @@ export class NotificationsResolver {
   @Query(() => [Notification])
   async notifications(
     @Args('limit', { nullable: true }) limit?: number,
-    @Args('includeArchived', { nullable: true, defaultValue: false }) includeArchived?: boolean,
+    @Args('includeArchived', { nullable: true, defaultValue: false })
+    includeArchived?: boolean,
   ) {
     return this.notificationsService.findAll(limit, includeArchived);
   }

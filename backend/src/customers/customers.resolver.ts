@@ -1,7 +1,17 @@
-import { Args, Mutation, Query, Resolver, ResolveField, Parent } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Query,
+  Resolver,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { CustomersService } from './customers.service';
 import { Customer } from '../common/models/customer.model';
-import { CreateCustomerInput, UpdateCustomerInput } from '../common/dto/customer.input';
+import {
+  CreateCustomerInput,
+  UpdateCustomerInput,
+} from '../common/dto/customer.input';
 
 @Resolver(() => Customer)
 export class CustomersResolver {

@@ -6,12 +6,13 @@ import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { RolesModule } from '../roles/roles.module';
+import { getJwtSecret } from './jwt-secret';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'cmp-jwt-secret',
+      secret: getJwtSecret(),
       signOptions: { expiresIn: process.env.JWT_EXPIRATION || '7d' } as any,
     }),
     UsersModule,

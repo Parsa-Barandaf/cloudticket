@@ -28,6 +28,8 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(`پلتفرم مدیریت مشتریان API running on http://localhost:${port}/graphql`);
+  console.log(
+    `پلتفرم مدیریت مشتریان API running on http://localhost:${port}/graphql`,
+  );
 }
 bootstrap();

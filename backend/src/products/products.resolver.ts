@@ -2,8 +2,14 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ProductsService } from './products.service';
 import { Product } from '../common/models/product.model';
 import { ProductCustomerConnection } from '../common/models/product-customer-connection.model';
-import { CreateProductInput, UpdateProductInput } from '../common/dto/product.input';
-import { CreateConnectionInput, UpdateConnectionInput } from '../common/dto/connection.input';
+import {
+  CreateProductInput,
+  UpdateProductInput,
+} from '../common/dto/product.input';
+import {
+  CreateConnectionInput,
+  UpdateConnectionInput,
+} from '../common/dto/connection.input';
 
 @Resolver(() => Product)
 export class ProductsResolver {

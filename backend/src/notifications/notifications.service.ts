@@ -46,16 +46,24 @@ export class NotificationsService {
   }
 
   async markRead(id: string) {
-    return this.prisma.notification.update({ where: { id }, data: { read: true } });
+    return this.prisma.notification.update({
+      where: { id },
+      data: { read: true },
+    });
   }
 
   async markAllRead() {
-    await this.prisma.notification.updateMany({ where: { read: false }, data: { read: true } });
+    await this.prisma.notification.updateMany({
+      where: { read: false },
+      data: { read: true },
+    });
     return true;
   }
 
   async toggleArchive(id: string) {
-    const existing = await this.prisma.notification.findUnique({ where: { id } });
+    const existing = await this.prisma.notification.findUnique({
+      where: { id },
+    });
     if (!existing) return null;
     return this.prisma.notification.update({
       where: { id },

@@ -4,7 +4,10 @@ import { DepartmentsService } from './departments.service';
 import { User } from '../common/models/user.model';
 import { Department } from '../common/models/department.model';
 import { CreateUserInput, UpdateUserInput } from '../common/dto/user.input';
-import { CreateDepartmentInput, UpdateDepartmentInput } from '../common/dto/department.input';
+import {
+  CreateDepartmentInput,
+  UpdateDepartmentInput,
+} from '../common/dto/department.input';
 
 @Resolver()
 export class UsersResolver {
