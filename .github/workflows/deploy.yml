@@ -8,10 +8,13 @@ on:
 
 env:
   IMAGE_NAME: cmp-crm
-  SERVER_HOST: ${{ secrets.SERVER_HOST }}
-  SERVER_PORT: ${{ secrets.SERVER_PORT }}
-  SERVER_USER: ${{ secrets.SERVER_USER }}
-  DEPLOY_PATH: /opt/crm
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudticket-production-deploy
+  cancel-in-progress: false
 
 jobs:
   lint-and-test:
@@ -77,10 +80,14 @@ jobs:
           path: ${{ env.IMAGE_NAME }}.tar.gz
           retention-days: 1
 
+
+
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, cloudticket-deploy]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -91,59 +98,21 @@ jobs:
         with:
           name: docker-image
 
-      - name: Upload Docker Compose file
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.SERVER_HOST }}
-          port: ${{ env.SERVER_PORT }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.prod.yml"
-          target: ${{ env.DEPLOY_PATH }}
-          overwrite: true
+      - name: Backup current Docker image
+        run: |
+          if docker image inspect cmp-crm:latest >/dev/null 2>&1; then
+            docker tag cmp-crm:latest cmp-crm:rollback
+            echo "Previous image backed up."
+          else
+            echo "No previous image found."
+          fi
 
-      - name: Upload Docker image to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.SERVER_HOST }}
-          port: ${{ env.SERVER_PORT }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "${{ env.IMAGE_NAME }}.tar.gz"
-          target: ${{ env.DEPLOY_PATH }}
+      - name: Load Docker image
+        run: docker load -i cmp-crm.tar.gz
 
-      - name: Deploy on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.SERVER_HOST }}
-          port: ${{ env.SERVER_PORT }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            cd ${{ env.DEPLOY_PATH }}
+      - name: Deploy CRM
+        run: sudo -n /usr/local/sbin/cloudticket-deploy "$GITHUB_WORKSPACE/docker-compose.prod.yml"
 
-            echo "Loading Docker image..."
-            sudo docker load < ${{ env.IMAGE_NAME }}.tar.gz
-
-            echo "Restarting services..."
-            sudo docker compose --env-file .env.production -f docker-compose.prod.yml up -d --force-recreate app
-
-            echo "Waiting for health check..."
-            sleep 10
-
-            echo "Verifying..."
-            if curl -sf http://localhost:4000 > /dev/null; then
-              echo "Deployment successful!"
-            else
-              echo "Health check failed!"
-              sudo docker compose --env-file .env.production -f docker-compose.prod.yml logs --tail=30 app
-              exit 1
-            fi
-
-            echo "Cleaning up..."
-            rm -f ${{ env.IMAGE_NAME }}.tar.gz
-
-      - name: Cleanup local artifacts
+      - name: Cleanup local artifact
         if: always()
-        run: rm -f ${{ env.IMAGE_NAME }}.tar.gz
+        run: rm -f cmp-crm.tar.gz
