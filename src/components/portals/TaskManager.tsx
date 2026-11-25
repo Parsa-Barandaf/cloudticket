@@ -24,6 +24,8 @@ import {
   CheckCheck,
   Flag,
   GripVertical,
+  CalendarPlus,
+  Eye,
 } from 'lucide-react';
 import { useTasks } from '../../hooks/useTasks';
 import { mapTaskComment } from '../../api/transform';
@@ -76,6 +78,38 @@ function fmtDateTime(iso?: string): string {
   const date = new Intl.DateTimeFormat('fa-IR', { month: '2-digit', day: '2-digit' }).format(d);
   const time = new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit' }).format(d);
   return `${date} - ${time}`;
+}
+
+function fmtTimestamp(iso?: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const date = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  const time = new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit' }).format(d);
+  return `${date} - ${time}`;
+}
+
+interface TaskTimestampProps {
+  icon: React.ReactNode;
+  label: string;
+  value?: string;
+  placeholder?: string;
+}
+
+function TaskTimestamp({ icon, label, value, placeholder = 'ثبت نشده' }: TaskTimestampProps) {
+  const formatted = fmtTimestamp(value);
+  return (
+    <span
+      className="inline-flex items-center gap-1 whitespace-nowrap"
+      title={`${label}: ${formatted || placeholder}`}
+    >
+      <span className="text-slate-400 dark:text-slate-500">{icon}</span>
+      <span className="font-bold text-slate-500 dark:text-slate-400">{label}:</span>
+      <span className={`font-bold tabular-nums ${formatted ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-400'}`}>
+        {formatted || placeholder}
+      </span>
+    </span>
+  );
 }
 
 function sameDay(a: Date, b: Date): boolean {
@@ -549,6 +583,24 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                             <MessageSquare className="w-3 h-3" />
                             <span>{t.comments.length} فعالیت</span>
                           </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/70 text-[10px]">
+                          <TaskTimestamp
+                            icon={<CalendarPlus className="w-3 h-3" />}
+                            label="ایجاد"
+                            value={t.createdAt}
+                          />
+                          <TaskTimestamp
+                            icon={<Eye className="w-3 h-3" />}
+                            label="اولین مشاهده"
+                            value={t.seenAt}
+                            placeholder="مشاهده نشده"
+                          />
+                          <TaskTimestamp
+                            icon={<History className="w-3 h-3" />}
+                            label="آخرین تغییر"
+                            value={t.updatedAt}
+                          />
                         </div>
                       </div>
                     </div>
