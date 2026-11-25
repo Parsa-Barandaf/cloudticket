@@ -254,9 +254,10 @@ export class TasksService {
     if (!task) throw new NotFoundException('Task not found');
     if (task.assigneeId !== userId) return this.findById(id);
 
+    // مشاهده وظیفه تغییر محتوایی نیست؛ مقدار updatedAt حفظ می‌شود تا «آخرین تغییر» جابه‌جا نشود
     return this.prisma.task.update({
       where: { id },
-      data: { seenAt: task.seenAt ?? new Date() },
+      data: { seenAt: task.seenAt ?? new Date(), updatedAt: task.updatedAt },
       include: this.include(),
     });
   }
