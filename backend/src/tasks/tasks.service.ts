@@ -8,6 +8,8 @@ import { ActivitiesService } from '../activities/activities.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TaskPriority, TaskStatus } from '@prisma/client';
 
+const ASSIGNEE_REQUIRED_MESSAGE = 'انتخاب مسئول وظیفه الزامی است.';
+
 @Injectable()
 export class TasksService {
   constructor(
@@ -62,7 +64,9 @@ export class TasksService {
   }
 
   private async validateAssignee(assigneeId?: string) {
-    if (!assigneeId) return;
+    if (!assigneeId?.trim()) {
+      throw new BadRequestException(ASSIGNEE_REQUIRED_MESSAGE);
+    }
     const user = await this.prisma.user.findUnique({
       where: { id: assigneeId },
     });
@@ -79,7 +83,7 @@ export class TasksService {
     description?: string;
     priority?: TaskPriority;
     dueDate?: Date;
-    assigneeId?: string;
+    assigneeId: string;
     createdById: string;
   }) {
     const creator = await this.prisma.user.findUnique({
@@ -100,7 +104,7 @@ export class TasksService {
         dueDate: data.dueDate,
         sortOrder: (maxOrder._max.sortOrder ?? 0) + 1,
         createdById: data.createdById,
-        assigneeId: data.assigneeId ?? null,
+        assigneeId: data.assigneeId,
       },
       include: this.include(),
     });
@@ -159,9 +163,7 @@ export class TasksService {
     if (data.status !== undefined) updateData.status = data.status;
     if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
     if (data.assigneeId !== undefined) {
-      updateData.assignee = data.assigneeId
-        ? { connect: { id: data.assigneeId } }
-        : { disconnect: true };
+      updateData.assignee = { connect: { id: data.assigneeId } };
       if (data.assigneeId !== existing.assigneeId) updateData.seenAt = null;
     }
     if (data.status === 'DONE') updateData.completedAt = new Date();

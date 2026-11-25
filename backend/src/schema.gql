@@ -114,7 +114,7 @@ input CreateRoleInput {
 }
 
 input CreateTaskInput {
-  assigneeId: String
+  assigneeId: String!
   createdById: String!
   description: String
   dueDate: DateTime
@@ -208,6 +208,11 @@ type Department {
   updatedAt: DateTime!
 }
 
+input MarkTaskSeenInput {
+  id: String!
+  userId: String!
+}
+
 type MePayload {
   accessiblePortals: [String!]!
   permissions: [String!]!
@@ -240,11 +245,13 @@ type Mutation {
   deleteTicketMessage(id: String!): Boolean!
   deleteTickets(input: DeleteTicketsInput!): Boolean!
   deleteUser(id: String!): Boolean!
-  login(email: String!, password: String!): AuthPayload!
+  login(email: String!, password: String!, rememberMe: Boolean = false): AuthPayload!
   markAllNotificationsRead: Boolean!
   markNotificationRead(id: String!): Notification!
+  markTaskSeen(input: MarkTaskSeenInput!): Task!
   register(email: String!, name: String!, password: String!): AuthPayload!
   rejectAccessRequest(input: RejectAccessRequestInput!): AccessRequest!
+  reorderTasks(input: ReorderTasksInput!): Boolean!
   requestAccess(input: RequestAccessInput!): AccessRequest!
   toggleNotificationArchive(id: String!): Notification
   unassignRoleFromUser(input: UnassignRoleInput!): [RoleEntity!]!
@@ -382,6 +389,10 @@ input RejectAccessRequestInput {
   id: String!
 }
 
+input ReorderTasksInput {
+  ids: [String!]!
+}
+
 input RequestAccessInput {
   companyName: String!
   email: String!
@@ -431,6 +442,8 @@ type Task {
   dueDate: DateTime
   id: String!
   priority: TaskPriority!
+  seenAt: DateTime
+  sortOrder: Float!
   status: TaskStatus!
   title: String!
   updatedAt: DateTime!
@@ -617,6 +630,7 @@ type User {
   email: String!
   id: String!
   isCustomer: Boolean!
+  lastLoginAt: DateTime
   name: String!
   phone: String
   role: UserRole!

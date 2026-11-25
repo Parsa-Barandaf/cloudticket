@@ -103,6 +103,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
   // create/edit form
   const emptyForm = { title: '', description: '', assigneeId: currentUserId, priority: 'MEDIUM' as TaskPriority, dueDate: '', dueTime: '' };
   const [form, setForm] = useState(emptyForm);
+  const [formErrors, setFormErrors] = useState<{ title?: string; assigneeId?: string }>({});
   const [saving, setSaving] = useState(false);
 
   // comment form
@@ -159,6 +160,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
   const openCreate = () => {
     setForm({ ...emptyForm, assigneeId: isAdmin ? '' : currentUserId });
+    setFormErrors({});
     setEditingTask(null);
     setShowCreateModal(true);
   };
@@ -176,14 +178,24 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
       }
     }
     setForm({ title: t.title, description: t.description || '', assigneeId: t.assigneeId || '', priority: t.priorityRaw, dueDate, dueTime });
+    setFormErrors({});
     setShowCreateModal(true);
   };
 
+  const clearFormError = (field: 'title' | 'assigneeId') =>
+    setFormErrors(prev => (prev[field] ? { ...prev, [field]: undefined } : prev));
+
   const handleSaveTask = async () => {
-    if (!form.title.trim()) {
-      showToast('عنوان وظیفه الزامی است.', 'error');
+    const nextErrors: { title?: string; assigneeId?: string } = {};
+    if (!form.title.trim()) nextErrors.title = 'عنوان وظیفه الزامی است.';
+    if (!form.assigneeId) nextErrors.assigneeId = 'انتخاب مسئول وظیفه الزامی است.';
+    setFormErrors(nextErrors);
+    const firstError = nextErrors.title ?? nextErrors.assigneeId;
+    if (firstError) {
+      showToast(firstError, 'error');
       return;
     }
+
     setSaving(true);
     try {
       let dueDate: string | undefined;
@@ -202,7 +214,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
           title: form.title.trim(),
           description: form.description.trim() || undefined,
           priority: form.priority,
-          assigneeId: form.assigneeId || undefined,
+          assigneeId: form.assigneeId,
           dueDate,
         });
         showToast('وظیفه با موفقیت به‌روزرسانی شد.', 'success');
@@ -211,7 +223,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
           title: form.title.trim(),
           description: form.description.trim() || undefined,
           priority: form.priority,
-          assigneeId: form.assigneeId || undefined,
+          assigneeId: form.assigneeId,
           dueDate,
           createdById: currentUserId,
         });
@@ -700,14 +712,22 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">عنوان وظیفه *</label>
+                  <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">عنوان وظیفه <b className="text-rose-500">*</b></label>
                   <input
                     type="text"
                     value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    onChange={(e) => {
+                      setForm({ ...form, title: e.target.value });
+                      clearFormError('title');
+                    }}
                     placeholder="مثال: بررسی لاگ‌های امنیتی هفتگی"
-                    className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-200"
+                    className={`w-full text-xs font-bold px-3 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-200 ${
+                      formErrors.title ? 'border-rose-400 dark:border-rose-500' : 'border-slate-200 dark:border-slate-800'
+                    }`}
                   />
+                  {formErrors.title && (
+                    <span className="text-[9px] text-rose-500 font-bold block mt-1">{formErrors.title}</span>
+                  )}
                 </div>
 
                 <div>
@@ -723,21 +743,29 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
                 {isAdmin ? (
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه</label>
+                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه <b className="text-rose-500">*</b></label>
                     <select
                       value={form.assigneeId}
-                      onChange={(e) => setForm({ ...form, assigneeId: e.target.value })}
-                      className="w-full text-xs font-bold px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-200 cursor-pointer"
+                      onChange={(e) => {
+                        setForm({ ...form, assigneeId: e.target.value });
+                        clearFormError('assigneeId');
+                      }}
+                      className={`w-full text-xs font-bold px-3 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:border-brand-500 outline-none text-slate-700 dark:text-slate-200 cursor-pointer ${
+                        formErrors.assigneeId ? 'border-rose-400 dark:border-rose-500' : 'border-slate-200 dark:border-slate-800'
+                      }`}
                     >
-                      <option value="">بدون مسئول</option>
+                      <option value="" disabled>انتخاب مسئول وظیفه...</option>
                       {assigneeOptions.map(u => (
                         <option key={u.id} value={u.id}>{u.name} ({u.role === 'ADMIN' ? 'مدیر' : 'کارشناس'})</option>
                       ))}
                     </select>
+                    {formErrors.assigneeId && (
+                      <span className="text-[9px] text-rose-500 font-bold block mt-1">{formErrors.assigneeId}</span>
+                    )}
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه</label>
+                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه <b className="text-rose-500">*</b></label>
                     <div className="w-full flex items-center gap-2 px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 text-xs font-bold text-slate-700 dark:text-slate-200">
                       <User className="w-3.5 h-3.5 text-brand-500" />
                       <span>{currentUserName}</span>

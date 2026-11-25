@@ -15,8 +15,8 @@ export class CreateTaskInput {
   @Field({ nullable: true })
   dueDate?: Date;
 
-  @Field({ nullable: true })
-  assigneeId?: string;
+  @Field()
+  assigneeId: string;
 
   @Field()
   createdById: string;

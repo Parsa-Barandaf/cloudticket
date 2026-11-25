@@ -20,7 +20,7 @@ export interface CreateTaskInput {
   description?: string;
   priority?: TaskPriority;
   dueDate?: string;
-  assigneeId?: string;
+  assigneeId: string;
   createdById: string;
 }
 

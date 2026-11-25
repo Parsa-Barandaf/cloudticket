@@ -5384,6 +5384,37 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
         )}
       </AnimatePresence>
 
+      {/* GLOBAL WORKSPACE TOAST */}
+      <AnimatePresence>
+        {workspaceFeedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className={`fixed top-6 left-6 z-[110] p-4 rounded-2xl shadow-xl flex items-center gap-3 border text-right max-w-sm ${
+              workspaceFeedback.type === 'success'
+                ? 'bg-emerald-50 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-200'
+                : 'bg-rose-50 dark:bg-rose-950/90 border-rose-200 dark:border-rose-800/80 text-rose-800 dark:text-rose-200'
+            }`}
+          >
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+              workspaceFeedback.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+            }`}>
+              {workspaceFeedback.type === 'success' ? <CheckCircle className="w-4.5 h-4.5" /> : <AlertTriangle className="w-4.5 h-4.5" />}
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-black leading-relaxed">{workspaceFeedback.message}</p>
+            </div>
+            <button
+              onClick={() => setWorkspaceFeedback(null)}
+              className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-slate-400 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
