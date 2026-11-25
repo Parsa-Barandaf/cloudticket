@@ -286,11 +286,14 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
     }
   };
 
-  const isUnseenTask = (task: TaskItem) => task.assigneeId === currentUserId && !task.seenAt;
+  // «دیده شده» فقط زمانی معنا دارد که مسئول وظیفه آن را مشاهده کرده باشد
+  const hasAssigneeSeen = (task: TaskItem) => Boolean(task.assigneeId && task.seenAt);
+  // «دیده‌نشده برای من» تنها برای مسئول وظیفه قابل محاسبه است
+  const isUnreadForMe = (task: TaskItem) => task.assigneeId === currentUserId && !hasAssigneeSeen(task);
 
   const openDetail = async (t: TaskItem) => {
     setSelectedTask(t);
-    if (!isUnseenTask(t)) return;
+    if (!isUnreadForMe(t)) return;
 
     const seenTask = await markSeen(t.id, currentUserId);
     if (seenTask) setSelectedTask(seenTask);
@@ -466,7 +469,8 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
             ) : (
               <div className="space-y-3">
                 {filteredTasks.map((t) => {
-                  const unseen = isUnseenTask(t);
+                  const unseen = isUnreadForMe(t);
+                  const seenByAssignee = hasAssigneeSeen(t);
                   return (
                   <motion.div
                     key={t.id}
@@ -515,8 +519,8 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                       <div className="space-y-1 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h4 className={`font-black ${unseen ? 'text-sm text-slate-950 dark:text-white' : 'text-xs text-slate-950 dark:text-white'}`}>{t.title}</h4>
-                          <span className={unseen ? 'text-sky-500' : 'text-emerald-500'} title={unseen ? 'دیده نشده' : 'دیده شده'}>
-                            {unseen ? <Check className="w-3.5 h-3.5" /> : <CheckCheck className="w-3.5 h-3.5" />}
+                          <span className={seenByAssignee ? 'text-emerald-500' : 'text-sky-500'} title={seenByAssignee ? 'دیده شده توسط مسئول وظیفه' : 'در انتظار مشاهده توسط مسئول وظیفه'}>
+                            {seenByAssignee ? <CheckCheck className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
                           </span>
                           {t.overdue && (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
@@ -898,8 +902,8 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${statusMeta[selectedTask.statusRaw].cls}`}>{selectedTask.status}</span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${priorityMeta[selectedTask.priorityRaw].cls}`}>{selectedTask.priority}</span>
-                    <span className={isUnseenTask(selectedTask) ? 'text-sky-500' : 'text-emerald-500'} title={isUnseenTask(selectedTask) ? 'دیده نشده' : 'دیده شده'}>
-                      {isUnseenTask(selectedTask) ? <Check className="w-3.5 h-3.5" /> : <CheckCheck className="w-3.5 h-3.5" />}
+                    <span className={hasAssigneeSeen(selectedTask) ? 'text-emerald-500' : 'text-sky-500'} title={hasAssigneeSeen(selectedTask) ? 'دیده شده توسط مسئول وظیفه' : 'در انتظار مشاهده توسط مسئول وظیفه'}>
+                      {hasAssigneeSeen(selectedTask) ? <CheckCheck className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
                     </span>
                     {selectedTask.overdue && (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
