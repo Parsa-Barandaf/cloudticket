@@ -72,12 +72,12 @@ describe('UsersService', () => {
 
       prismaService.user.findFirst.mockResolvedValue(mockUser);
 
-      const result = await usersService.findByEmail('ADMIN@EXAMPLE.COM');
+      const result = await usersService.findByEmail('  ADMIN@EXAMPLE.COM  ');
 
       expect(prismaService.user.findFirst).toHaveBeenCalledWith({
         where: {
           email: {
-            equals: 'ADMIN@EXAMPLE.COM',
+            equals: 'admin@example.com',
             mode: 'insensitive',
           },
         },

@@ -130,6 +130,21 @@ describe('AuthService', () => {
       expect(jwtService.sign).not.toHaveBeenCalled();
     });
 
+    it('should normalize email casing before looking up the user', async () => {
+      const passwordHash = await bcrypt.hash('password123', 10);
+
+      usersService.findByEmail.mockResolvedValue({
+        ...mockUser,
+        password: passwordHash,
+      });
+
+      await authService.login('  Admin@Example.COM  ', 'password123');
+
+      expect(usersService.findByEmail).toHaveBeenCalledWith(
+        'admin@example.com',
+      );
+    });
+
     it('should generate a 30-day token when rememberMe is enabled', async () => {
       const passwordHash = await bcrypt.hash('password123', 10);
 
@@ -190,6 +205,28 @@ describe('AuthService', () => {
 
       expect(result.accessToken).toBe('test-access-token');
       expect(result.user.id).toBe('new-user');
+    });
+
+    it('should store a normalized email when registering', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+
+      prismaService.user.create.mockImplementation(async ({ data }: any) => ({
+        id: 'new-user',
+        ...data,
+        role: 'user',
+        isCustomer: false,
+      }));
+
+      await authService.register(
+        '  New@Example.COM  ',
+        'password123',
+        'New User',
+      );
+
+      expect(usersService.findByEmail).toHaveBeenCalledWith('new@example.com');
+
+      const createCall = prismaService.user.create.mock.calls[0][0];
+      expect(createCall.data.email).toBe('new@example.com');
     });
   });
 });

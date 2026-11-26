@@ -8,6 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
 import { PrismaService } from '../common/prisma.service';
+import { normalizeEmail } from '../common/utils/email';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,7 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string, rememberMe?: boolean) {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(normalizeEmail(email));
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(password, user.password);
@@ -34,12 +35,13 @@ export class AuthService {
   }
 
   async register(email: string, password: string, name: string) {
-    const existing = await this.usersService.findByEmail(email);
+    const normalizedEmail = normalizeEmail(email);
+    const existing = await this.usersService.findByEmail(normalizedEmail);
     if (existing) throw new ConflictException('Email already registered');
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await this.prisma.user.create({
-      data: { email, password: hashed, name },
+      data: { email: normalizedEmail, password: hashed, name },
     });
 
     return this.generateToken(user);
