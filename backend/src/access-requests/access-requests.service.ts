@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { ActivitiesService } from '../activities/activities.service';
 import * as bcrypt from 'bcryptjs';
+import { normalizeEmail } from '../common/utils/email';
 
 @Injectable()
 export class AccessRequestsService {
@@ -21,14 +22,18 @@ export class AccessRequestsService {
     phone: string;
     industry?: string;
   }) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email },
+    const email = normalizeEmail(data.email);
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
     });
     if (existingUser)
       throw new ConflictException('این ایمیل قبلاً ثبت‌نام شده است');
 
     const existingRequest = await this.prisma.accessRequest.findFirst({
-      where: { email: data.email, status: { in: ['PENDING', 'APPROVED'] } },
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+        status: { in: ['PENDING', 'APPROVED'] },
+      },
     });
     if (existingRequest) {
       if (existingRequest.status === 'PENDING') {
@@ -41,7 +46,7 @@ export class AccessRequestsService {
       );
     }
 
-    return this.prisma.accessRequest.create({ data });
+    return this.prisma.accessRequest.create({ data: { ...data, email } });
   }
 
   async findAll() {
@@ -67,8 +72,9 @@ export class AccessRequestsService {
         'Request is already ' + request.status.toLowerCase(),
       );
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: request.email },
+    const email = normalizeEmail(request.email);
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
     });
     if (existingUser)
       throw new ConflictException('A user with this email already exists');
@@ -76,7 +82,7 @@ export class AccessRequestsService {
     const hashed = await bcrypt.hash('123456', 10);
     const user = await this.prisma.user.create({
       data: {
-        email: request.email,
+        email,
         password: hashed,
         name: request.name,
         role: 'ADMIN',

@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { ActivitiesService } from '../activities/activities.service';
 import { CreateUserInput, UpdateUserInput } from '../common/dto/user.input';
+import { normalizeEmail } from '../common/utils/email';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -49,8 +50,11 @@ export class UsersService {
 
   async findByEmail(email: string) {
     // Email lookup is case-insensitive so users can log in regardless of casing.
+    const normalized = normalizeEmail(email);
+    if (!normalized) return null;
+
     const user = await this.prisma.user.findFirst({
-      where: { email: { equals: email, mode: 'insensitive' } },
+      where: { email: { equals: normalized, mode: 'insensitive' } },
       include: this.include(),
     });
     return user ? this.mapUser(user) : null;
@@ -98,7 +102,7 @@ export class UsersService {
 
     const user = await this.prisma.user.create({
       data: {
-        email: input.email,
+        email: normalizeEmail(input.email),
         password: hashed,
         name: input.name,
         phone: input.phone,
@@ -148,7 +152,9 @@ export class UsersService {
       where: { id: input.id },
       data: {
         ...(input.name !== undefined && { name: input.name }),
-        ...(input.email !== undefined && { email: input.email }),
+        ...(input.email !== undefined && {
+          email: normalizeEmail(input.email),
+        }),
         ...(input.phone !== undefined && { phone: input.phone }),
         ...(input.company !== undefined && { company: input.company }),
         ...(input.isCustomer !== undefined && { isCustomer: input.isCustomer }),
