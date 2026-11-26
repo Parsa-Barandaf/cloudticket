@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ClipboardList,
@@ -28,6 +28,8 @@ import {
   Eye,
   Archive,
   ArchiveRestore,
+  ListChecks,
+  ChevronDown,
 } from 'lucide-react';
 import { useTasks } from '../../hooks/useTasks';
 import { mapTaskComment } from '../../api/transform';
@@ -51,6 +53,17 @@ type CommentType = 'note' | 'timeline';
 
 const statusList: TaskStatus[] = ['PENDING', 'IN_PROGRESS', 'DONE', 'CANCELLED'];
 const priorityList: TaskPriority[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+
+// تعداد وظایف رندر‌شده در هر مرحله؛ ادامه لیست با اسکرول یا دکمه «نمایش بیشتر» بارگذاری می‌شود
+const TASK_PAGE_SIZE = 20;
+
+type ConfirmAction =
+  | { type: 'delete'; task: TaskItem }
+  | { type: 'status'; task: TaskItem; status: TaskStatus }
+  | { type: 'archive'; task: TaskItem }
+  | { type: 'restore'; task: TaskItem }
+  | { type: 'bulk-archive'; ids: string[]; restore: boolean }
+  | { type: 'bulk-delete'; ids: string[] };
 
 const statusMeta: Record<TaskStatus, { label: string; cls: string; iconCls: string }> = {
   PENDING: { label: 'در انتظار', cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30', iconCls: 'text-amber-500' },
@@ -118,9 +131,36 @@ function sameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
+interface TaskCheckboxProps {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+}
+
+// چک‌باکس مینیمال با ظاهر مدرن (input بومی برای دسترس‌پذیری حفظ شده است)
+function TaskCheckbox({ checked, onChange, label }: TaskCheckboxProps) {
+  return (
+    <span className="relative inline-flex items-center justify-center shrink-0">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        aria-label={label}
+        className="peer sr-only"
+      />
+      <span
+        aria-hidden="true"
+        className="w-[18px] h-[18px] rounded-[6px] border-[1.5px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-transparent flex items-center justify-center transition-all duration-150 peer-checked:bg-brand-600 peer-checked:border-brand-600 peer-checked:text-white peer-hover:border-brand-400 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500/40 peer-focus-visible:ring-offset-1 dark:peer-focus-visible:ring-offset-slate-900"
+      >
+        <Check className="w-3 h-3" strokeWidth={3} />
+      </span>
+    </span>
+  );
+}
+
 export default function TaskManager({ mode, currentUserId, currentUserName, users, showToast }: TaskManagerProps) {
   const isAdmin = mode === 'admin';
-  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask } =
+  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask, bulkUpdateStatus, bulkDelete, bulkArchive } =
     useTasks(isAdmin ? 'all' : 'mine', isAdmin ? '' : currentUserId);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -148,7 +188,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
   const [commentType, setCommentType] = useState<CommentType>('note');
   const [sendingComment, setSendingComment] = useState(false);
 
-  const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'status' | 'archive' | 'restore'; task: TaskItem; status?: TaskStatus } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
@@ -163,6 +203,112 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
   }, [tasks, statusFilter, assigneeFilter, showArchived]);
 
   const archivedCount = useMemo(() => tasks.filter(t => !!t.archivedAt).length, [tasks]);
+
+  // ── نمایش تدریجی، انتخاب گروهی و اکشن‌های گروهی ──
+  const [visibleCount, setVisibleCount] = useState(TASK_PAGE_SIZE);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const visibleTasks = useMemo(
+    () => filteredTasks.slice(0, visibleCount),
+    [filteredTasks, visibleCount],
+  );
+  const hasMore = visibleCount < filteredTasks.length;
+  const remainingCount = Math.max(filteredTasks.length - visibleCount, 0);
+  const allFilteredSelected = filteredTasks.length > 0 && filteredTasks.every(t => selectedIds.has(t.id));
+
+  // با تغییر فیلترها، لیست از ابتدا و بدون انتخاب قبلی نمایش داده می‌شود
+  useEffect(() => {
+    setVisibleCount(TASK_PAGE_SIZE);
+    setSelectedIds(new Set());
+  }, [statusFilter, assigneeFilter, showArchived]);
+
+  // نمایش نوار اکشن فشرده پس از عبور از هدر اصلی
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      entries => {
+        const entry = entries[0];
+        setShowStickyBar(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { rootMargin: '-88px 0px 0px 0px', threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // حذف خودکار شناسه‌های حذف‌شده/ناموجود از انتخاب‌ها
+  useEffect(() => {
+    setSelectedIds(prev => {
+      if (prev.size === 0) return prev;
+      const existing = new Set(filteredTasks.map(t => t.id));
+      const next = new Set<string>();
+      prev.forEach(id => {
+        if (existing.has(id)) next.add(id);
+      });
+      return next.size === prev.size ? prev : next;
+    });
+  }, [filteredTasks]);
+
+  // بارگذاری خودکار صفحه بعد وقتی انتهای لیست در دید است
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !hasMore || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries.some(entry => entry.isIntersecting)) {
+          setVisibleCount(count => Math.min(count + TASK_PAGE_SIZE, filteredTasks.length));
+        }
+      },
+      { rootMargin: '160px 0px' },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filteredTasks.length, hasMore, visibleCount]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds(allFilteredSelected ? new Set() : new Set(filteredTasks.map(t => t.id)));
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const runBulkStatus = async (status: TaskStatus) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0 || bulkBusy) return;
+    setBulkBusy(true);
+    try {
+      await bulkUpdateStatus(ids, status);
+      clearSelection();
+      showToast(`وضعیت ${ids.length} وظیفه به «${statusMeta[status].label}» تغییر یافت.`, 'success');
+    } catch (e) {
+      showToast('خطا در تغییر گروهی وضعیت: ' + (e as Error).message, 'error');
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const requestBulkArchive = () => {
+    if (selectedIds.size === 0 || bulkBusy) return;
+    setConfirmAction({ type: 'bulk-archive', ids: Array.from(selectedIds), restore: showArchived });
+  };
+
+  const requestBulkDelete = () => {
+    if (!isAdmin || selectedIds.size === 0) return;
+    setConfirmAction({ type: 'bulk-delete', ids: Array.from(selectedIds) });
+  };
 
   const handleTaskDrop = async (targetId: string) => {
     if (!draggedTaskId || draggedTaskId === targetId) {
@@ -305,7 +451,28 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
       } else if (confirmAction.type === 'restore') {
         await unarchiveTask(confirmAction.task.id);
         showToast('وظیفه از آرشیو بازگردانده شد.', 'success');
-      } else if (confirmAction.status) {
+      } else if (confirmAction.type === 'bulk-archive') {
+        const { ids, restore } = confirmAction;
+        const cancelledCount = restore
+          ? 0
+          : tasks.filter(t => ids.includes(t.id) && t.statusRaw !== 'DONE').length;
+        await bulkArchive(ids, restore);
+        clearSelection();
+        showToast(
+          restore
+            ? `${ids.length} وظیفه از آرشیو خارج شد.`
+            : cancelledCount > 0
+              ? `${ids.length} وظیفه آرشیو شد و وضعیت ${cancelledCount} وظیفه به «لغو شده» تغییر یافت.`
+              : `${ids.length} وظیفه آرشیو شد.`,
+          'success',
+        );
+      } else if (confirmAction.type === 'bulk-delete') {
+        const ids = confirmAction.ids;
+        await bulkDelete(ids);
+        clearSelection();
+        if (selectedTask && ids.includes(selectedTask.id)) setSelectedTask(null);
+        showToast(`${ids.length} وظیفه حذف شد.`, 'success');
+      } else if (confirmAction.type === 'status') {
         await updateStatus(confirmAction.task.id, confirmAction.status);
         if (selectedTask?.id === confirmAction.task.id) {
           setSelectedTask({ ...selectedTask, statusRaw: confirmAction.status, status: statusMeta[confirmAction.status].label as TaskItem['status'] });
@@ -383,10 +550,15 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
   const assigneeOptions = users.filter(u => !u.isCustomer);
 
+  const bulkArchiveCancelledCount =
+    confirmAction?.type === 'bulk-archive' && !confirmAction.restore
+      ? tasks.filter(t => confirmAction.ids.includes(t.id) && t.statusRaw !== 'DONE').length
+      : 0;
+
   return (
     <div className="space-y-6 text-right font-sans pb-12 relative">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs relative overflow-hidden">
+      <div ref={headerRef} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-brand-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
           <div>
@@ -460,6 +632,48 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
         </div>
       </div>
 
+      {/* نوار اکشن فشرده و استیکی هنگام عبور از هدر */}
+      <AnimatePresence>
+        {showStickyBar && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="sticky top-[5.5rem] z-30"
+          >
+            <div className="flex items-center justify-between gap-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200/70 dark:border-slate-700/60 rounded-2xl shadow-md shadow-slate-900/5 px-3 py-2">
+              <div className="flex items-center gap-2 min-w-0 text-[11px] font-black text-slate-700 dark:text-slate-200">
+                <ClipboardList className="w-4 h-4 text-brand-500 shrink-0" />
+                <span className="truncate">مدیریت وظایف</span>
+                <span className="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-mono text-[10px]">
+                  {filteredTasks.length.toLocaleString('fa-IR')}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={openCreate}
+                  aria-label="وظیفه جدید"
+                  className="px-3 py-1.5 text-[11px] font-black bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-brand-600/20"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">وظیفه جدید</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { refetch(); showToast('لیست وظایف به‌روزرسانی شد.', 'success'); }}
+                  aria-label="به‌روزرسانی لیست وظایف"
+                  title="به‌روزرسانی"
+                  className="p-2 rounded-xl bg-white hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 transition-colors cursor-pointer"
+                >
+                  <Loader2 className={`w-4 h-4 text-brand-500 ${loading ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {/* LIST VIEW */}
         {viewMode === 'list' && (
@@ -506,14 +720,103 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     </select>
                   </div>
                 )}
-                <div className="text-xs text-slate-400 font-bold flex items-center gap-2">
-                  <span>تعداد:</span>
-                  <span className="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-mono">{filteredTasks.length}</span>
+                <div className="text-xs text-slate-400 font-bold flex flex-wrap items-center gap-3">
+                  <span className="flex items-center gap-1.5">
+                    <span>تعداد:</span>
+                    <span className="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-mono">{filteredTasks.length}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                    نمایش {visibleTasks.length.toLocaleString('fa-IR')} از {filteredTasks.length.toLocaleString('fa-IR')}
+                  </span>
+                  {filteredTasks.length > 0 && (
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none text-[11px] text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400">
+                      <TaskCheckbox
+                        checked={allFilteredSelected}
+                        onChange={toggleSelectAll}
+                        label="انتخاب همه وظایف فیلترشده"
+                      />
+                      <span>انتخاب همه</span>
+                    </label>
+                  )}
                 </div>
               </div>
             </div>
 
+            {/* Bulk action bar */}
+            <AnimatePresence initial={false}>
+              {selectedIds.size > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className={`sticky z-20 transition-[top] duration-200 ${showStickyBar ? 'top-[9.25rem]' : 'top-[5.5rem]'} bg-white/95 dark:bg-slate-800/95 border border-slate-200/70 dark:border-slate-700/60 p-2.5 rounded-2xl shadow-lg shadow-slate-900/5 flex flex-wrap items-center gap-2`}
+                >
+                  <div className="flex items-center gap-2 text-[11px] font-black text-slate-700 dark:text-slate-200">
+                    <span className="p-1.5 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-400">
+                      <ListChecks className="w-4 h-4" />
+                    </span>
+                    <span>{selectedIds.size.toLocaleString('fa-IR')} وظیفه انتخاب شده</span>
+                    {bulkBusy && <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-500" />}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 mr-auto">
+                    <div className="relative">
+                      <select
+                        aria-label="تغییر گروهی وضعیت"
+                        value=""
+                        onChange={(e) => {
+                          const next = e.target.value as TaskStatus | '';
+                          e.currentTarget.value = '';
+                          if (next) void runBulkStatus(next);
+                        }}
+                        disabled={bulkBusy}
+                        className="appearance-none text-[11px] font-black pr-3 pl-8 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-transparent focus:border-brand-500 outline-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="">تغییر وضعیت…</option>
+                        {statusList.map(s => (
+                          <option key={s} value={s}>{statusMeta[s].label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={requestBulkArchive}
+                      disabled={bulkBusy}
+                      aria-label={showArchived ? 'خروج گروهی از آرشیو' : 'آرشیو وظایف انتخاب‌شده'}
+                      title={showArchived ? 'خروج از آرشیو' : 'آرشیو'}
+                      className="p-2 rounded-xl bg-slate-100 hover:bg-amber-50 dark:bg-slate-700 dark:hover:bg-amber-950/30 text-slate-500 dark:text-slate-400 hover:text-amber-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {showArchived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={requestBulkDelete}
+                        disabled={bulkBusy}
+                        aria-label="حذف وظایف انتخاب‌شده"
+                        title="حذف"
+                        className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-slate-700 dark:hover:bg-rose-950/30 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={clearSelection}
+                      disabled={bulkBusy}
+                      aria-label="لغو انتخاب"
+                      title="لغو انتخاب"
+                      className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Task cards */}
+            <div className="space-y-3">
             {loading && filteredTasks.length === 0 ? (
               <div className="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-center space-y-3">
                 <Loader2 className="w-10 h-10 text-brand-500 mx-auto animate-spin" />
@@ -540,9 +843,10 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredTasks.map((t) => {
+                {visibleTasks.map((t) => {
                   const unseen = isUnreadForMe(t);
                   const seenByAssignee = hasAssigneeSeen(t);
+                  const isSelected = selectedIds.has(t.id);
                   return (
                   <motion.div
                     key={t.id}
@@ -570,6 +874,8 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     } ${
                       draggedTaskId === t.id ? 'opacity-60 scale-[0.99]' : ''
                     } ${
+                      isSelected ? 'ring-2 ring-brand-500/50 border-brand-500/60 bg-brand-500/5 dark:bg-brand-500/10' : ''
+                    } ${
                       t.overdue
                         ? 'bg-rose-500/5 dark:bg-rose-500/10 border-rose-500/30'
                         : unseen
@@ -578,6 +884,17 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     }`}
                   >
                     <div className="flex items-start gap-3.5 flex-1">
+                      <label
+                        className="mt-2 shrink-0 flex items-center justify-center cursor-pointer"
+                        title={isSelected ? 'لغو انتخاب وظیفه' : 'انتخاب وظیفه'}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <TaskCheckbox
+                          checked={isSelected}
+                          onChange={() => toggleSelect(t.id)}
+                          label={`انتخاب وظیفه ${t.title}`}
+                        />
+                      </label>
                       <div
                         className="mt-2 text-slate-300 dark:text-slate-600 hover:text-brand-500 dark:hover:text-brand-400 cursor-grab active:cursor-grabbing"
                         title="برای تغییر ترتیب بکشید"
@@ -668,6 +985,27 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                 })}
               </div>
             )}
+
+            {hasMore && (
+              <div ref={loadMoreRef} className="pt-2 pb-3 flex flex-col items-center justify-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount(count => Math.min(count + TASK_PAGE_SIZE, filteredTasks.length))}
+                  className="px-4 py-2 rounded-xl text-xs font-black bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 border border-brand-200/70 dark:border-brand-500/30 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                  <span>نمایش بیشتر</span>
+                  <span className="text-[10px] font-mono text-slate-400">({remainingCount.toLocaleString('fa-IR')} وظیفه)</span>
+                </button>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">با اسکرول به انتهای لیست نیز وظایف بیشتری بارگذاری می‌شود.</span>
+              </div>
+            )}
+            {!hasMore && filteredTasks.length > TASK_PAGE_SIZE && (
+              <div className="pb-3 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                همه وظایف نمایش داده شد.
+              </div>
+            )}
+            </div>
           </motion.div>
         )}
 
@@ -943,26 +1281,40 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
               </div>
               <div className="text-center space-y-1">
                 <h3 className="text-sm font-black text-slate-950 dark:text-white">
-                  {confirmAction.type === 'delete'
-                    ? 'حذف وظیفه'
-                    : confirmAction.type === 'archive'
-                      ? 'آرشیو وظیفه'
-                      : confirmAction.type === 'restore'
-                        ? 'بازگردانی وظیفه'
-                        : 'تغییر وضعیت وظیفه'}
+                  {confirmAction.type === 'bulk-delete'
+                    ? 'حذف گروهی وظایف'
+                    : confirmAction.type === 'bulk-archive'
+                      ? confirmAction.restore
+                        ? 'بازگردانی گروهی از آرشیو'
+                        : 'آرشیو گروهی وظایف'
+                      : confirmAction.type === 'delete'
+                        ? 'حذف وظیفه'
+                        : confirmAction.type === 'archive'
+                          ? 'آرشیو وظیفه'
+                          : confirmAction.type === 'restore'
+                            ? 'بازگردانی وظیفه'
+                            : 'تغییر وضعیت وظیفه'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  {confirmAction.type === 'delete'
-                    ? `آیا از حذف «${confirmAction.task.title}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.`
-                    : confirmAction.type === 'archive'
-                      ? confirmAction.task.statusRaw !== 'DONE'
-                        ? `«${confirmAction.task.title}» آرشیو شود؟ با آرشیو کردن، وضعیت این وظیفه به «لغو شده» تغییر می‌کند.`
-                        : `«${confirmAction.task.title}» آرشیو شود؟`
-                      : confirmAction.type === 'restore'
-                        ? `«${confirmAction.task.title}» از آرشیو خارج شود؟`
-                        : confirmAction.status
-                          ? `وضعیت «${confirmAction.task.title}» به «${statusMeta[confirmAction.status].label}» تغییر یابد؟`
-                          : ''}
+                  {confirmAction.type === 'bulk-delete'
+                    ? `آیا از حذف ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده مطمئن هستید؟ این عملیات قابل بازگشت نیست.`
+                    : confirmAction.type === 'bulk-archive'
+                      ? confirmAction.restore
+                        ? `آیا از خروج ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده از آرشیو مطمئن هستید؟`
+                        : bulkArchiveCancelledCount > 0
+                          ? `آیا از آرشیو ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده مطمئن هستید؟ وضعیت ${bulkArchiveCancelledCount.toLocaleString('fa-IR')} وظیفه (به‌جز موارد «انجام شده») به «لغو شده» تغییر می‌کند.`
+                          : `آیا از آرشیو ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده مطمئن هستید؟`
+                      : confirmAction.type === 'delete'
+                        ? `آیا از حذف «${confirmAction.task.title}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.`
+                        : confirmAction.type === 'archive'
+                          ? confirmAction.task.statusRaw !== 'DONE'
+                            ? `«${confirmAction.task.title}» آرشیو شود؟ با آرشیو کردن، وضعیت این وظیفه به «لغو شده» تغییر می‌کند.`
+                            : `«${confirmAction.task.title}» آرشیو شود؟`
+                          : confirmAction.type === 'restore'
+                            ? `«${confirmAction.task.title}» از آرشیو خارج شود؟`
+                            : confirmAction.status
+                              ? `وضعیت «${confirmAction.task.title}» به «${statusMeta[confirmAction.status].label}» تغییر یابد؟`
+                              : ''}
                 </p>
               </div>
               <div className="flex items-center gap-2 pt-1">
@@ -977,24 +1329,24 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   onClick={runConfirmAction}
                   disabled={confirming}
                   className={`flex-1 px-4 py-2 text-white text-xs font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 ${
-                    confirmAction.type === 'delete'
-                      ? 'bg-rose-600 hover:bg-rose-700'
-                      : confirmAction.type === 'archive'
+                    confirmAction.type === 'status'
+                      ? 'bg-brand-600 hover:bg-brand-700'
+                      : confirmAction.type === 'archive' || (confirmAction.type === 'bulk-archive' && !confirmAction.restore)
                         ? 'bg-amber-600 hover:bg-amber-700'
-                        : confirmAction.type === 'restore'
+                        : confirmAction.type === 'restore' || (confirmAction.type === 'bulk-archive' && confirmAction.restore)
                           ? 'bg-emerald-600 hover:bg-emerald-700'
-                          : 'bg-brand-600 hover:bg-brand-700'
+                          : 'bg-rose-600 hover:bg-rose-700'
                   }`}
                 >
                   {confirming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                   <span>
-                    {confirmAction.type === 'delete'
-                      ? 'حذف'
-                      : confirmAction.type === 'archive'
+                    {confirmAction.type === 'status'
+                      ? 'تأیید تغییر'
+                      : confirmAction.type === 'archive' || (confirmAction.type === 'bulk-archive' && !confirmAction.restore)
                         ? 'آرشیو'
-                        : confirmAction.type === 'restore'
+                        : confirmAction.type === 'restore' || (confirmAction.type === 'bulk-archive' && confirmAction.restore)
                           ? 'بازگردانی'
-                          : 'تأیید تغییر'}
+                          : 'حذف'}
                   </span>
                 </button>
               </div>
