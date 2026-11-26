@@ -118,6 +118,7 @@ export function mapTask(t: ApiTask): TaskItem {
     completedAt: t.completedAt,
     sortOrder: t.sortOrder,
     seenAt: t.seenAt,
+    archivedAt: t.archivedAt,
     createdAt: t.createdAt,
     updatedAt: t.updatedAt,
     createdById: t.createdById,

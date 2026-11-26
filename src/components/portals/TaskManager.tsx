@@ -26,6 +26,8 @@ import {
   GripVertical,
   CalendarPlus,
   Eye,
+  Archive,
+  ArchiveRestore,
 } from 'lucide-react';
 import { useTasks } from '../../hooks/useTasks';
 import { mapTaskComment } from '../../api/transform';
@@ -118,10 +120,11 @@ function sameDay(a: Date, b: Date): boolean {
 
 export default function TaskManager({ mode, currentUserId, currentUserName, users, showToast }: TaskManagerProps) {
   const isAdmin = mode === 'admin';
-  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen } =
+  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask } =
     useTasks(isAdmin ? 'all' : 'mine', isAdmin ? '' : currentUserId);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [showArchived, setShowArchived] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'ALL' | TaskStatus>('ALL');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('ALL');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -145,18 +148,21 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
   const [commentType, setCommentType] = useState<CommentType>('note');
   const [sendingComment, setSendingComment] = useState(false);
 
-  const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'status'; task: TaskItem; status?: TaskStatus } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'status' | 'archive' | 'restore'; task: TaskItem; status?: TaskStatus } | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(t => {
+      if (showArchived ? !t.archivedAt : !!t.archivedAt) return false;
       if (statusFilter !== 'ALL' && t.statusRaw !== statusFilter) return false;
       if (assigneeFilter !== 'ALL' && t.assigneeId !== assigneeFilter) return false;
       return true;
     });
-  }, [tasks, statusFilter, assigneeFilter]);
+  }, [tasks, statusFilter, assigneeFilter, showArchived]);
+
+  const archivedCount = useMemo(() => tasks.filter(t => !!t.archivedAt).length, [tasks]);
 
   const handleTaskDrop = async (targetId: string) => {
     if (!draggedTaskId || draggedTaskId === targetId) {
@@ -275,6 +281,10 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
   const requestStatusChange = (t: TaskItem, status: TaskStatus) => setConfirmAction({ type: 'status', task: t, status });
 
+  const requestArchive = (t: TaskItem) => setConfirmAction({ type: 'archive', task: t });
+
+  const requestRestore = (t: TaskItem) => setConfirmAction({ type: 'restore', task: t });
+
   const runConfirmAction = async () => {
     if (!confirmAction) return;
     setConfirming(true);
@@ -283,6 +293,18 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
         await deleteTask(confirmAction.task.id);
         if (selectedTask?.id === confirmAction.task.id) setSelectedTask(null);
         showToast('وظیفه حذف شد.', 'success');
+      } else if (confirmAction.type === 'archive') {
+        await archiveTask(confirmAction.task.id);
+        if (selectedTask?.id === confirmAction.task.id) setSelectedTask(null);
+        showToast(
+          confirmAction.task.statusRaw !== 'DONE'
+            ? 'وظیفه آرشیو شد و وضعیت آن به «لغو شده» تغییر یافت.'
+            : 'وظیفه آرشیو شد.',
+          'success',
+        );
+      } else if (confirmAction.type === 'restore') {
+        await unarchiveTask(confirmAction.task.id);
+        showToast('وظیفه از آرشیو بازگردانده شد.', 'success');
       } else if (confirmAction.status) {
         await updateStatus(confirmAction.task.id, confirmAction.status);
         if (selectedTask?.id === confirmAction.task.id) {
@@ -345,7 +367,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
     for (let i = 0; i < startOffset; i++) cells.push({ date: new Date(year, month, i - startOffset + 1), tasks: [] });
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, month, d);
-      cells.push({ date, tasks: tasks.filter(t => t.dueDate && sameDay(new Date(t.dueDate), date) && t.statusRaw !== 'CANCELLED') });
+      cells.push({ date, tasks: tasks.filter(t => !t.archivedAt && t.dueDate && sameDay(new Date(t.dueDate), date) && t.statusRaw !== 'CANCELLED') });
     }
     while (cells.length % 7 !== 0) {
       const last = cells[cells.length - 1].date;
@@ -354,7 +376,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
     return cells;
   }, [boardMonth, tasks]);
 
-  const overdueTasks = useMemo(() => tasks.filter(t => t.overdue), [tasks]);
+  const overdueTasks = useMemo(() => tasks.filter(t => t.overdue && !t.archivedAt), [tasks]);
 
   const monthLabel = new Intl.DateTimeFormat('fa-IR', { month: 'long', year: 'numeric' }).format(boardMonth);
   const today = new Date();
@@ -400,9 +422,9 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
         {/* View toggle */}
         <div className="flex items-center gap-1.5 mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/60 relative z-10">
           <button
-            onClick={() => setViewMode('list')}
+            onClick={() => { setViewMode('list'); setShowArchived(false); }}
             className={`px-4.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-              viewMode === 'list'
+              viewMode === 'list' && !showArchived
                 ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-500/20'
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
             }`}
@@ -411,15 +433,29 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
             <span>نمایش لیستی</span>
           </button>
           <button
-            onClick={() => setViewMode('board')}
+            onClick={() => { setViewMode('board'); setShowArchived(false); }}
             className={`px-4.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-              viewMode === 'board'
+              viewMode === 'board' && !showArchived
                 ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-500/20'
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
             }`}
           >
             <Calendar className="w-4 h-4" />
             <span>تقویم زمانی</span>
+          </button>
+          <button
+            onClick={() => { setViewMode('list'); setShowArchived(true); }}
+            className={`px-4.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+              showArchived
+                ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20'
+                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+            }`}
+          >
+            <Archive className="w-4 h-4" />
+            <span>آرشیو</span>
+            {archivedCount > 0 && (
+              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400">{archivedCount}</span>
+            )}
           </button>
         </div>
       </div>
@@ -493,12 +529,14 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
             ) : filteredTasks.length === 0 ? (
               <div className="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-center space-y-3">
                 <ClipboardList className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" />
-                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">هیچ وظیفه‌ای پیدا نشد!</h3>
-                <p className="text-xs text-slate-400">فیلترها را تغییر دهید یا وظیفه جدیدی تعریف کنید.</p>
-                <button onClick={openCreate} className="mx-auto px-4 py-2 text-xs font-black bg-brand-600 hover:bg-brand-700 text-white rounded-xl flex items-center gap-1.5 cursor-pointer">
-                  <Plus className="w-4 h-4" />
-                  <span>وظیفه جدید</span>
-                </button>
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">{showArchived ? 'هیچ وظیفه آرشیو شده‌ای وجود ندارد.' : 'هیچ وظیفه‌ای پیدا نشد!'}</h3>
+                <p className="text-xs text-slate-400">{showArchived ? 'وظایفی که آرشیو می‌کنید در این بخش نگهداری می‌شوند.' : 'فیلترها را تغییر دهید یا وظیفه جدیدی تعریف کنید.'}</p>
+                {!showArchived && (
+                  <button onClick={openCreate} className="mx-auto px-4 py-2 text-xs font-black bg-brand-600 hover:bg-brand-700 text-white rounded-xl flex items-center gap-1.5 cursor-pointer">
+                    <Plus className="w-4 h-4" />
+                    <span>وظیفه جدید</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -509,7 +547,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   <motion.div
                     key={t.id}
                     layout
-                    draggable={viewMode === 'list'}
+                    draggable={viewMode === 'list' && !showArchived}
                     onDragStart={() => setDraggedTaskId(t.id)}
                     onDragOver={(e) => {
                       e.preventDefault();
@@ -604,10 +642,19 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0 self-end md:self-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-col items-center gap-1 shrink-0 self-end md:self-center" onClick={(e) => e.stopPropagation()}>
                       {isAdmin && (
                         <button onClick={() => openEdit(t)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-brand-500 transition-colors cursor-pointer" title="ویرایش">
                           <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
+                      {t.archivedAt ? (
+                        <button onClick={() => requestRestore(t)} className="p-2 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-slate-400 hover:text-emerald-500 transition-colors cursor-pointer" title="بازگردانی از آرشیو">
+                          <ArchiveRestore className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button onClick={() => requestArchive(t)} className="p-2 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-950/30 text-slate-400 hover:text-amber-500 transition-colors cursor-pointer" title="آرشیو وظیفه">
+                          <Archive className="w-4 h-4" />
                         </button>
                       )}
                       {isAdmin && (
@@ -896,14 +943,26 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
               </div>
               <div className="text-center space-y-1">
                 <h3 className="text-sm font-black text-slate-950 dark:text-white">
-                  {confirmAction.type === 'delete' ? 'حذف وظیفه' : 'تغییر وضعیت وظیفه'}
+                  {confirmAction.type === 'delete'
+                    ? 'حذف وظیفه'
+                    : confirmAction.type === 'archive'
+                      ? 'آرشیو وظیفه'
+                      : confirmAction.type === 'restore'
+                        ? 'بازگردانی وظیفه'
+                        : 'تغییر وضعیت وظیفه'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                   {confirmAction.type === 'delete'
                     ? `آیا از حذف «${confirmAction.task.title}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.`
-                    : confirmAction.status
-                      ? `وضعیت «${confirmAction.task.title}» به «${statusMeta[confirmAction.status].label}» تغییر یابد؟`
-                      : ''}
+                    : confirmAction.type === 'archive'
+                      ? confirmAction.task.statusRaw !== 'DONE'
+                        ? `«${confirmAction.task.title}» آرشیو شود؟ با آرشیو کردن، وضعیت این وظیفه به «لغو شده» تغییر می‌کند.`
+                        : `«${confirmAction.task.title}» آرشیو شود؟`
+                      : confirmAction.type === 'restore'
+                        ? `«${confirmAction.task.title}» از آرشیو خارج شود؟`
+                        : confirmAction.status
+                          ? `وضعیت «${confirmAction.task.title}» به «${statusMeta[confirmAction.status].label}» تغییر یابد؟`
+                          : ''}
                 </p>
               </div>
               <div className="flex items-center gap-2 pt-1">
@@ -918,11 +977,25 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   onClick={runConfirmAction}
                   disabled={confirming}
                   className={`flex-1 px-4 py-2 text-white text-xs font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 ${
-                    confirmAction.type === 'delete' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-brand-600 hover:bg-brand-700'
+                    confirmAction.type === 'delete'
+                      ? 'bg-rose-600 hover:bg-rose-700'
+                      : confirmAction.type === 'archive'
+                        ? 'bg-amber-600 hover:bg-amber-700'
+                        : confirmAction.type === 'restore'
+                          ? 'bg-emerald-600 hover:bg-emerald-700'
+                          : 'bg-brand-600 hover:bg-brand-700'
                   }`}
                 >
                   {confirming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                  <span>{confirmAction.type === 'delete' ? 'حذف' : 'تأیید تغییر'}</span>
+                  <span>
+                    {confirmAction.type === 'delete'
+                      ? 'حذف'
+                      : confirmAction.type === 'archive'
+                        ? 'آرشیو'
+                        : confirmAction.type === 'restore'
+                          ? 'بازگردانی'
+                          : 'تأیید تغییر'}
+                  </span>
                 </button>
               </div>
             </motion.div>

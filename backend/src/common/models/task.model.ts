@@ -47,6 +47,9 @@ export class Task {
   @Field({ nullable: true })
   seenAt?: Date;
 
+  @Field({ nullable: true })
+  archivedAt?: Date;
+
   @Field()
   createdAt: Date;
 
