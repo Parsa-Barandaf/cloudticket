@@ -23,7 +23,7 @@ export default function AbstractIllustration() {
         </div>
         <div className="text-right">
           <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">هسته پردازش ابری</div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500">موتور تخصیص هوشمند تیکت‌ها</div>
+          <div className="text-2xs text-slate-400 dark:text-slate-500">موتور تخصیص هوشمند تیکت‌ها</div>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function AbstractIllustration() {
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">صف تیکت‌های فعال</span>
               </div>
-              <span className="text-[10px] bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full font-mono">
+              <span className="text-2xs bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full font-mono">
                 ۲۴ تیکت
               </span>
             </div>
@@ -108,18 +108,18 @@ export default function AbstractIllustration() {
             <div className="space-y-2">
               <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50/50 dark:bg-slate-800/40 border border-slate-100/50 dark:border-slate-700/20 text-right">
                 <div>
-                  <div className="text-[11px] font-medium text-slate-800 dark:text-slate-200">خطای دسترسی در پرداخت ارزی</div>
-                  <div className="text-[9px] text-slate-400 dark:text-slate-500">توسط شرکت آرمان‌پژوه • ۲ دقیقه پیش</div>
+                  <div className="text-xs font-medium text-slate-800 dark:text-slate-200">خطای دسترسی در پرداخت ارزی</div>
+                  <div className="text-3xs text-slate-400 dark:text-slate-500">توسط شرکت آرمان‌پژوه • ۲ دقیقه پیش</div>
                 </div>
-                <span className="text-[9px] bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 px-1.5 py-0.5 rounded font-medium">بحرانی</span>
+                <span className="text-3xs bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 px-1.5 py-0.5 rounded font-medium">بحرانی</span>
               </div>
 
               <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50/50 dark:bg-slate-800/40 border border-slate-100/50 dark:border-slate-700/20 text-right">
                 <div>
-                  <div className="text-[11px] font-medium text-slate-800 dark:text-slate-200">عدم تطابق API وب‌هوکی</div>
-                  <div className="text-[9px] text-slate-400 dark:text-slate-500">توسط بانک سامان • ۵ دقیقه پیش</div>
+                  <div className="text-xs font-medium text-slate-800 dark:text-slate-200">عدم تطابق API وب‌هوکی</div>
+                  <div className="text-3xs text-slate-400 dark:text-slate-500">توسط بانک سامان • ۵ دقیقه پیش</div>
                 </div>
-                <span className="text-[9px] bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 px-1.5 py-0.5 rounded font-medium">متوسط</span>
+                <span className="text-3xs bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 px-1.5 py-0.5 rounded font-medium">متوسط</span>
               </div>
             </div>
           </motion.div>
@@ -159,7 +159,7 @@ export default function AbstractIllustration() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 dark:text-slate-500">
+            <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-2xs text-slate-400 dark:text-slate-500">
               <span>هدف: ۹۹.۲٪</span>
               <span className="font-semibold text-emerald-500">۹۹.۸٪ واقعی</span>
             </div>
@@ -183,12 +183,12 @@ export default function AbstractIllustration() {
               </div>
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">تخصیص هوشمند تیکت</span>
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 mb-2">تیکت #۵۱۲۴ ارجاع شد به:</div>
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mb-2">تیکت #۵۱۲۴ ارجاع شد به:</div>
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-slate-100 dark:border-slate-700/30">
-              <div className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center text-[10px] font-bold">رع</div>
+              <div className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center text-2xs font-bold">رع</div>
               <div className="text-right">
-                <div className="text-[10px] font-medium text-slate-800 dark:text-slate-200">رضا علوی</div>
-                <div className="text-[8px] text-slate-400">سرپرست پشتیبانی فنی</div>
+                <div className="text-2xs font-medium text-slate-800 dark:text-slate-200">رضا علوی</div>
+                <div className="text-4xs text-slate-400">سرپرست پشتیبانی فنی</div>
               </div>
             </div>
           </motion.div>

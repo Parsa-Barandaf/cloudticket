@@ -899,17 +899,6 @@ export default function SupportAgentPortalView({
             </button>
           </div>
 
-          {/* User Profile Mini Block */}
-          <div className="h-9 w-[1px] bg-slate-200 dark:bg-slate-800" />
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs shadow-inner">
-              {currentUserInitials || '؟'}
-            </div>
-            <div className="hidden lg:flex flex-col text-right">
-              <span className="text-xs font-black text-slate-800 dark:text-slate-200">{currentUserName}</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">{currentUserRoleLabel}</span>
-            </div>
-          </div>
         </div>
       </header>
 
@@ -941,7 +930,7 @@ export default function SupportAgentPortalView({
               {!sidebarCollapsed && (
                 <div className="text-right">
                   <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری مدیریت مشتریان</span>
-                  <span className="text-[10px] text-brand-600 dark:text-brand-400 font-bold block">پرتال پشتیبانی</span>
+                  <span className="text-2xs text-brand-600 dark:text-brand-400 font-bold block">پرتال پشتیبانی</span>
                 </div>
               )}
             </div>
@@ -973,7 +962,7 @@ export default function SupportAgentPortalView({
                 <Inbox className="w-4.5 h-4.5 shrink-0" />
                 {!sidebarCollapsed && <span className="whitespace-nowrap">صندوق ورودی تیکتها</span>}
                 {!sidebarCollapsed && (
-                  <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
+                  <span className="mr-auto text-2xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
                     {teamTickets.filter(t => t.status !== 'بسته شده').length}
                   </span>
                 )}
@@ -991,7 +980,7 @@ export default function SupportAgentPortalView({
                 <Headphones className="w-4.5 h-4.5 shrink-0" />
                 {!sidebarCollapsed && <span className="whitespace-nowrap">تیکتهای من</span>}
                 {!sidebarCollapsed && (
-                  <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
+                  <span className="mr-auto text-2xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
                     {myTickets.filter(t => t.status !== 'بسته شده').length}
                   </span>
                 )}
@@ -1090,8 +1079,23 @@ export default function SupportAgentPortalView({
             </nav>
           </div>
 
-          {/* Sidebar Footer */}
+          {/* Sidebar Footer: User Profile & Logout */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2 sticky bottom-5">
+            {!sidebarCollapsed ? (
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2.5 text-right">
+                <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 font-bold text-xs shrink-0">
+                  {currentUserInitials || '؟'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{currentUserName}</h4>
+                  <p className="text-2xs text-slate-400 dark:text-slate-500 truncate">{currentUserRoleLabel}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="w-9 h-9 mx-auto rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 font-bold text-xs" title={`${currentUserName} - ${currentUserRoleLabel}`}>
+                {currentUserInitials || '؟'}
+              </div>
+            )}
             {/* Logout Button */}
             <button
               onClick={() => {
@@ -1147,10 +1151,10 @@ export default function SupportAgentPortalView({
                   className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-amber-500/50 dark:hover:border-amber-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
                 >
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">تیکتهای نیازمند اقدام</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">تیکتهای نیازمند اقدام</span>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.needsAction.toLocaleString('fa-IR')}</span>
-                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                      <span className="text-2xs text-amber-600 dark:text-amber-400 font-extrabold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
                         اقدام ضروری
                       </span>
                     </div>
@@ -1166,10 +1170,10 @@ export default function SupportAgentPortalView({
                   className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-rose-500/50 dark:hover:border-rose-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
                 >
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">SLA نزدیک</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">SLA نزدیک</span>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.slaRisk.toLocaleString('fa-IR')}</span>
-                      <span className="text-[10px] text-rose-600 dark:text-rose-400 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
+                      <span className="text-2xs text-rose-600 dark:text-rose-400 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
                         کمتر از ۱ ساعت
                       </span>
                     </div>
@@ -1185,10 +1189,10 @@ export default function SupportAgentPortalView({
                   className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
                 >
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">منتظر پاسخ مشتری</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">منتظر پاسخ مشتری</span>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.awaitingCustomer.toLocaleString('fa-IR')}</span>
-                      <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                      <span className="text-2xs text-indigo-600 dark:text-indigo-400 font-extrabold bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
                         نیاز به پیگیری
                       </span>
                     </div>
@@ -1204,10 +1208,10 @@ export default function SupportAgentPortalView({
                   className="group bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-right cursor-pointer"
                 >
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">حل شده</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">حل شده</span>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-black text-slate-900 dark:text-white">{dashboardKpis.resolved.toLocaleString('fa-IR')}</span>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                      <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                         تکمیل شده
                       </span>
                     </div>
@@ -1230,7 +1234,7 @@ export default function SupportAgentPortalView({
                         <Activity className="w-4 h-4 text-brand-500" />
                         <h2 className="text-sm font-black text-slate-900 dark:text-white">شاخص‌های کیفیت و پاسخگویی</h2>
                       </div>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                         وضعیت مطلوب شیفت
                       </span>
                     </div>
@@ -1240,8 +1244,8 @@ export default function SupportAgentPortalView({
                       <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
                         <MetricRing value={82} color="#f59e0b" />
                         <div className="text-center space-y-0.5">
-                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">میانگین اولین پاسخ</span>
-                          <span className="block text-[10px] text-slate-400 font-bold">۱۲ دقیقه</span>
+                          <span className="block text-2xs font-black text-slate-700 dark:text-slate-200">میانگین اولین پاسخ</span>
+                          <span className="block text-2xs text-slate-400 font-bold">۱۲ دقیقه</span>
                         </div>
                       </div>
 
@@ -1249,8 +1253,8 @@ export default function SupportAgentPortalView({
                       <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
                         <MetricRing value={98} color="#10b981" />
                         <div className="text-center space-y-0.5">
-                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">رضایت مشتری (CSAT)</span>
-                          <span className="block text-[10px] text-slate-400 font-bold">از ۱۴۲ بازخورد</span>
+                          <span className="block text-2xs font-black text-slate-700 dark:text-slate-200">رضایت مشتری (CSAT)</span>
+                          <span className="block text-2xs text-slate-400 font-bold">از ۱۴۲ بازخورد</span>
                         </div>
                       </div>
 
@@ -1258,8 +1262,8 @@ export default function SupportAgentPortalView({
                       <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
                         <MetricRing value={99} color="#6366f1" />
                         <div className="text-center space-y-0.5">
-                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">پایبندی به SLA</span>
-                          <span className="block text-[10px] text-slate-400 font-bold">استاندارد عالی</span>
+                          <span className="block text-2xs font-black text-slate-700 dark:text-slate-200">پایبندی به SLA</span>
+                          <span className="block text-2xs text-slate-400 font-bold">استاندارد عالی</span>
                         </div>
                       </div>
 
@@ -1267,8 +1271,8 @@ export default function SupportAgentPortalView({
                       <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60">
                         <MetricRing value={75} color="#0ea5e9" />
                         <div className="text-center space-y-0.5">
-                          <span className="block text-[10.5px] font-black text-slate-700 dark:text-slate-200">میانگین زمان بستن</span>
-                          <span className="block text-[10px] text-slate-400 font-bold">۴۵ دقیقه</span>
+                          <span className="block text-2xs font-black text-slate-700 dark:text-slate-200">میانگین زمان بستن</span>
+                          <span className="block text-2xs text-slate-400 font-bold">۴۵ دقیقه</span>
                         </div>
                       </div>
                     </div>
@@ -1281,7 +1285,7 @@ export default function SupportAgentPortalView({
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                       <h3 className="text-xs font-black text-slate-900 dark:text-white">چک‌لیست روزانه شیفت</h3>
-                      <span className="text-[10px] text-brand-500 font-bold">
+                      <span className="text-2xs text-brand-500 font-bold">
                         {checklistDoneCount} از {checklist.length} انجام شده
                       </span>
                     </div>
@@ -1368,26 +1372,26 @@ export default function SupportAgentPortalView({
                     <div className="space-y-2.5 text-xs">
                       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 space-y-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="text-2xs font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
                             <AlertTriangle className="w-3 h-3" />
                             مهم
                           </span>
-                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">امشب ساعت ۲۴:۰۰</span>
+                          <span className="text-2xs font-bold text-slate-500 dark:text-slate-400">امشب ساعت ۲۴:۰۰</span>
                         </div>
-                        <p className="font-bold leading-relaxed text-[11px] text-slate-700 dark:text-slate-300">
+                        <p className="font-bold leading-relaxed text-xs text-slate-700 dark:text-slate-300">
                           بروزرسانی زیرساخت ابری به مدت ۱۵ دقیقه صورت می‌گیرد.
                         </p>
                       </div>
 
                       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 space-y-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 border border-brand-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="text-2xs font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 border border-brand-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
                             <Sparkles className="w-3 h-3" />
                             اطلاعیه
                           </span>
-                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">امروز ۱۰:۳۰</span>
+                          <span className="text-2xs font-bold text-slate-500 dark:text-slate-400">امروز ۱۰:۳۰</span>
                         </div>
-                        <p className="font-bold leading-relaxed text-[11px] text-slate-700 dark:text-slate-300">
+                        <p className="font-bold leading-relaxed text-xs text-slate-700 dark:text-slate-300">
                           قالب‌های جدید پاسخ آماده برای مشکلات درگاه پرداخت اضافه شد.
                         </p>
                       </div>
@@ -1412,7 +1416,7 @@ export default function SupportAgentPortalView({
                       {agentTab === 'my-tickets' ? 'تیکت‌های من' : 'صندوق ورودی تیکت‌ها'}
                     </h2>
                   </div>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-bold">
                     {agentTab === 'my-tickets'
                       ? 'تیکت‌های تخصیص‌داده‌شده به شما و در حال پیگیری'
                       : 'مشاهده، پیگیری و پاسخ‌دهی سریع به درخواست‌های پشتیبانی تحت پوشش تیم شما'}
@@ -1461,9 +1465,9 @@ export default function SupportAgentPortalView({
                   }`}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز</span>
+                    <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز</span>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalOpenTickets}</h4>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">جریان کار فعال در سیستم</span>
+                    <span className="text-2xs font-bold text-slate-400 dark:text-slate-500">جریان کار فعال در سیستم</span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
                     <Inbox className="w-5 h-5" />
@@ -1479,9 +1483,9 @@ export default function SupportAgentPortalView({
                   }`}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">در انتظار پاسخ</span>
+                    <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">در انتظار پاسخ</span>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalWaitingResponse}</h4>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">نیاز به اقدام و مانیتورینگ</span>
+                    <span className="text-2xs font-bold text-slate-400 dark:text-slate-500">نیاز به اقدام و مانیتورینگ</span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5" />
@@ -1497,9 +1501,9 @@ export default function SupportAgentPortalView({
                   }`}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">حل شده</span>
+                    <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">حل شده</span>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalResolved}</h4>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">تیکت‌های خاتمه‌یافته نهایی</span>
+                    <span className="text-2xs font-bold text-slate-400 dark:text-slate-500">تیکت‌های خاتمه‌یافته نهایی</span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-5 h-5" />
@@ -1515,9 +1519,9 @@ export default function SupportAgentPortalView({
                   }`}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">SLA در خطر</span>
+                    <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">SLA در خطر</span>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalSlaRisk}</h4>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">نیازمند پیگیری فوری</span>
+                    <span className="text-2xs font-bold text-slate-400 dark:text-slate-500">نیازمند پیگیری فوری</span>
                   </div>
                   <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
                     <AlertTriangle className="w-5 h-5" />
@@ -1639,7 +1643,7 @@ export default function SupportAgentPortalView({
                       }`}
                     >
                       <span>{c.label}</span>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                      <span className={`text-2xs font-mono px-2 py-0.5 rounded-full ${
                         isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                       }`}>
                         {c.count}
@@ -1709,7 +1713,7 @@ export default function SupportAgentPortalView({
                     <div className="hidden sm:block overflow-x-auto">
                       <table className="w-full min-w-[1100px] text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-slate-450 dark:text-slate-550 text-[10px] font-extrabold uppercase">
+                          <tr className="border-b border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-slate-450 dark:text-slate-550 text-2xs font-extrabold uppercase">
                             <th className="p-4 pr-6 w-10">
                               <input
                                 type="checkbox"
@@ -1773,7 +1777,7 @@ export default function SupportAgentPortalView({
                                     </span>
                                     {t.pinned && <Pin className="w-3 h-3 text-brand-500 fill-brand-500" />}
                                     {t.assignedToMe && (
-                                      <span className="flex items-center gap-0.5 text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0" title="به شما تخصیص داده شده">
+                                      <span className="flex items-center gap-0.5 text-3xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0" title="به شما تخصیص داده شده">
                                         <UserCheck className="w-2.5 h-2.5" />
                                         <span>من</span>
                                       </span>
@@ -1787,7 +1791,7 @@ export default function SupportAgentPortalView({
                                     <span className={`block leading-relaxed line-clamp-1 ${isUnread ? 'font-black text-slate-900 dark:text-white' : 'font-bold text-slate-900 dark:text-slate-200'}`}>
                                       {t.title}
                                     </span>
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block">
+                                    <span className="text-2xs text-slate-400 dark:text-slate-500 font-bold block">
                                       {t.customerTier} • {t.messages.length} گفتگو
                                     </span>
                                   </div>
@@ -1802,14 +1806,14 @@ export default function SupportAgentPortalView({
 
                                 {/* Product */}
                                 <td className="p-4 whitespace-nowrap">
-                                  <span className="bg-slate-100 dark:bg-slate-800/80 text-slate-650 dark:text-slate-400 px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-slate-150 dark:border-slate-700/50">
+                                  <span className="bg-slate-100 dark:bg-slate-800/80 text-slate-650 dark:text-slate-400 px-2.5 py-1 rounded-lg text-2xs font-extrabold border border-slate-150 dark:border-slate-700/50">
                                     {t.product}
                                   </span>
                                 </td>
 
                                 {/* Priority */}
                                 <td className="p-4 text-center whitespace-nowrap">
-                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${getPriorityBadge(t.priority)}`}>
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-black border ${getPriorityBadge(t.priority)}`}>
                                     <span className={`w-1.5 h-1.5 rounded-full ${
                                       t.priority === 'بحرانی' ? 'bg-rose-500' :
                                       t.priority === 'بالا' ? 'bg-orange-500' :
@@ -1821,7 +1825,7 @@ export default function SupportAgentPortalView({
 
                                 {/* Status */}
                                 <td className="p-4 text-center whitespace-nowrap">
-                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black border ${getStatusBadge(t.status)}`}>
+                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-2xs font-black border ${getStatusBadge(t.status)}`}>
                                     {t.status}
                                   </span>
                                 </td>
@@ -1850,7 +1854,7 @@ export default function SupportAgentPortalView({
                                           e.stopPropagation();
                                           acceptTicket(t.id);
                                         }}
-                                        className="px-2 py-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 rounded-lg text-[10px] font-black transition-colors cursor-pointer"
+                                        className="px-2 py-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 rounded-lg text-2xs font-black transition-colors cursor-pointer"
                                         title="پذیرش تیکت و افزودن به تیکت‌های من"
                                       >
                                         <UserPlus className="w-3.5 h-3.5" />
@@ -1873,7 +1877,7 @@ export default function SupportAgentPortalView({
                                     >
                                       <Pin className={`w-4 h-4 ${t.pinned ? 'fill-brand-500 text-brand-500' : ''}`} />
                                     </button>
-                                    <span className="flex items-center gap-1 text-[10px] font-bold text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="flex items-center gap-1 text-2xs font-bold text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                       گفتگو
                                       <MessageSquare className="w-3.5 h-3.5" />
                                     </span>
@@ -1908,9 +1912,9 @@ export default function SupportAgentPortalView({
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 {isUnread && <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />}
-                                <span className="font-mono text-[10px] font-bold text-slate-400">#{t.ticketNumber}</span>
+                                <span className="font-mono text-2xs font-bold text-slate-400">#{t.ticketNumber}</span>
                               </div>
-                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border ${getPriorityBadge(t.priority)}`}>
+                              <span className={`px-2 py-0.5 rounded-full text-3xs font-black border ${getPriorityBadge(t.priority)}`}>
                                 {t.priority}
                               </span>
                             </div>
@@ -1919,11 +1923,11 @@ export default function SupportAgentPortalView({
                               <h4 className="text-xs font-black text-slate-900 dark:text-white leading-relaxed">
                                 {t.title}
                               </h4>
-                              <p className="text-[10px] text-slate-400 font-bold">{t.customer} • {t.product}</p>
+                              <p className="text-2xs text-slate-400 font-bold">{t.customer} • {t.product}</p>
                             </div>
 
-                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
-                              <span className={`px-2 py-0.5 rounded-md text-[9px] font-black border ${getStatusBadge(t.status)}`}>
+                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-2xs">
+                              <span className={`px-2 py-0.5 rounded-md text-3xs font-black border ${getStatusBadge(t.status)}`}>
                                 {t.status}
                               </span>
                               <span className="text-slate-400 font-bold">{t.waitingTime}</span>
@@ -1951,7 +1955,7 @@ export default function SupportAgentPortalView({
                                       e.stopPropagation();
                                       acceptTicket(t.id);
                                     }}
-                                    className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 text-[10px] font-black transition-colors cursor-pointer flex items-center gap-1"
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 text-2xs font-black transition-colors cursor-pointer flex items-center gap-1"
                                     title="پذیرش تیکت و افزودن به تیکت‌های من"
                                   >
                                     <UserPlus className="w-3 h-3" />
@@ -1968,7 +1972,7 @@ export default function SupportAgentPortalView({
                                 >
                                   <Pin className={`w-4 h-4 ${t.pinned ? 'fill-brand-500 text-brand-500' : ''}`} />
                                 </button>
-                                <span className="flex items-center gap-1 text-[11px] text-brand-500 font-bold">
+                                <span className="flex items-center gap-1 text-xs text-brand-500 font-bold">
                                   گفتگو
                                   <MessageSquare className="w-3.5 h-3.5" />
                                 </span>
@@ -2144,19 +2148,19 @@ export default function SupportAgentPortalView({
 
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                             <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
-                              <span className="text-[10px] text-slate-400 font-medium block">مشتری:</span>
+                              <span className="text-2xs text-slate-400 font-medium block">مشتری:</span>
                               <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">{activeTicket.customer}</span>
                             </div>
                             <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
-                              <span className="text-[10px] text-slate-400 font-medium block">سطح حساب:</span>
+                              <span className="text-2xs text-slate-400 font-medium block">سطح حساب:</span>
                               <span className="font-extrabold text-amber-600 dark:text-amber-400">{activeTicket.customerTier}</span>
                             </div>
                             <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
-                              <span className="text-[10px] text-slate-400 font-medium block">محصول:</span>
+                              <span className="text-2xs text-slate-400 font-medium block">محصول:</span>
                               <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">{activeTicket.product}</span>
                             </div>
                             <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
-                              <span className="text-[10px] text-slate-400 font-medium block">مهلت SLA:</span>
+                              <span className="text-2xs text-slate-400 font-medium block">مهلت SLA:</span>
                               <span className="text-xs font-bold text-rose-500">{activeTicket.slaRemaining || '۱ ساعت'}</span>
                             </div>
                           </div>
@@ -2166,7 +2170,7 @@ export default function SupportAgentPortalView({
                         <div className="flex-1 p-4 space-y-3 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/30">
                           <div className="flex items-center justify-between text-xs text-slate-400 font-bold pb-1 border-b border-slate-200/50 dark:border-slate-800/50">
                             <span>تاریخچه گفتگو ({activeTicket.messages.length} پیام)</span>
-                            <span className="text-[10px]">{activeTicket.waitingTime}</span>
+                            <span className="text-2xs">{activeTicket.waitingTime}</span>
                           </div>
 
                           {activeTicket.messages.map(m => (
@@ -2184,12 +2188,12 @@ export default function SupportAgentPortalView({
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-slate-900 dark:text-white font-extrabold">{m.senderName}</span>
                                   {m.isInternalNote && (
-                                    <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded font-black">
+                                    <span className="text-2xs bg-amber-500 text-white px-1.5 py-0.2 rounded font-black">
                                       یادداشت محرمانه
                                     </span>
                                   )}
                                 </div>
-                                <span className="font-mono text-[10px] text-slate-400">{m.time}</span>
+                                <span className="font-mono text-2xs text-slate-400">{m.time}</span>
                               </div>
                               <p className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed whitespace-pre-wrap">
                                 {m.text}
@@ -2308,15 +2312,15 @@ export default function SupportAgentPortalView({
                   <div key={c.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs font-black text-slate-400">{c.id}</span>
-                      <span className="text-[10px] bg-amber-500/10 text-amber-500 font-extrabold px-2 py-0.5 rounded-full border border-amber-500/20">
+                      <span className="text-2xs bg-amber-500/10 text-amber-500 font-extrabold px-2 py-0.5 rounded-full border border-amber-500/20">
                         {c.tier}
                       </span>
                     </div>
                     <div>
                       <h3 className="font-black text-xs text-slate-900 dark:text-white">{c.name}</h3>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{c.industry} • {c.managerName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{c.industry} • {c.managerName}</p>
                     </div>
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
                       <span>تیکت‌های فعال: {c.activeTickets}</span>
                       <button
                         onClick={() => onOpenCustomerWorkspace?.(c.id)}
@@ -2350,7 +2354,7 @@ export default function SupportAgentPortalView({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {kbArticles.map(kb => (
                   <div key={kb.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+                    <div className="flex items-center justify-between text-2xs text-slate-400 font-bold">
                       <span className="bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded">{kb.category}</span>
                       <span>{kb.readTime} مطالعه</span>
                     </div>
@@ -2388,7 +2392,7 @@ export default function SupportAgentPortalView({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {savedReplies.map(sr => (
                   <div key={sr.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+                    <div className="flex items-center justify-between text-2xs text-slate-400 font-bold">
                       <span className="bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded">{sr.category}</span>
                       <span className="font-mono">{sr.id}</span>
                     </div>
@@ -2426,7 +2430,7 @@ export default function SupportAgentPortalView({
                       <span className="text-slate-500">{act.action}</span>
                       <span className="font-mono text-brand-500 font-bold">{act.ticketId}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-slate-400">{act.time}</span>
+                    <span className="font-mono text-2xs text-slate-400">{act.time}</span>
                   </div>
                 ))}
               </div>
@@ -2452,7 +2456,7 @@ export default function SupportAgentPortalView({
                 <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20 text-xs space-y-1">
                   <div className="flex items-center justify-between font-bold text-rose-600 dark:text-rose-400">
                     <span>هشدار بحرانی SLA</span>
-                    <span className="font-mono text-[10px]">۱۰ دقیقه پیش</span>
+                    <span className="font-mono text-2xs">۱۰ دقیقه پیش</span>
                   </div>
                   <p className="text-slate-700 dark:text-slate-300 font-medium">
                     تیکت TKT-1024 (پتروشیمی سپهر پارس) کمتر از ۴۵ دقیقه تا نقض SLA زمان دارد.
@@ -2474,11 +2478,11 @@ export default function SupportAgentPortalView({
                     <h2 className="text-base font-black text-slate-900 dark:text-white">{currentUserName}</h2>
                     <p className="text-xs text-slate-500 mt-0.5">{currentUserRoleLabel}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-full font-bold">{userEmail}</span>
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold ${currentUserInfo?.active === false ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                      <span className="text-2xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-full font-bold">{userEmail}</span>
+                      <span className={`text-2xs px-2.5 py-0.5 rounded-full font-bold ${currentUserInfo?.active === false ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
                         {currentUserInfo?.active === false ? 'غیرفعال' : 'فعال'}
                       </span>
-                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold text-[10px]">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold text-2xs">
                         وضعیت: {agentStatus}
                       </span>
                     </div>
@@ -2558,7 +2562,7 @@ export default function SupportAgentPortalView({
                           </div>
                           <div>
                             <div className="font-extrabold text-slate-800 dark:text-slate-200">{cmd.title}</div>
-                            <div className="text-[10px] text-slate-400 mt-0.5">{cmd.desc}</div>
+                            <div className="text-2xs text-slate-400 mt-0.5">{cmd.desc}</div>
                           </div>
                         </div>
                         <ChevronLeft className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-brand-500 transition-colors" />
@@ -2568,7 +2572,7 @@ export default function SupportAgentPortalView({
               </div>
 
               {/* Palette Footer */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400 font-bold">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-2xs text-slate-400 font-bold">
                 <div className="flex items-center gap-2">
                   <span>ناوبری: <kbd className="bg-slate-200 dark:bg-slate-800 px-1 rounded">↑↓</kbd></span>
                   <span>انتخاب: <kbd className="bg-slate-200 dark:bg-slate-800 px-1 rounded">Enter</kbd></span>
@@ -2602,7 +2606,7 @@ export default function SupportAgentPortalView({
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     دپارتمان مقصد
                   </label>
                   <select
@@ -2624,7 +2628,7 @@ export default function SupportAgentPortalView({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     پشتیبان مقصد (اختیاری)
                   </label>
                   <select
@@ -2641,12 +2645,12 @@ export default function SupportAgentPortalView({
                     ))}
                   </select>
                   {!transferDepartmentId && (
-                    <p className="text-[10px] text-slate-400 font-medium mt-1">ابتدا دپارتمان مقصد را انتخاب کنید.</p>
+                    <p className="text-2xs text-slate-400 font-medium mt-1">ابتدا دپارتمان مقصد را انتخاب کنید.</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     علت ارجاع / توضیحات فنی <span className="text-rose-500">*</span>
                   </label>
                   <textarea
@@ -2657,7 +2661,7 @@ export default function SupportAgentPortalView({
                     className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 transition-colors"
                   />
                   {!transferReason.trim() && (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-1">برای ارجاع تیکت، نوشتن علت الزامی است.</p>
+                    <p className="text-2xs text-amber-600 dark:text-amber-400 font-medium mt-1">برای ارجاع تیکت، نوشتن علت الزامی است.</p>
                   )}
                 </div>
               </div>
@@ -2702,11 +2706,11 @@ export default function SupportAgentPortalView({
               </div>
 
               <div className="space-y-3 text-xs">
-                <div className="p-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-xl border border-emerald-500/20 text-[11px] font-bold">
+                <div className="p-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-xl border border-emerald-500/20 text-xs font-bold">
                   تماس مستقیم با نماینده فنی سازمان: {activeTicket.customer}
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     شماره تماس مستقیم نماینده
                   </label>
                   <input
@@ -2783,7 +2787,7 @@ export default function SupportAgentPortalView({
                 className="space-y-3 text-xs"
               >
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     انتخاب سازمان / مشتری <span className="text-rose-500">*</span>
                   </label>
                   <select
@@ -2800,7 +2804,7 @@ export default function SupportAgentPortalView({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     محصول یا زیرسرویس مرتبط <span className="text-rose-500">*</span>
                   </label>
                   <select
@@ -2817,7 +2821,7 @@ export default function SupportAgentPortalView({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     موضوع درخواست <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -2832,7 +2836,7 @@ export default function SupportAgentPortalView({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                       اولویت پاسخگویی
                     </label>
                     <select
@@ -2847,7 +2851,7 @@ export default function SupportAgentPortalView({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                       تخصیص به پشتیبان
                     </label>
                     <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none font-bold">
@@ -2945,13 +2949,13 @@ export default function SupportAgentPortalView({
                         />
                         <span className="font-bold text-slate-900 dark:text-white">{msg.senderName}</span>
                         {msg.isInternalNote && (
-                          <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-extrabold flex items-center gap-0.5">
+                          <span className="text-2xs bg-amber-500 text-white px-1.5 py-0.5 rounded font-extrabold flex items-center gap-0.5">
                             <Lock className="w-2.5 h-2.5" />
                             <span>یادداشت محرمانه داخلی</span>
                           </span>
                         )}
                       </div>
-                      <span className="font-mono text-[11px] text-slate-400">{msg.time}</span>
+                      <span className="font-mono text-xs text-slate-400">{msg.time}</span>
                     </div>
 
                     <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-wrap">
@@ -2963,11 +2967,11 @@ export default function SupportAgentPortalView({
                         {msg.attachments.map((att, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300"
+                            className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300"
                           >
                             <Paperclip className="w-3.5 h-3.5 text-brand-500" />
                             <span>{att.name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">({att.size})</span>
+                            <span className="text-2xs text-slate-400 font-mono">({att.size})</span>
                           </div>
                         ))}
                       </div>
@@ -3003,7 +3007,7 @@ export default function SupportAgentPortalView({
                   <span className="text-xs font-black text-slate-800 dark:text-slate-200">
                     {replyMode === 'note' ? 'افزودن یادداشت داخلی (همکاران)' : 'ارسال پاسخ به مشتری'}
                   </span>
-                  <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[10px] font-bold">
+                  <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-2xs font-bold">
                     <button
                       type="button"
                       onClick={() => setReplyMode('reply')}
@@ -3090,7 +3094,7 @@ export default function SupportAgentPortalView({
 
               <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 text-xs space-y-1">
                 <p className="font-black text-rose-600 dark:text-rose-400">آیا از بستن گروهی تیکت‌های انتخاب‌شده مطمئن هستید؟</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   {selectedTicketIds.length.toLocaleString('fa-IR')} تیکت انتخاب شده به حالت «بسته شده» منتقل خواهند شد.
                 </p>
               </div>

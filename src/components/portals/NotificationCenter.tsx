@@ -329,7 +329,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
             <Clock className="w-4 h-4" />
             <span>زمان‌بندی اعلان‌ها</span>
             {notifications.filter(n => !n.read).length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-rose-500 text-white font-mono">
+              <span className="px-1.5 py-0.5 rounded-full text-2xs bg-rose-500 text-white font-mono">
                 {notifications.filter(n => !n.read).length}
               </span>
             )}
@@ -584,7 +584,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                           )}
 
                           {/* Priority Badge */}
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                          <span className={`px-2 py-0.5 rounded-full text-2xs font-black ${
                             n.priority === 'critical' ? 'bg-rose-500/10 text-rose-600' :
                             n.priority === 'important' ? 'bg-amber-500/10 text-amber-600' :
                             'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
@@ -594,7 +594,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
 
                           {/* Linked object tag */}
                           {n.linkedObject && (
-                            <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
                               <ExternalLink className="w-3 h-3 text-slate-400" />
                               <span>{n.linkedObject.type}: {n.linkedObject.name}</span>
                             </span>
@@ -605,7 +605,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                           {n.description}
                         </p>
 
-                        <div className="flex items-center gap-3 text-[10px] text-slate-400 pt-1">
+                        <div className="flex items-center gap-3 text-2xs text-slate-400 pt-1">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             <span>{n.time}</span>
@@ -675,7 +675,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                   <Activity className="w-5 h-5 text-brand-500" />
                   <h3 className="text-xs font-black text-slate-900 dark:text-white">جریان رویدادها و فعالیتهای لحظه‌ای پلتفرم</h3>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">Real-time Stream Log</span>
+                <span className="text-2xs text-slate-400 font-mono">Real-time Stream Log</span>
               </div>
 
               {/* Timeline Items */}
@@ -693,7 +693,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-black text-slate-900 dark:text-white">{act.actor}</span>
-                            <span className="text-[10px] text-slate-400 font-bold">({act.actorRole})</span>
+                            <span className="text-2xs text-slate-400 font-bold">({act.actorRole})</span>
                           </div>
                           <p className="text-xs text-slate-600 dark:text-slate-350">
                             {act.action} <b className="text-brand-600 dark:text-brand-400">{act.target}</b>
@@ -702,10 +702,10 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                       </div>
 
                       <div className="flex items-center gap-3 self-end sm:self-center">
-                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${act.badgeColor}`}>
+                        <span className={`px-2.5 py-1 rounded-lg text-2xs font-black ${act.badgeColor}`}>
                           {act.category}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-bold font-mono">
+                        <span className="text-2xs text-slate-400 font-bold font-mono">
                           {act.time}
                         </span>
                       </div>
@@ -733,7 +733,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                   <AtSign className="w-5 h-5 text-brand-500" />
                   <h3 className="text-xs font-black text-slate-900 dark:text-white">ارسال یادداشت داخلی و منشن همکاران</h3>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium">برای لیست اعضا کاراکتر @ را تایپ کنید</span>
+                <span className="text-2xs text-slate-400 font-medium">برای لیست اعضا کاراکتر @ را تایپ کنید</span>
               </div>
 
               {/* Textarea Area */}
@@ -755,7 +755,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                       exit={{ opacity: 0, y: 10 }}
                       className="absolute right-4 bottom-16 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden"
                     >
-                      <div className="p-2 bg-slate-50 dark:bg-slate-900/50 text-[10px] font-black text-slate-400 border-b border-slate-100 dark:border-slate-700">
+                      <div className="p-2 bg-slate-50 dark:bg-slate-900/50 text-2xs font-black text-slate-400 border-b border-slate-100 dark:border-slate-700">
                         انتخاب همکار جهت منشن
                       </div>
                       <div className="max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -769,7 +769,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                             >
                               <div>
                                 <h5 className="text-xs font-black text-slate-900 dark:text-white">@{member.name}</h5>
-                                <span className="text-[10px] text-slate-400">{member.role}</span>
+                                <span className="text-2xs text-slate-400">{member.role}</span>
                               </div>
                               <User className="w-4 h-4 text-brand-500" />
                             </button>
@@ -782,7 +782,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
 
               {/* Action Buttons */}
               <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                <div className="flex items-center gap-1.5 text-2xs text-slate-400">
                   <Info className="w-3.5 h-3.5 text-brand-500" />
                   <span>افراد منشن شده بلافاصله اعلان دریافت خواهند کرد.</span>
                 </div>
@@ -801,7 +801,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                 <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">تاریخچه یادداشت‌های منشن شده</h4>
                 {savedNotes.map((note) => (
                   <div key={note.id} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/50 space-y-1">
-                    <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <div className="flex items-center justify-between text-2xs text-slate-400">
                       <span className="font-bold text-slate-700 dark:text-slate-300">{note.author}</span>
                       <span>{note.time}</span>
                     </div>
@@ -824,11 +824,11 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                   <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 flex items-center justify-between">
                     <div className="space-y-0.5">
                       <h5 className="text-xs font-black text-slate-900 dark:text-white">{m.name}</h5>
-                      <span className="text-[10px] text-slate-400 block">{m.role}</span>
+                      <span className="text-2xs text-slate-400 block">{m.role}</span>
                     </div>
                     <button
                       onClick={() => handleInsertMention(m.name)}
-                      className="px-2.5 py-1 text-[10px] font-bold bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-lg cursor-pointer"
+                      className="px-2.5 py-1 text-2xs font-bold bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-lg cursor-pointer"
                     >
                       + منشن
                     </button>
@@ -886,7 +886,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                 <div className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <h4 className="text-xs font-black text-slate-900 dark:text-white">تیکت جدید (New Ticket)</h4>
-                    <p className="text-[11px] text-slate-400">ارسال اعلان هنگام ثبت تیکت جدید توسط مشتریان</p>
+                    <p className="text-xs text-slate-400">ارسال اعلان هنگام ثبت تیکت جدید توسط مشتریان</p>
                   </div>
                   <div className="flex items-center gap-6">
                     <button onClick={() => togglePref('ticketNew', 'inApp')} className="cursor-pointer text-xs font-bold flex items-center gap-1.5">
@@ -908,7 +908,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                 <div className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <h4 className="text-xs font-black text-slate-900 dark:text-white">منشن شدن نام شما (@Mention)</h4>
-                    <p className="text-[11px] text-slate-400">اطلاع‌رسانی فوری هنگام منشن شدن در تیکت‌ها یا یادداشت‌ها</p>
+                    <p className="text-xs text-slate-400">اطلاع‌رسانی فوری هنگام منشن شدن در تیکت‌ها یا یادداشت‌ها</p>
                   </div>
                   <div className="flex items-center gap-6">
                     <button onClick={() => togglePref('userMentions', 'inApp')} className="cursor-pointer text-xs font-bold flex items-center gap-1.5">
@@ -930,7 +930,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                 <div className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <h4 className="text-xs font-black text-slate-900 dark:text-white">هشدار انقضای لایسنس (License Expiry)</h4>
-                    <p className="text-[11px] text-slate-400">هشدارهای بحرانی قبل از اتمام اعتبار اعتبارنامه‌های ابری</p>
+                    <p className="text-xs text-slate-400">هشدارهای بحرانی قبل از اتمام اعتبار اعتبارنامه‌های ابری</p>
                   </div>
                   <div className="flex items-center gap-6">
                     <button onClick={() => togglePref('licenseExpiring', 'inApp')} className="cursor-pointer text-xs font-bold flex items-center gap-1.5">
@@ -987,7 +987,7 @@ export default function NotificationCenterView({ showToast, onNotificationsChang
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <div>زمان ثبت: <b className="text-slate-700 dark:text-slate-300">{expandedNotification.time}</b></div>
                   <div>اولویت: <b className="text-slate-700 dark:text-slate-300">{expandedNotification.priority}</b></div>
                 </div>

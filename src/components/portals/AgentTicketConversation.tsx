@@ -324,10 +324,10 @@ export default function AgentTicketConversation({
               <span className="font-mono text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
                 #{currentTicket.ticketNumber}
               </span>
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black border ${getPriorityBadge(currentTicket.priority)}`}>
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-2xs font-black border ${getPriorityBadge(currentTicket.priority)}`}>
                 اولویت {currentTicket.priority}
               </span>
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black border ${getStatusBadge(currentTicket.status)}`}>
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-2xs font-black border ${getStatusBadge(currentTicket.status)}`}>
                 {currentTicket.status}
               </span>
             </div>
@@ -335,7 +335,7 @@ export default function AgentTicketConversation({
               {currentTicket.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[10.5px] font-bold text-slate-400 dark:text-slate-500 pt-1">
+            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-2xs font-bold text-slate-400 dark:text-slate-500 pt-1">
               <span className="flex items-center gap-1.5"><Building className="w-4 h-4" /> {currentTicket.customer}</span>
               <span>•</span>
               <span className="flex items-center gap-1.5"><Layers className="w-4 h-4" /> {currentTicket.product}</span>
@@ -435,7 +435,7 @@ export default function AgentTicketConversation({
                 <MessageSquare className="w-4 h-4 text-brand-500" />
                 <div className="space-y-0.5">
                   <h3 className="text-xs font-black text-slate-900 dark:text-white">جریان گفتگو و پاسخ به پرونده</h3>
-                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold">
+                  <div className="flex items-center gap-1.5 text-2xs text-slate-400 font-bold">
                     <span>شناسه تیکت: #{currentTicket.id}</span>
                     <span>•</span>
                     <span>{messages.length} پیام ثبت شده</span>
@@ -462,7 +462,7 @@ export default function AgentTicketConversation({
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <MessageSquare className="w-10 h-10 text-slate-300 dark:text-slate-700 mb-2" />
                   <span className="text-xs font-black text-slate-500 dark:text-slate-400">هنوز پیامی برای این تیکت ثبت نشده است</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-bold">اولین پاسخ را از طریق بخش پایین ثبت کنید.</span>
+                  <span className="text-2xs text-slate-400 dark:text-slate-500 mt-1 font-bold">اولین پاسخ را از طریق بخش پایین ثبت کنید.</span>
                 </div>
               ) : (
                 messages.map((msg, index) => {
@@ -490,16 +490,16 @@ export default function AgentTicketConversation({
                             <div className="flex items-center gap-1.5">
                               <span className="text-xs font-black text-slate-900 dark:text-white">{msg.name}</span>
                               {isNote && (
-                                <span className="bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                                <span className="bg-amber-500 text-white text-3xs font-black px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
                                   <Lock className="w-2.5 h-2.5" />
                                   یادداشت داخلی
                                 </span>
                               )}
                             </div>
-                            <span className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold block">{msg.role}</span>
+                            <span className="text-3xs text-slate-400 dark:text-slate-500 font-bold block">{msg.role}</span>
                           </div>
                         </div>
-                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500">{msg.time}</span>
+                        <span className="text-3xs font-mono font-bold text-slate-400 dark:text-slate-500">{msg.time}</span>
                       </div>
 
                       <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-semibold whitespace-pre-line">
@@ -557,7 +557,7 @@ export default function AgentTicketConversation({
               />
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="text-[9.5px] text-slate-400 font-bold">
+                <div className="text-3xs text-slate-400 font-bold">
                   ارسال سریع پاسخ: <kbd className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono">Ctrl + Enter</kbd>
                 </div>
                 <button
@@ -604,7 +604,7 @@ export default function AgentTicketConversation({
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400 font-bold">آخرین تعامل سیستم:</span>
-                <span className="font-mono text-[10.5px] font-black text-slate-500">{currentTicket.createdAt}</span>
+                <span className="font-mono text-2xs font-black text-slate-500">{currentTicket.createdAt}</span>
               </div>
             </div>
           </div>
@@ -617,7 +617,7 @@ export default function AgentTicketConversation({
             </h3>
             <div className="space-y-4 text-xs">
               <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px] font-bold">
+                <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-400">مهلت باقیمانده:</span>
                   <span className={`${currentTicket.slaRisk ? 'text-rose-500' : 'text-emerald-500'} font-black`}>
                     {currentTicket.slaRemaining}
@@ -628,7 +628,7 @@ export default function AgentTicketConversation({
                 </div>
               </div>
               <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px] font-bold">
+                <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-400">وضعیت نهایی:</span>
                   <span className={`${currentTicket.status === 'بسته شده' ? 'text-emerald-500' : 'text-brand-500'} font-black`}>
                     {currentTicket.status}
@@ -639,7 +639,7 @@ export default function AgentTicketConversation({
                 </div>
               </div>
               {currentTicket.slaRisk && (
-                <div className="flex items-center gap-2 text-[10px] font-black text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 text-2xs font-black text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2">
                   <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
                   این تیکت در خطر نقض SLA قرار دارد.
                 </div>
@@ -655,15 +655,15 @@ export default function AgentTicketConversation({
             </h3>
             <div className="space-y-3.5 text-xs font-semibold">
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-400 block font-bold">عنوان کامل سازمان:</span>
+                <span className="text-2xs text-slate-400 block font-bold">عنوان کامل سازمان:</span>
                 <span className="text-slate-900 dark:text-white font-black">{customerInfo.name}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-400 block font-bold">سطح پشتیبانی:</span>
+                <span className="text-2xs text-slate-400 block font-bold">سطح پشتیبانی:</span>
                 <span className="text-amber-600 dark:text-amber-400 font-extrabold">{currentTicket.customerTier}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-400 block font-bold">وضعیت مشتری:</span>
+                <span className="text-2xs text-slate-400 block font-bold">وضعیت مشتری:</span>
                 <span className="text-emerald-500 font-black">{customerInfo.status || 'فعال'}</span>
               </div>
             </div>
@@ -677,15 +677,15 @@ export default function AgentTicketConversation({
             </h3>
             <div className="space-y-3.5 text-xs font-semibold">
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-400 block font-bold">سیستم نرم‌افزاری ارجاعی:</span>
+                <span className="text-2xs text-slate-400 block font-bold">سیستم نرم‌افزاری ارجاعی:</span>
                 <span className="text-slate-900 dark:text-white font-black">{productInfo.name}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-400 block font-bold">نسخه فعال نصب شده:</span>
+                <span className="text-2xs text-slate-400 block font-bold">نسخه فعال نصب شده:</span>
                 <span className="text-slate-800 dark:text-slate-200 font-mono font-black">{productInfo.version || '—'}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-400 block font-bold">وضعیت محصول:</span>
+                <span className="text-2xs text-slate-400 block font-bold">وضعیت محصول:</span>
                 <span className="text-emerald-500 font-black">{productInfo.status || 'فعال'}</span>
               </div>
             </div>
@@ -700,7 +700,7 @@ export default function AgentTicketConversation({
             <div className="relative z-0 border-r-2 border-slate-100 dark:border-slate-800 mr-2.5 space-y-5 pr-4 text-right max-h-64 overflow-y-auto">
               <div className="relative z-0">
                 <div className="absolute -right-[21px] top-1 z-20 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
-                <span className="text-[11px] font-mono text-slate-400 block font-bold">{currentTicket.createdAt || ''}</span>
+                <span className="text-xs font-mono text-slate-400 block font-bold">{currentTicket.createdAt || ''}</span>
                 <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">ثبت اولیه تیکت</span>
               </div>
               {messages.map((msg, idx) => {
@@ -710,7 +710,7 @@ export default function AgentTicketConversation({
                 return (
                   <div key={msg.id || idx} className="relative">
                     <div className={`absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full ${color} border-2 border-white dark:border-slate-900`} />
-                    <span className="text-[11px] font-mono text-slate-400 block font-bold">{msg.time || ''}</span>
+                    <span className="text-xs font-mono text-slate-400 block font-bold">{msg.time || ''}</span>
                     <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">{label}</span>
                   </div>
                 );
@@ -742,7 +742,7 @@ export default function AgentTicketConversation({
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     دپارتمان مقصد
                   </label>
                   <select
@@ -764,7 +764,7 @@ export default function AgentTicketConversation({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     پشتیبان مقصد (اختیاری)
                   </label>
                   <select
@@ -783,7 +783,7 @@ export default function AgentTicketConversation({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                     علت ارجاع / توضیحات فنی <span className="text-rose-500">*</span>
                   </label>
                   <textarea
@@ -838,7 +838,7 @@ export default function AgentTicketConversation({
 
               <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 text-xs space-y-1">
                 <p className="font-black text-rose-600 dark:text-rose-400">آیا از بستن این تیکت مطمئن هستید؟</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">با بستن تیکت، چرخه پشتیبانی این درخواست به پایان می‌رسد.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">با بستن تیکت، چرخه پشتیبانی این درخواست به پایان می‌رسد.</p>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">

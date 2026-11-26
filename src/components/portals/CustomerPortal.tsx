@@ -478,7 +478,7 @@ export default function CustomerPortalView({
               {!sidebarCollapsed && (
                 <div className="truncate">
                   <h1 className="text-xs font-black text-slate-900 dark:text-white truncate">سامانه ابری مدیریت مشتریان</h1>
-                  <span className="text-[10px] text-brand-600 dark:text-brand-400 font-extrabold bg-brand-500/10 px-1.5 py-0.5 rounded border border-brand-500/20 block mt-0.5 w-fit">
+                  <span className="text-2xs text-brand-600 dark:text-brand-400 font-extrabold bg-brand-500/10 px-1.5 py-0.5 rounded border border-brand-500/20 block mt-0.5 w-fit">
                     پرتال مشتریان سازمانی
                   </span>
                 </div>
@@ -562,8 +562,23 @@ export default function CustomerPortalView({
           </nav>
         </div>
 
-        {/* Sidebar Footer: Portal Switcher & Logout */}
+        {/* Sidebar Footer: User Profile, Portal Switcher & Logout */}
         <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2 sticky bottom-5">
+          {!sidebarCollapsed ? (
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2.5 text-right">
+              <div className="w-9 h-9 rounded-full bg-brand-500 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-md shadow-brand-500/20">
+                {customerName ? customerName.trim().charAt(0) : '؟'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{customerName}</h4>
+                <p className="text-2xs text-slate-400 dark:text-slate-500 truncate">{userEmail}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-9 h-9 mx-auto rounded-full bg-brand-500 text-white font-black text-xs flex items-center justify-center shadow-md shadow-brand-500/20" title={`${customerName} - ${userEmail}`}>
+              {customerName ? customerName.trim().charAt(0) : '؟'}
+            </div>
+          )}
           {/* Logout Button */}
           <button
             onClick={onLogout}
@@ -596,20 +611,7 @@ export default function CustomerPortalView({
                 {activeTab === 'docs' && 'مستندات و پایگاه دانش سازمانی'}
                 {activeTab === 'profile' && 'شناسنامه و مشخصات سازمان'}
               </h2>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">{customerName} ({tierLabel[customerTier] || 'مشتری سازمانی'})</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Customer User Profile Badge */}
-            <div className="flex items-center gap-2.5 pr-3 border-r border-slate-200 dark:border-slate-800">
-              <div className="w-8 h-8 rounded-full bg-brand-500 text-white font-black text-xs flex items-center justify-center shadow-md shadow-brand-500/20">
-                پ‌س
-              </div>
-              <div className="hidden sm:block text-right">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">{userEmail}</span>
-                <span className="text-[9px] text-emerald-500 font-bold block">مستندسازی و نماینده ارشد</span>
-              </div>
+              <span className="text-2xs text-slate-400 dark:text-slate-500">{customerName} ({tierLabel[customerTier] || 'مشتری سازمانی'})</span>
             </div>
           </div>
         </header>
@@ -627,11 +629,11 @@ export default function CustomerPortalView({
                     {customerName} — {tierLabel[customerTier] || 'مشتری سازمانی'}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="text-[10px] bg-white/10 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+                    <span className="text-2xs bg-white/10 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       پشتیبانی ۲۴/۷
                     </span>
-                    <span className="text-[10px] bg-white/10 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+                    <span className="text-2xs bg-white/10 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
                       <Headphones className="w-3 h-3" />
                       تیم پاسخگویی فنی
                     </span>
@@ -647,14 +649,14 @@ export default function CustomerPortalView({
                 >
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">تیکت‌های باز</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">تیکت‌های باز</span>
                       <h4 className="text-2xl font-black text-slate-900 dark:text-white">{openTickets.toLocaleString('fa-IR')}</h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                       <TicketIcon className="w-5 h-5" />
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-medium mt-2 block">در مجموع {totalTickets.toLocaleString('fa-IR')} تیکت</span>
+                  <span className="text-2xs text-slate-400 font-medium mt-2 block">در مجموع {totalTickets.toLocaleString('fa-IR')} تیکت</span>
                 </button>
 
                 <button
@@ -663,14 +665,14 @@ export default function CustomerPortalView({
                 >
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">منتظر پاسخ</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">منتظر پاسخ</span>
                       <h4 className="text-2xl font-black text-slate-900 dark:text-white">{awaitingCustomer.toLocaleString('fa-IR')}</h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                       <Clock className="w-5 h-5" />
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-medium mt-2 block">نیاز به پیگیری</span>
+                  <span className="text-2xs text-slate-400 font-medium mt-2 block">نیاز به پیگیری</span>
                 </button>
 
                 <button
@@ -679,14 +681,14 @@ export default function CustomerPortalView({
                 >
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">حل شده</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">حل شده</span>
                       <h4 className="text-2xl font-black text-slate-900 dark:text-white">{resolvedTickets.toLocaleString('fa-IR')}</h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                       <CheckCircle2 className="w-5 h-5" />
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-medium mt-2 block">درخواست‌های تکمیل‌شده</span>
+                  <span className="text-2xs text-slate-400 font-medium mt-2 block">درخواست‌های تکمیل‌شده</span>
                 </button>
 
                 <button
@@ -695,14 +697,14 @@ export default function CustomerPortalView({
                 >
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">محصولات فعال</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">محصولات فعال</span>
                       <h4 className="text-2xl font-black text-slate-900 dark:text-white">{activeProductsCount.toLocaleString('fa-IR')}</h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
                       <Layers className="w-5 h-5" />
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-medium mt-2 block">
+                  <span className="text-2xs text-slate-400 font-medium mt-2 block">
                     {licenseExpiring > 0 ? `${licenseExpiring.toLocaleString('fa-IR')} مورد در معرض انقضا` : 'همه لایسنس‌ها فعال'}
                   </span>
                 </button>
@@ -721,7 +723,7 @@ export default function CustomerPortalView({
                       <select
                         value={recentTicketsLimit}
                         onChange={(e) => setRecentTicketsLimit(Number(e.target.value))}
-                        className="text-[10px] font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                        className="text-2xs font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         style={{ colorScheme: 'dark' }}
                         title="تعداد تیکت‌های نمایش داده شده"
                       >
@@ -754,7 +756,7 @@ export default function CustomerPortalView({
                     <div className="overflow-auto max-h-[400px]">
                       <table className="w-full text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-[10px] font-bold sticky top-0 bg-white dark:bg-slate-900">
+                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-2xs font-bold sticky top-0 bg-white dark:bg-slate-900">
                             <th className="p-4 pr-5">موضوع تیکت</th>
                             <th className="p-4">محصول</th>
                             <th className="p-4">اولویت</th>
@@ -784,7 +786,7 @@ export default function CustomerPortalView({
                               </td>
                               <td className="p-4 text-slate-500 dark:text-slate-400 max-w-[120px] truncate">{tkt.product}</td>
                               <td className="p-4">
-                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
                                   tkt.priority === 'بحرانی' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
                                   tkt.priority === 'بالا' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
                                   tkt.priority === 'متوسط' ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400' :
@@ -800,7 +802,7 @@ export default function CustomerPortalView({
                                 </span>
                               </td>
                               <td className="p-4">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold ${
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
                                   tkt.status === 'حل شده' || tkt.status === 'بسته شده' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
                                   tkt.status === 'باز' || tkt.status === 'جدید' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
                                   tkt.status === 'در حال بررسی' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
@@ -861,9 +863,9 @@ export default function CustomerPortalView({
                             <span className="w-7 h-7 rounded-lg bg-brand-500/10 text-brand-500 flex items-center justify-center shrink-0">
                               <Layers className="w-3.5 h-3.5" />
                             </span>
-                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-200 truncate">{prd.name}</span>
+                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">{prd.name}</span>
                           </div>
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                          <span className={`text-3xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
                             prd.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
                           }`}>
                             {prd.status}
@@ -873,7 +875,7 @@ export default function CustomerPortalView({
                     </div>
                     <button
                       onClick={() => setActiveTab('products')}
-                      className="w-full text-center text-[10px] font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+                      className="w-full text-center text-2xs font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                     >
                       مشاهده همه محصولات و لایسنس‌ها
                     </button>
@@ -892,7 +894,7 @@ export default function CustomerPortalView({
                     <Layers className="w-4.5 h-4.5 text-brand-500" />
                     محصولات و لایسنس‌های فعال سازمان
                   </h3>
-                  <p className="text-[11px] text-slate-400 font-bold">
+                  <p className="text-xs text-slate-400 font-bold">
                     {customerConnections.length > 0
                       ? `${customerConnections.length.toLocaleString('fa-IR')} لایسنس فعال در سامانه برای ${customerName}`
                       : 'لایسنس‌های اختصاصی سازمان شما'}
@@ -916,7 +918,7 @@ export default function CustomerPortalView({
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-12 text-center space-y-2">
                   <Layers className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto" />
                   <p className="text-xs font-black text-slate-500 dark:text-slate-400">هیچ محصول فعالی برای سازمان شما ثبت نشده است</p>
-                  <p className="text-[10px] text-slate-400 font-bold">برای ثبت لایسنس جدید با تیم فروش و لایسنسینگ تماس بگیرید.</p>
+                  <p className="text-2xs text-slate-400 font-bold">برای ثبت لایسنس جدید با تیم فروش و لایسنسینگ تماس بگیرید.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -931,10 +933,10 @@ export default function CustomerPortalView({
                             </span>
                             <div className="min-w-0">
                               <h3 className="text-xs font-black text-slate-900 dark:text-white truncate">{prd.name}</h3>
-                              <span className="text-[9px] font-bold text-slate-400">{prd.version}</span>
+                              <span className="text-3xs font-bold text-slate-400">{prd.version}</span>
                             </div>
                           </div>
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                          <span className={`text-3xs font-bold px-2 py-0.5 rounded-full border shrink-0 ${
                             prd.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                             prd.status === 'منقضی شده' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                             'bg-amber-500/10 text-amber-500 border-amber-500/20'
@@ -944,23 +946,23 @@ export default function CustomerPortalView({
                         </div>
 
                         <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800">
-                          <span className="text-[9px] text-slate-400 font-bold block mb-0.5">کلید فعال‌سازی</span>
-                          <code className="text-[10px] font-mono font-bold text-brand-600 dark:text-brand-400 dir-ltr block truncate">{prd.licenseKey}</code>
+                          <span className="text-3xs text-slate-400 font-bold block mb-0.5">کلید فعال‌سازی</span>
+                          <code className="text-2xs font-mono font-bold text-brand-600 dark:text-brand-400 dir-ltr block truncate">{prd.licenseKey}</code>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-600 dark:text-slate-400 font-medium">
+                        <div className="grid grid-cols-2 gap-2 text-2xs text-slate-600 dark:text-slate-400 font-medium">
                           <div className="space-y-0.5">
-                            <span className="text-[9px] text-slate-400 block">انقضای لایسنس</span>
+                            <span className="text-3xs text-slate-400 block">انقضای لایسنس</span>
                             <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{prd.expiresAt}</span>
                           </div>
                           <div className="space-y-0.5">
-                            <span className="text-[9px] text-slate-400 block">سهمیه کاربر</span>
+                            <span className="text-3xs text-slate-400 block">سهمیه کاربر</span>
                             <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{prd.userQuota}</span>
                           </div>
                         </div>
 
                         {conn?.subscriptionType && (
-                          <div className="flex items-center gap-1.5 text-[9px] text-slate-500 dark:text-slate-400 font-bold">
+                          <div className="flex items-center gap-1.5 text-3xs text-slate-500 dark:text-slate-400 font-bold">
                             <Calendar className="w-3 h-3 text-brand-500 shrink-0" />
                             <span>نوع اشتراک: {conn.subscriptionType}</span>
                           </div>
@@ -969,7 +971,7 @@ export default function CustomerPortalView({
                         <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
                           <button
                             onClick={() => { setActiveTab('create-ticket'); setTicketProduct(prd.name); }}
-                            className="text-[10px] font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
+                            className="text-2xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
                           >
                             <Headphones className="w-3 h-3" />
                             <span>درخواست پشتیبانی</span>
@@ -1077,7 +1079,7 @@ export default function CustomerPortalView({
                     <TicketIcon className="w-4.5 h-4.5 text-brand-500" />
                     پیگیری تیکت‌های پشتیبانی
                   </h3>
-                  <p className="text-[11px] text-slate-400 font-bold">تاریخچه درخواست‌های پشتیبانی شما</p>
+                  <p className="text-xs text-slate-400 font-bold">تاریخچه درخواست‌های پشتیبانی شما</p>
                 </div>
                 <button
                   onClick={() => setActiveTab('create-ticket')}
@@ -1099,7 +1101,7 @@ export default function CustomerPortalView({
                   }`}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block">کل تیکت‌ها</span>
+                    <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block">کل تیکت‌ها</span>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{totalTickets.toLocaleString('fa-IR')}</h4>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
@@ -1116,7 +1118,7 @@ export default function CustomerPortalView({
                   }`}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block">در حال بررسی</span>
+                    <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block">در حال بررسی</span>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{customerTickets.filter(t => t.status === 'در حال بررسی').length.toLocaleString('fa-IR')}</h4>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -1133,7 +1135,7 @@ export default function CustomerPortalView({
                   }`}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block">حل شده</span>
+                    <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block">حل شده</span>
                     <h4 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{customerTickets.filter(t => t.status === 'حل شده' || t.status === 'بسته شده').length.toLocaleString('fa-IR')}</h4>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
@@ -1220,7 +1222,7 @@ export default function CustomerPortalView({
                   <div className="p-12 text-center space-y-2">
                     <TicketIcon className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto" />
                     <p className="text-xs font-black text-slate-500 dark:text-slate-400">تیکتی یافت نشد</p>
-                    <p className="text-[10px] text-slate-400 font-bold">فیلترها را تغییر دهید یا تیکت جدیدی ثبت کنید.</p>
+                    <p className="text-2xs text-slate-400 font-bold">فیلترها را تغییر دهید یا تیکت جدیدی ثبت کنید.</p>
                     <button
                       onClick={() => setActiveTab('create-ticket')}
                       className="mt-3 px-4 py-2 bg-brand-500 text-white text-xs font-bold rounded-xl cursor-pointer"
@@ -1233,7 +1235,7 @@ export default function CustomerPortalView({
                     <div className="overflow-x-auto">
                       <table className="w-full text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-[10px] font-bold bg-slate-50/50 dark:bg-slate-950/30">
+                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-2xs font-bold bg-slate-50/50 dark:bg-slate-950/30">
                             <th className="p-4 pr-5">شماره / موضوع</th>
                             <th className="p-4">محصول</th>
                             <th className="p-4">اولویت</th>
@@ -1254,7 +1256,7 @@ export default function CustomerPortalView({
                               </td>
                               <td className="p-4 text-slate-500 dark:text-slate-400 max-w-[120px] truncate">{tkt.product}</td>
                               <td className="p-4">
-                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
                                   tkt.priority === 'بحرانی' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
                                   tkt.priority === 'بالا' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
                                   tkt.priority === 'متوسط' ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400' :
@@ -1270,7 +1272,7 @@ export default function CustomerPortalView({
                                 </span>
                               </td>
                               <td className="p-4">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold ${
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
                                   tkt.status === 'حل شده' || tkt.status === 'بسته شده' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
                                   tkt.status === 'باز' || tkt.status === 'جدید' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
                                   tkt.status === 'در حال بررسی' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
@@ -1362,7 +1364,7 @@ export default function CustomerPortalView({
               ].map((doc, idx) => (
                 <div key={idx} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
                   <doc.icon className="w-8 h-8 text-brand-500" />
-                  <span className="text-[10px] font-bold text-slate-400 block">{doc.category}</span>
+                  <span className="text-2xs font-bold text-slate-400 block">{doc.category}</span>
                   <h4 className="text-xs font-black text-slate-900 dark:text-white leading-relaxed">{doc.title}</h4>
                   <button onClick={() => showToast(`مستندات «${doc.title}» در حال باز شدن است.`)} className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 pt-2 cursor-pointer">
                     <span>مطالعه مستندات</span>
@@ -1476,7 +1478,7 @@ export default function CustomerPortalView({
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                       <div className="space-y-0.5">
                         <h3 className="text-sm font-black text-slate-900 dark:text-white">گفتگو با تیم پشتیبانی</h3>
-                        <span className="block text-[10px] text-slate-400 font-bold">
+                        <span className="block text-2xs text-slate-400 font-bold">
                           {activeActionTicket.ticketNumber ? `#${activeActionTicket.ticketNumber}` : activeActionTicket.id} • {activeActionTicket.subject}
                         </span>
                       </div>
@@ -1504,7 +1506,7 @@ export default function CustomerPortalView({
                         <div className="flex flex-col items-center justify-center h-full text-center">
                           <MessageSquare className="w-8 h-8 text-slate-300 dark:text-slate-700 mb-2" />
                           <span className="text-xs font-black text-slate-500 dark:text-slate-400">هنوز پیامی در این تیکت ثبت نشده است</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-1">اولین پیام خود را بنویسید.</span>
+                          <span className="text-2xs text-slate-400 font-bold mt-1">اولین پیام خود را بنویسید.</span>
                         </div>
                       ) : (
                         ticketThread.map(msg => {
@@ -1516,9 +1518,9 @@ export default function CustomerPortalView({
                                   ? 'bg-brand-500/10 border-brand-500/20'
                                   : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-sm'
                               }`}>
-                                <span className="text-[11px] font-black text-slate-900 dark:text-white">{msg.senderName}</span>
+                                <span className="text-xs font-black text-slate-900 dark:text-white">{msg.senderName}</span>
                                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-wrap">{msg.text}</p>
-                                <span className="block text-[9px] font-mono text-slate-400">{msg.time}</span>
+                                <span className="block text-3xs font-mono text-slate-400">{msg.time}</span>
                               </div>
                             </div>
                           );
@@ -1559,7 +1561,7 @@ export default function CustomerPortalView({
                     </div>
                     <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs space-y-1">
                       <p className="font-black text-slate-800 dark:text-slate-200">آیا از حل‌شدن مشکل خود مطمئن هستید؟</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">با تایید، این تیکت به‌عنوان «حل شده» علامت‌گذاری شده و در وضعیت نهایی قرار می‌گیرد.</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">با تایید، این تیکت به‌عنوان «حل شده» علامت‌گذاری شده و در وضعیت نهایی قرار می‌گیرد.</p>
                     </div>
                     <div className="flex items-center justify-end gap-2 pt-2">
                       <button onClick={() => { setTicketAction(null); setActiveActionTicket(null); }} className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold cursor-pointer">
@@ -1583,7 +1585,7 @@ export default function CustomerPortalView({
                     </div>
                     <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 text-xs space-y-1">
                       <p className="font-black text-rose-600 dark:text-rose-400">آیا از حذف این تیکت مطمئن هستید؟</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">این عملیات غیرقابل بازگشت است و تمام پیام‌های مرتبط با تیکت نیز حذف خواهند شد.</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">این عملیات غیرقابل بازگشت است و تمام پیام‌های مرتبط با تیکت نیز حذف خواهند شد.</p>
                     </div>
                     <div className="flex items-center justify-end gap-2 pt-2">
                       <button onClick={() => { setTicketAction(null); setActiveActionTicket(null); }} className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold cursor-pointer">

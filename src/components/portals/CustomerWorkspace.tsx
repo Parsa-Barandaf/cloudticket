@@ -320,10 +320,10 @@ export default function CustomerWorkspaceView({
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
                 <h2 className="text-xl font-black text-slate-900 dark:text-white leading-none">{c.name}</h2>
-                <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/25">
+                <span className="text-2xs font-extrabold px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/25">
                   {c.tier}
                 </span>
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                <span className={`text-2xs font-bold px-2.5 py-1 rounded-full ${
                   c.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'
                 }`}>
                   {c.status || 'فعال'}
@@ -391,9 +391,9 @@ export default function CustomerWorkspaceView({
         {/* KPI CARD 1: ACTIVE PRODUCTS */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">محصولات فعال سازمان</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">محصولات فعال سازمان</span>
             <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{c.activeProductsCount || connections.length}</h4>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">لایسنس‌های معتبر ابری</span>
+            <span className="text-2xs font-bold text-slate-400 dark:text-slate-500">لایسنس‌های معتبر ابری</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
             <Layers className="w-5 h-5" />
@@ -403,9 +403,9 @@ export default function CustomerWorkspaceView({
         {/* KPI CARD 2: ACTIVE USERS LIMIT */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تعداد کل کاربران</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تعداد کل کاربران</span>
             <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{c.usersCount || customerWorkspaceUsers.length}</h4>
-            <span className="text-[10px] font-bold text-emerald-650 dark:text-emerald-400 flex items-center gap-1 font-sans">
+            <span className="text-2xs font-bold text-emerald-650 dark:text-emerald-400 flex items-center gap-1 font-sans">
               <UserCheck className="w-3.5 h-3.5" />
               <span>تمامی حساب‌ها فعال</span>
             </span>
@@ -418,9 +418,9 @@ export default function CustomerWorkspaceView({
         {/* KPI CARD 3: ACTIVE TICKETS */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز جاری</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز جاری</span>
             <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{matchesTickets.length}</h4>
-            <span className="text-[10px] font-bold text-rose-650 dark:text-rose-450">نیازمند اقدام فوری</span>
+            <span className="text-2xs font-bold text-rose-650 dark:text-rose-450">نیازمند اقدام فوری</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center shrink-0">
             <Inbox className="w-5 h-5" />
@@ -430,9 +430,9 @@ export default function CustomerWorkspaceView({
         {/* KPI CARD 4: SUBSCRIPTION EXPIRY */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs relative overflow-hidden group hover:border-brand-500/30 transition-all duration-200">
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">انقضای نزدیک‌ترین سرویس</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">انقضای نزدیک‌ترین سرویس</span>
             <h4 className="text-lg font-black text-slate-900 dark:text-white font-mono leading-none mt-1">۱۴۰۵/۰۴/۱۵</h4>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">پلتفرم مدیریت ابری</span>
+            <span className="text-2xs font-bold text-slate-400 dark:text-slate-500">پلتفرم مدیریت ابری</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
@@ -469,7 +469,7 @@ export default function CustomerWorkspaceView({
                   <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-brand-500' : 'text-slate-400'}`} />
                   <span>{t.label}</span>
                   {t.count !== undefined && (
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                    <span className={`text-2xs font-mono px-2 py-0.5 rounded-full ${
                       isActive ? 'bg-brand-500/10 text-brand-500 font-extrabold' : 'bg-slate-200/60 dark:bg-slate-800 text-slate-500'
                     }`}>
                       {t.count}
@@ -503,23 +503,23 @@ export default function CustomerWorkspaceView({
 
                   <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs text-slate-750 dark:text-slate-300">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">نام ثبتی شرکت</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">نام ثبتی شرکت</span>
                       <span className="font-bold text-slate-900 dark:text-white">{c.name}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">نام تجاری سیستم</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">نام تجاری سیستم</span>
                       <span className="font-bold text-slate-900 dark:text-white">{c.commercialName || 'توسعه امنیت آریا'}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">صنعت و حوزه تخصصی</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">صنعت و حوزه تخصصی</span>
                       <span className="font-bold text-slate-900 dark:text-white">{c.industry}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">تلفن تماس مرکزی</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">تلفن تماس مرکزی</span>
                       <span className="font-bold text-slate-900 dark:text-white font-mono">{c.phone || '۰۲۱-۸۸۲۲۳۳۹۹'}</span>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">وب‌سایت رسمی سازمان</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">وب‌سایت رسمی سازمان</span>
                       <a 
                         href={`https://${c.website || 'www.ariasecurity.ir'}`} 
                         target="_blank" 
@@ -531,7 +531,7 @@ export default function CustomerWorkspaceView({
                       </a>
                     </div>
                     <div className="col-span-2 border-t border-slate-100 dark:border-slate-800/80 pt-3">
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">آدرس دفتر مرکزی سازمان</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">آدرس دفتر مرکزی سازمان</span>
                       <div className="flex items-start gap-2 text-slate-600 dark:text-slate-300">
                         <MapPin className="w-4.5 h-4.5 text-slate-400 shrink-0 mt-0.5" />
                         <span className="font-bold leading-relaxed">{c.address || 'تهران، پارک فناوری پردیس، خیابان نوآوری ۱۲، برج فناوری '}</span>
@@ -549,23 +549,23 @@ export default function CustomerWorkspaceView({
 
                   <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs text-slate-750 dark:text-slate-300">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">نام و نام خانوادگی رابط</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">نام و نام خانوادگی رابط</span>
                       <span className="font-bold text-slate-900 dark:text-white">{c.managerName || 'مهندس آرش کریمی'}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">سمت اداری سازمان</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">سمت اداری سازمان</span>
                       <span className="font-bold text-slate-900 dark:text-white">رئیس دپارتمان امنیت اطلاعات</span>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">ایمیل رسمی مکاتبات فنی</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">ایمیل رسمی مکاتبات فنی</span>
                       <span className="font-bold text-slate-900 dark:text-white font-mono block select-all">{c.managerEmail || 'a.karimi@ariasecurity.ir'}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">شماره تماس مستقیم</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">شماره تماس مستقیم</span>
                       <span className="font-bold text-slate-900 dark:text-white font-mono">{c.managerPhone || '۰۹۱۲۷۷۷۸۸۹۹'}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-1">سطح احراز هویت</span>
+                      <span className="text-2xs font-bold text-slate-400 dark:text-slate-500 block mb-1">سطح احراز هویت</span>
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                         <Shield className="w-4.5 h-4.5 text-emerald-500" />
                         <span>تایید شده (سطح ۱)</span>
@@ -661,7 +661,7 @@ export default function CustomerWorkspaceView({
                   <div className="overflow-x-auto">
                     <table className="w-full text-right border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-2xs font-extrabold uppercase">
                           <th className="p-4 pr-6 w-10">
                             <input
                               type="checkbox"
@@ -701,12 +701,12 @@ export default function CustomerWorkspaceView({
                                 </td>
                                 <td className="p-4">
                                   <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${conn.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center font-bold text-white text-[10px] shrink-0 shadow-xs`}>
+                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${conn.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center font-bold text-white text-2xs shrink-0 shadow-xs`}>
                                       {conn.logoInitials || conn.productName?.substring(0, 2)}
                                     </div>
                                     <div className="space-y-0.5">
                                       <span className="font-bold text-slate-900 dark:text-white">{conn.productName || conn.customerName}</span>
-                                      <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block">{conn.productId}</span>
+                                      <span className="text-3xs font-mono text-slate-400 dark:text-slate-500 block">{conn.productId}</span>
                                     </div>
                                   </div>
                                 </td>
@@ -723,7 +723,7 @@ export default function CustomerWorkspaceView({
                                   {conn.endDate || '—'}
                                 </td>
                                 <td className="p-4">
-                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                  <span className={`text-2xs font-black px-2 py-0.5 rounded-full ${
                                     conn.licenseStatus === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : conn.licenseStatus === 'منقضی شده' ? 'bg-rose-500/10 text-rose-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
                                   }`}>
                                     {conn.licenseStatus || '—'}
@@ -743,7 +743,7 @@ export default function CustomerWorkspaceView({
                                         showWorkspaceToast('خطا در تغییر وضعیت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
                                       }
                                     }}
-                                    className="text-[10px] text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline font-bold cursor-pointer"
+                                    className="text-2xs text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:underline font-bold cursor-pointer"
                                   >
                                     {conn.licenseStatus === 'فعال' ? 'تعلیق موقت' : 'فعال‌سازی'}
                                   </button>
@@ -789,7 +789,7 @@ export default function CustomerWorkspaceView({
                   <div className="overflow-x-auto">
                     <table className="w-full text-right border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-2xs font-extrabold uppercase">
                           <th className="p-4 pr-6">نام کاربر</th>
                           <th className="p-4">پست الکترونیکی</th>
                           <th className="p-4">نقش دسترسی</th>
@@ -802,7 +802,7 @@ export default function CustomerWorkspaceView({
                         {customerWorkspaceUsers.map((u) => (
                           <tr key={u.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-all duration-150">
                             <td className="p-4 pr-6 font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-[10px] font-sans shadow-xs">
+                              <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-2xs font-sans shadow-xs">
                                 {u.name.substring(0, 2)}
                               </div>
                               <span>{u.name}</span>
@@ -811,7 +811,7 @@ export default function CustomerWorkspaceView({
                               {u.email}
                             </td>
                             <td className="p-4">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                              <span className={`text-2xs font-bold px-2 py-0.5 rounded-md ${
                                 u.role === 'مدیر' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'
                               }`}>
                                 {u.role}
@@ -821,7 +821,7 @@ export default function CustomerWorkspaceView({
                               {u.lastLogin}
                             </td>
                             <td className="p-4">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${
                                 u.status === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
                               }`}>
                                 {u.status}
@@ -842,7 +842,7 @@ export default function CustomerWorkspaceView({
                                     showWorkspaceToast('خطا در تغییر وضعیت: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
                                   }
                                 }}
-                                className="text-[10px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold cursor-pointer"
+                                className="text-2xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold cursor-pointer"
                               >
                                 {u.status === 'فعال' ? 'غیرفعال‌سازی' : 'فعال‌سازی'}
                               </button>
@@ -856,7 +856,7 @@ export default function CustomerWorkspaceView({
                                     showWorkspaceToast('خطا در حذف کاربر: ' + ((err as Error).message || 'خطای ناشناخته'), 'error');
                                   }
                                 }}
-                                className="text-[10px] text-rose-500 hover:text-rose-650 font-bold cursor-pointer"
+                                className="text-2xs text-rose-500 hover:text-rose-650 font-bold cursor-pointer"
                               >
                                 حذف دسترسی
                               </button>
@@ -900,7 +900,7 @@ export default function CustomerWorkspaceView({
                   <div className="overflow-x-auto">
                     <table className="w-full text-right border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                        <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-2xs font-extrabold uppercase">
                           <th className="p-4 pr-6">شناسه / عنوان تیکت فنی</th>
                           <th className="p-4">محصول مرتبط</th>
                           <th className="p-4 text-center">اولویت</th>
@@ -922,14 +922,14 @@ export default function CustomerWorkspaceView({
                                   }}>
                                     {t.title}
                                   </span>
-                                  <span className="text-[9px] font-mono font-bold text-slate-400">{t.id}</span>
+                                  <span className="text-3xs font-mono font-bold text-slate-400">{t.id}</span>
                                 </div>
                               </td>
                               <td className="p-4 text-slate-600 dark:text-slate-400 font-bold">
                                 {t.product}
                               </td>
                               <td className="p-4 text-center">
-                                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                                <span className={`text-2xs font-black px-2.5 py-0.5 rounded-full ${
                                   t.priority === 'بحرانی' ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' :
                                   t.priority === 'بالا' ? 'bg-orange-500/15 text-orange-600 dark:text-orange-400' :
                                   t.priority === 'متوسط' ? 'bg-blue-500/15 text-blue-600' :
@@ -945,7 +945,7 @@ export default function CustomerWorkspaceView({
                                 {t.date}
                               </td>
                               <td className="p-4 text-center">
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                                <span className={`text-2xs font-black px-2 py-0.5 rounded-md ${
                                   t.status === 'باز' ? 'bg-rose-500/10 text-rose-500' :
                                   t.status === 'در حال بررسی' ? 'bg-amber-500/10 text-amber-500' :
                                   t.status === 'منتظر پاسخ مشتری' ? 'bg-blue-500/10 text-blue-500' :
@@ -960,7 +960,7 @@ export default function CustomerWorkspaceView({
                                     setActiveTab('tickets');
                                     setTicketSearch(t.id);
                                   }}
-                                  className="text-[10px] text-brand-600 hover:text-brand-700 dark:text-brand-400 font-bold cursor-pointer"
+                                  className="text-2xs text-brand-600 hover:text-brand-700 dark:text-brand-400 font-bold cursor-pointer"
                                 >
                                   ورود به تیکت
                                 </button>
@@ -1006,15 +1006,15 @@ export default function CustomerWorkspaceView({
                     <div key={conn.id} className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-150 dark:border-slate-800 rounded-2xl p-5 space-y-4">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${conn.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-xs`}>
+                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${conn.logoColor || 'from-blue-500 to-indigo-600'} flex items-center justify-center text-white text-2xs font-black shrink-0 shadow-xs`}>
                             {conn.logoInitials || 'PR'}
                           </div>
                           <div className="space-y-0.5">
                             <h4 className="text-xs font-black text-slate-900 dark:text-white">{conn.productName || conn.customerName}</h4>
-                            <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">منقضی در {conn.endDate || '—'}</span>
+                            <span className="text-3xs font-mono text-slate-400 dark:text-slate-500">منقضی در {conn.endDate || '—'}</span>
                           </div>
                         </div>
-                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
+                        <span className={`text-3xs font-black px-2 py-0.5 rounded-full ${
                           conn.licenseStatus === 'فعال' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
                         }`}>
                           {conn.licenseStatus}
@@ -1038,7 +1038,7 @@ export default function CustomerWorkspaceView({
                         </button>
                       </div>
 
-                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-3">
+                      <div className="flex justify-between items-center text-2xs font-bold text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-3">
                         <span>ظرفیت اختصاصی: {conn.userCount} کاربر همزمان</span>
                         <button 
                           onClick={async () => {
@@ -1090,9 +1090,9 @@ export default function CustomerWorkspaceView({
                       
                       <div className="space-y-0.5">
                         <h4 className="text-xs font-black text-slate-900 dark:text-white">{act.title}</h4>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{act.subtitle}</span>
+                        <span className="text-2xs text-slate-400 dark:text-slate-500 font-semibold">{act.subtitle}</span>
                       </div>
-                      <span className="text-[10px] font-mono font-black text-slate-400 shrink-0">{act.time}</span>
+                      <span className="text-2xs font-mono font-black text-slate-400 shrink-0">{act.time}</span>
                     </div>
                   ))}
                 </div>
@@ -1115,7 +1115,7 @@ export default function CustomerWorkspaceView({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">نوع اولویت‌دهی تیکت‌های سازمان (SLA)</label>
+                      <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-2">نوع اولویت‌دهی تیکت‌های سازمان (SLA)</label>
                       <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
                         <option className="dark:bg-slate-800 dark:text-slate-200" value="critical">طلایی (حداکثر ۱ ساعت مهلت پاسخگویی)</option>
                         <option className="dark:bg-slate-800 dark:text-slate-200" value="high">نقره‌ای (حداکثر ۲ ساعت مهلت پاسخگویی)</option>
@@ -1124,7 +1124,7 @@ export default function CustomerWorkspaceView({
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">روش ارتباطی پیش‌فرض اعلان‌ها</label>
+                      <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-2">روش ارتباطی پیش‌فرض اعلان‌ها</label>
                       <select className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 outline-none cursor-pointer">
                         <option className="dark:bg-slate-800 dark:text-slate-200" value="both">پیامک و ایمیل همزمان</option>
                         <option className="dark:bg-slate-800 dark:text-slate-200" value="email">فقط ایمیل کارپوشه</option>
@@ -1133,7 +1133,7 @@ export default function CustomerWorkspaceView({
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">محدودیت تعداد کل کاربران قابل تعریف</label>
+                      <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-2">محدودیت تعداد کل کاربران قابل تعریف</label>
                       <input 
                         type="number" 
                         defaultValue={150} 
@@ -1142,7 +1142,7 @@ export default function CustomerWorkspaceView({
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-2">محدودیت دامنه ایمیل مجاز کاربران</label>
+                      <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-2">محدودیت دامنه ایمیل مجاز کاربران</label>
                       <input 
                         type="text" 
                         defaultValue="ariasecurity.ir" 
@@ -1190,7 +1190,7 @@ export default function CustomerWorkspaceView({
                           }
                         }
                       }}
-                      className="bg-rose-650 hover:bg-rose-700 text-white text-[10px] font-black px-4.5 py-2 rounded-xl transition-all cursor-pointer"
+                      className="bg-rose-650 hover:bg-rose-700 text-white text-2xs font-black px-4.5 py-2 rounded-xl transition-all cursor-pointer"
                     >
                       تعلیق موقت کلیدهای دسترسی لایسنس
                     </button>
@@ -1203,7 +1203,7 @@ export default function CustomerWorkspaceView({
                           showCustomerToast(`پرونده سازمان ${c.name} بایگانی شد.`, 'success');
                         }
                       }}
-                      className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-[10px] font-black px-4.5 py-2 rounded-xl transition-all cursor-pointer"
+                      className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-2xs font-black px-4.5 py-2 rounded-xl transition-all cursor-pointer"
                     >
                       بایگانی پرونده سازمان (Archive)
                     </button>
@@ -1242,7 +1242,7 @@ export default function CustomerWorkspaceView({
 
             <form onSubmit={handleCreateUser} className="space-y-4 text-right">
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نام و نام خانوادگی کاربر <span className="text-rose-500">*</span></label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">نام و نام خانوادگی کاربر <span className="text-rose-500">*</span></label>
                 <input 
                   type="text" 
                   value={newUserName}
@@ -1254,7 +1254,7 @@ export default function CustomerWorkspaceView({
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">پست الکترونیکی سازمانی <span className="text-rose-500">*</span></label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">پست الکترونیکی سازمانی <span className="text-rose-500">*</span></label>
                 <input 
                   type="email" 
                   value={newUserEmail}
@@ -1266,7 +1266,7 @@ export default function CustomerWorkspaceView({
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نقش دسترسی در پرتال</label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">نقش دسترسی در پرتال</label>
                 <select 
                   value={newUserRole}
                   onChange={(e) => setNewUserRole(e.target.value)}
@@ -1322,7 +1322,7 @@ export default function CustomerWorkspaceView({
 
             <form onSubmit={handleAddProduct} className="space-y-4 text-right">
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">انتخاب محصول پلتفرم  <span className="text-rose-500">*</span></label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">انتخاب محصول پلتفرم  <span className="text-rose-500">*</span></label>
                 <select 
                   value={newProductId}
                   onChange={(e) => setNewProductId(e.target.value)}
@@ -1337,7 +1337,7 @@ export default function CustomerWorkspaceView({
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">محدودیت تعداد مجاز کاربران لایسنس</label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">محدودیت تعداد مجاز کاربران لایسنس</label>
                 <input 
                   type="number" 
                   value={newProductLimit}
@@ -1392,7 +1392,7 @@ export default function CustomerWorkspaceView({
 
             <form onSubmit={handleSaveOrgDetails} className="space-y-4 text-right">
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نام تجاری سازمان</label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">نام تجاری سازمان</label>
                 <input 
                   type="text" 
                   value={orgCommercialName}
@@ -1403,7 +1403,7 @@ export default function CustomerWorkspaceView({
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">شماره تلفن ثابت دفتر مرکزی</label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">شماره تلفن ثابت دفتر مرکزی</label>
                 <input 
                   type="text" 
                   value={orgPhone}
@@ -1414,7 +1414,7 @@ export default function CustomerWorkspaceView({
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">نشانی وب‌سایت رسمی</label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">نشانی وب‌سایت رسمی</label>
                 <input 
                   type="text" 
                   value={orgWebsite}
@@ -1425,7 +1425,7 @@ export default function CustomerWorkspaceView({
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">آدرس پستی شعبه مرکزی</label>
+                <label className="block text-2xs font-extrabold text-slate-500 mb-1.5">آدرس پستی شعبه مرکزی</label>
                 <textarea 
                   rows={3}
                   value={orgAddress}
