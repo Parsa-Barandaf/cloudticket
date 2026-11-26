@@ -192,6 +192,62 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
   const [confirming, setConfirming] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
+  const dragScrollContainerRef = useRef<HTMLElement | null>(null);
+
+  // Find the nearest vertically scrollable ancestor (or fall back to the page).
+  const findScrollContainer = (node: HTMLElement | null): HTMLElement | null => {
+    let el = node?.parentElement ?? null;
+    while (el) {
+      const style = window.getComputedStyle(el);
+      const scrollableY = /(auto|scroll|overlay)/.test(style.overflowY);
+      if (scrollableY && el.scrollHeight > el.clientHeight) return el;
+      el = el.parentElement;
+    }
+    return null;
+  };
+
+  // Auto-scroll while dragging near the top/bottom edge of the scrollable area.
+  useEffect(() => {
+    if (!draggedTaskId) return;
+
+    const EDGE_ZONE = 90;
+    const MAX_SPEED = 18;
+    let pointerY = 0;
+    let rafId: number | null = null;
+
+    const step = () => {
+      rafId = null;
+      const container = dragScrollContainerRef.current;
+      const top = container ? Math.max(container.getBoundingClientRect().top, 0) : 0;
+      const bottom = container
+        ? Math.min(container.getBoundingClientRect().bottom, window.innerHeight)
+        : window.innerHeight;
+
+      let delta = 0;
+      if (pointerY < top + EDGE_ZONE) {
+        delta = -Math.ceil(((top + EDGE_ZONE - pointerY) / EDGE_ZONE) * MAX_SPEED);
+      } else if (pointerY > bottom - EDGE_ZONE) {
+        delta = Math.ceil(((pointerY - (bottom - EDGE_ZONE)) / EDGE_ZONE) * MAX_SPEED);
+      }
+
+      if (delta !== 0) {
+        if (container) container.scrollTop += delta;
+        else window.scrollBy(0, delta);
+        rafId = requestAnimationFrame(step);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      pointerY = e.clientY;
+      if (rafId == null) rafId = requestAnimationFrame(step);
+    };
+
+    document.addEventListener('dragover', handleDragOver);
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      if (rafId != null) cancelAnimationFrame(rafId);
+    };
+  }, [draggedTaskId]);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(t => {
@@ -852,7 +908,12 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     key={t.id}
                     layout
                     draggable={viewMode === 'list' && !showArchived}
-                    onDragStart={() => setDraggedTaskId(t.id)}
+                    onDragStart={(e) => {
+                      const dragEvent = e as unknown as React.DragEvent<HTMLDivElement>;
+                      dragScrollContainerRef.current = findScrollContainer(dragEvent.currentTarget);
+                      if (dragEvent.dataTransfer) dragEvent.dataTransfer.effectAllowed = 'move';
+                      setDraggedTaskId(t.id);
+                    }}
                     onDragOver={(e) => {
                       e.preventDefault();
                       setDragOverTaskId(t.id);
