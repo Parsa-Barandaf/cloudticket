@@ -163,7 +163,7 @@ function AppContent() {
               </div>
               <div className="text-right">
                 <span className="text-xs font-black text-slate-950 dark:text-white tracking-wide block">سامانه ابری مدیریت مشتریان</span>
-                <span className="text-[9px] text-slate-400 dark:text-slate-500">پلتفرم مدیریت هوشمند پشتیبانی</span>
+                <span className="text-3xs text-slate-400 dark:text-slate-500">پلتفرم مدیریت هوشمند پشتیبانی</span>
               </div>
             </div>
 
@@ -191,7 +191,7 @@ function AppContent() {
           </div>
 
           {/* Footer Bar for Right Section */}
-          <footer className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-400 dark:text-slate-500">
+          <footer className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-2xs text-slate-400 dark:text-slate-500">
             <div className="flex items-center gap-4">
               <a href="#privacy" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">سیاست حریم خصوصی</a>
               <span className="text-slate-200 dark:text-slate-800">•</span>

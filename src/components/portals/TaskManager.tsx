@@ -626,7 +626,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
             <Archive className="w-4 h-4" />
             <span>آرشیو</span>
             {archivedCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400">{archivedCount}</span>
+              <span className="px-1.5 py-0.5 rounded-md text-2xs font-black bg-amber-500/15 text-amber-600 dark:text-amber-400">{archivedCount}</span>
             )}
           </button>
         </div>
@@ -912,18 +912,18 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                             {seenByAssignee ? <CheckCheck className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
                           </span>
                           {t.overdue && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-full text-2xs font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
                               <AlertTriangle className="w-3 h-3" />
                               <span>عقب افتاده</span>
                             </span>
                           )}
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${priorityMeta[t.priorityRaw].cls}`}>{t.priority}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${statusMeta[t.statusRaw].cls}`}>{t.status}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-2xs font-black border ${priorityMeta[t.priorityRaw].cls}`}>{t.priority}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-2xs font-black border ${statusMeta[t.statusRaw].cls}`}>{t.status}</span>
                         </div>
                         {t.description && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-1">{t.description}</p>
                         )}
-                        <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 pt-1">
+                        <div className="flex flex-wrap items-center gap-3 text-2xs text-slate-400 pt-1">
                           <span className="flex items-center gap-1">
                             <CalendarClock className="w-3 h-3" />
                             <span>{fmtDateTime(t.dueDate)}</span>
@@ -939,7 +939,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                             <span>{t.comments.length} فعالیت</span>
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/70 text-[10px]">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/70 text-2xs">
                           <TaskTimestamp
                             icon={<CalendarPlus className="w-3 h-3" />}
                             label="ایجاد"
@@ -1033,7 +1033,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                       className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-rose-200/60 dark:border-rose-800/50 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-rose-400 transition-colors cursor-pointer"
                     >
                       {t.title}
-                      <span className="mr-2 text-[10px] text-rose-500">{fmtDate(t.dueDate)}</span>
+                      <span className="mr-2 text-2xs text-rose-500">{fmtDate(t.dueDate)}</span>
                     </button>
                   ))}
                 </div>
@@ -1078,7 +1078,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   {/* Weekday header */}
                   <div className="grid grid-cols-7 gap-1.5 text-center">
                     {['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'].map((d, i) => (
-                      <div key={i} className="text-[10px] font-black text-slate-400 py-1">{d}</div>
+                      <div key={i} className="text-2xs font-black text-slate-400 py-1">{d}</div>
                     ))}
                   </div>
                   <div className="grid grid-cols-7 gap-1.5">
@@ -1097,7 +1097,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                               : 'border-slate-100 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-900/30 opacity-50'
                           }`}
                         >
-                          <span className={`text-[10px] font-black ${isToday ? 'text-brand-600 dark:text-brand-400' : isWeekend ? 'text-rose-400' : 'text-slate-400'}`}>
+                          <span className={`text-2xs font-black ${isToday ? 'text-brand-600 dark:text-brand-400' : isWeekend ? 'text-rose-400' : 'text-slate-400'}`}>
                             {new Intl.DateTimeFormat('fa-IR', { day: 'numeric' }).format(cell.date)}
                           </span>
                           <div className="space-y-1 overflow-hidden">
@@ -1105,7 +1105,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                               <button
                                 key={t.id}
                                 onClick={() => openDetail(t)}
-                                className={`w-full text-right px-1.5 py-1 rounded-lg text-[10px] font-bold leading-tight truncate cursor-pointer transition-colors hover:opacity-80 ${
+                                className={`w-full text-right px-1.5 py-1 rounded-lg text-2xs font-bold leading-tight truncate cursor-pointer transition-colors hover:opacity-80 ${
                                   t.statusRaw === 'DONE'
                                     ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                                     : t.overdue
@@ -1117,7 +1117,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                               </button>
                             ))}
                             {cell.tasks.length > 3 && (
-                              <span className="px-1.5 text-[9px] font-mono text-slate-400">+{cell.tasks.length - 3}</span>
+                              <span className="px-1.5 text-3xs font-mono text-slate-400">+{cell.tasks.length - 3}</span>
                             )}
                           </div>
                         </div>
@@ -1153,7 +1153,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">عنوان وظیفه <b className="text-rose-500">*</b></label>
+                  <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">عنوان وظیفه <b className="text-rose-500">*</b></label>
                   <input
                     type="text"
                     value={form.title}
@@ -1167,12 +1167,12 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     }`}
                   />
                   {formErrors.title && (
-                    <span className="text-[9px] text-rose-500 font-bold block mt-1">{formErrors.title}</span>
+                    <span className="text-3xs text-rose-500 font-bold block mt-1">{formErrors.title}</span>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">توضیحات</label>
+                  <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">توضیحات</label>
                   <textarea
                     rows={3}
                     value={form.description}
@@ -1184,7 +1184,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
                 {isAdmin ? (
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه <b className="text-rose-500">*</b></label>
+                    <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه <b className="text-rose-500">*</b></label>
                     <select
                       value={form.assigneeId}
                       onChange={(e) => {
@@ -1201,23 +1201,23 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                       ))}
                     </select>
                     {formErrors.assigneeId && (
-                      <span className="text-[9px] text-rose-500 font-bold block mt-1">{formErrors.assigneeId}</span>
+                      <span className="text-3xs text-rose-500 font-bold block mt-1">{formErrors.assigneeId}</span>
                     )}
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه <b className="text-rose-500">*</b></label>
+                    <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">مسئول وظیفه <b className="text-rose-500">*</b></label>
                     <div className="w-full flex items-center gap-2 px-3 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 text-xs font-bold text-slate-700 dark:text-slate-200">
                       <User className="w-3.5 h-3.5 text-brand-500" />
                       <span>{currentUserName}</span>
-                      <span className="text-[10px] text-slate-400 font-bold mr-auto">فقط برای خودم</span>
+                      <span className="text-2xs text-slate-400 font-bold mr-auto">فقط برای خودم</span>
                     </div>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">اولویت</label>
+                    <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">اولویت</label>
                     <select
                       value={form.priority}
                       onChange={(e) => setForm({ ...form, priority: e.target.value as TaskPriority })}
@@ -1229,7 +1229,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">تاریخ تحویل</label>
+                    <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">تاریخ تحویل</label>
                     <JalaliDatePicker
                       value={form.dueDate}
                       onChange={(v) => setForm({ ...form, dueDate: v })}
@@ -1238,7 +1238,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">ساعت تحویل</label>
+                  <label className="block text-2xs font-extrabold text-slate-400 dark:text-slate-500 mb-1.5">ساعت تحویل</label>
                   <input
                     type="time"
                     value={form.dueTime}
@@ -1377,13 +1377,13 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
               <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${statusMeta[selectedTask.statusRaw].cls}`}>{selectedTask.status}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${priorityMeta[selectedTask.priorityRaw].cls}`}>{selectedTask.priority}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-2xs font-black border ${statusMeta[selectedTask.statusRaw].cls}`}>{selectedTask.status}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-2xs font-black border ${priorityMeta[selectedTask.priorityRaw].cls}`}>{selectedTask.priority}</span>
                     <span className={hasAssigneeSeen(selectedTask) ? 'text-emerald-500' : 'text-sky-500'} title={hasAssigneeSeen(selectedTask) ? 'دیده شده توسط مسئول وظیفه' : 'در انتظار مشاهده توسط مسئول وظیفه'}>
                       {hasAssigneeSeen(selectedTask) ? <CheckCheck className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
                     </span>
                     {selectedTask.overdue && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded-full text-2xs font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
                         <span>عقب افتاده</span>
                       </span>
@@ -1411,13 +1411,13 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
                 {/* Status actions */}
                 <div className="bg-slate-50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 space-y-2">
-                  <h4 className="text-[10px] font-extrabold text-slate-400">تغییر وضعیت</h4>
+                  <h4 className="text-2xs font-extrabold text-slate-400">تغییر وضعیت</h4>
                   <div className="flex flex-wrap gap-2">
                     {statusList.map(s => (
                       <button
                         key={s}
                         onClick={() => requestStatusChange(selectedTask, s)}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-black border transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer ${
                           selectedTask.statusRaw === s
                             ? statusMeta[s].cls + ' ring-2 ring-brand-500/20'
                             : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200/60 dark:border-slate-800 hover:border-brand-500/40'
@@ -1432,26 +1432,26 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                 {/* Meta info */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-slate-50 dark:bg-slate-950/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1"><CalendarClock className="w-3 h-3" /> مهلت</span>
+                    <span className="text-2xs text-slate-400 font-bold flex items-center gap-1"><CalendarClock className="w-3 h-3" /> مهلت</span>
                     <p className="text-xs font-black text-slate-800 dark:text-slate-200 mt-1">{fmtDateTime(selectedTask.dueDate)}</p>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-950/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1"><User className="w-3 h-3" /> مسئول</span>
+                    <span className="text-2xs text-slate-400 font-bold flex items-center gap-1"><User className="w-3 h-3" /> مسئول</span>
                     <p className="text-xs font-black text-slate-800 dark:text-slate-200 mt-1">{selectedTask.assigneeName || 'بدون مسئول'}</p>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-950/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1"><User className="w-3 h-3" /> ثبت‌کننده</span>
+                    <span className="text-2xs text-slate-400 font-bold flex items-center gap-1"><User className="w-3 h-3" /> ثبت‌کننده</span>
                     <p className="text-xs font-black text-slate-800 dark:text-slate-200 mt-1">{selectedTask.createdByName}</p>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-950/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1"><Flag className="w-3 h-3" /> اولویت</span>
+                    <span className="text-2xs text-slate-400 font-bold flex items-center gap-1"><Flag className="w-3 h-3" /> اولویت</span>
                     <p className="text-xs font-black text-slate-800 dark:text-slate-200 mt-1">{selectedTask.priority}</p>
                   </div>
                 </div>
 
                 {selectedTask.description && (
                   <div className="bg-slate-50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60">
-                    <h4 className="text-[10px] font-extrabold text-slate-400 mb-2">توضیحات</h4>
+                    <h4 className="text-2xs font-extrabold text-slate-400 mb-2">توضیحات</h4>
                     <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-bold whitespace-pre-wrap">{selectedTask.description}</p>
                   </div>
                 )}
@@ -1467,7 +1467,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setCommentType('note')}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                           commentType === 'note' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200/60 dark:border-slate-800'
                         }`}
                       >
@@ -1475,7 +1475,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                       </button>
                       <button
                         onClick={() => setCommentType('timeline')}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                           commentType === 'timeline' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200/60 dark:border-slate-800'
                         }`}
                       >
@@ -1509,13 +1509,13 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                         <div key={c.id} className="relative group">
                           <div className={`absolute -right-[31px] top-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 ${c.type === 'timeline' ? 'bg-brand-500' : 'bg-slate-400'}`} />
                           <div className="bg-slate-50/70 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
-                            <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
+                            <div className="flex items-center justify-between text-2xs text-slate-400 mb-1.5">
                               <span className="flex items-center gap-1.5">
                                 {c.type === 'timeline' ? <History className="w-3 h-3 text-brand-500" /> : <MessageSquare className="w-3 h-3 text-slate-400" />}
                                 <b className="text-slate-700 dark:text-slate-300">{c.authorName}</b>
                                 <span>· {c.time}</span>
                               </span>
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-slate-100 dark:bg-slate-800 text-slate-500">
+                              <span className="px-2 py-0.5 rounded-full text-3xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500">
                                 {c.type === 'timeline' ? 'پیشرفت' : 'یادداشت'}
                               </span>
                             </div>

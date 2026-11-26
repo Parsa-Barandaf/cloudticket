@@ -372,14 +372,14 @@ export default function TicketDetailsWorkspace({
               <span className="font-mono text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
                 #{currentTicket.ticketNumber}
               </span>
-              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black border ${
+              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-2xs font-black border ${
                 currentTicket.priority === 'بحرانی' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
                 currentTicket.priority === 'بالا' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
                 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
               }`}>
                 اولویت {currentTicket.priority}
               </span>
-              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black ${
+              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-2xs font-black ${
                 currentTicket.status === 'باز' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 border border-blue-500/20' :
                 currentTicket.status === 'در حال بررسی' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400 border border-amber-500/20' :
                 currentTicket.status === 'منتظر پاسخ مشتری' ? 'bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400 border border-purple-500/20' :
@@ -394,7 +394,7 @@ export default function TicketDetailsWorkspace({
             </h1>
             
             {/* Quick Metadata list */}
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[10.5px] font-bold text-slate-400 dark:text-slate-500 pt-1">
+            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-2xs font-bold text-slate-400 dark:text-slate-500 pt-1">
               <span className="flex items-center gap-1.5"><Building className="w-4 h-4 text-slate-400/80" /> {currentTicket.customer}</span>
               <span>•</span>
               <span className="flex items-center gap-1.5"><Layers className="w-4 h-4 text-slate-400/80" /> {currentTicket.product}</span>
@@ -490,7 +490,7 @@ export default function TicketDetailsWorkspace({
                         {ag.name}
                       </button>
                     )) : (
-                      <div className="text-slate-500 text-[10px] px-4 py-3 text-center">کارشناسی برای این محصول تخصیص داده نشده است</div>
+                      <div className="text-slate-500 text-2xs px-4 py-3 text-center">کارشناسی برای این محصول تخصیص داده نشده است</div>
                     )}
                     <button
                       onClick={() => {
@@ -606,7 +606,7 @@ export default function TicketDetailsWorkspace({
                   <Activity className="w-4 h-4 text-brand-500" />
                   <div className="space-y-0.5">
                     <h3 className="text-xs font-black text-slate-900 dark:text-white">جریان گفتگو و پاسخ به پرونده</h3>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold">
+                    <div className="flex items-center gap-1.5 text-2xs text-slate-400 font-bold">
                       <span>شناسه تیکت: #{currentTicket.id}</span>
                       <span>•</span>
                       <span>{threads.length} پیام ثبت شده</span>
@@ -614,7 +614,7 @@ export default function TicketDetailsWorkspace({
                   </div>
                 </div>
 
-                <div className="text-[10px] text-slate-450 font-bold px-3">
+                <div className="text-2xs text-slate-450 font-bold px-3">
                   {isDraftSaved ? (
                     <span className="flex items-center gap-1 text-emerald-500">
                       <Check className="w-3 h-3" />
@@ -656,17 +656,17 @@ export default function TicketDetailsWorkspace({
                             <div className="flex items-center gap-1.5">
                               <span className="text-xs font-black text-slate-900 dark:text-white">{msg.name}</span>
                               {isNote && (
-                                <span className="bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md">
+                                <span className="bg-amber-500 text-white text-3xs font-black px-1.5 py-0.5 rounded-md">
                                   یادداشت داخلی
                                 </span>
                               )}
                             </div>
-                            <span className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold block">{msg.role}</span>
+                            <span className="text-3xs text-slate-400 dark:text-slate-500 font-bold block">{msg.role}</span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500">{msg.time}</span>
+                          <span className="text-3xs font-mono font-bold text-slate-400 dark:text-slate-500">{msg.time}</span>
                           
                           {/* Edit / Delete actions for internal notes */}
                           {isNote && (
@@ -712,7 +712,7 @@ export default function TicketDetailsWorkspace({
 
                       {/* Support formatting (Code blocks inside message) */}
                       {msg.message.includes('پورت ۸۴۴۳') && (
-                        <div className="bg-slate-950 text-emerald-400 font-mono text-[10.5px] p-3 rounded-xl mb-3 text-left direction-ltr overflow-x-auto border border-slate-800/80">
+                        <div className="bg-slate-950 text-emerald-400 font-mono text-2xs p-3 rounded-xl mb-3 text-left direction-ltr overflow-x-auto border border-slate-800/80">
                           <code>
                             # Diagnostic Firewall test on local client<br />
                             $ nmap -p 8443 secure-db.example.com<br />
@@ -725,7 +725,7 @@ export default function TicketDetailsWorkspace({
                       {/* Attachments Section inside Message */}
                       {msg.attachments && msg.attachments.length > 0 && (
                         <div className="border-t border-slate-150 dark:border-slate-800/60 pt-2.5 space-y-1.5">
-                          <span className="text-[10px] text-slate-400 font-black block mb-1">ضمیمه‌های مشتری:</span>
+                          <span className="text-2xs text-slate-400 font-black block mb-1">ضمیمه‌های مشتری:</span>
                           <div className="grid grid-cols-1 gap-2">
                             {msg.attachments.map((file: any, fidx: number) => {
                               const isImg = file.type === 'img';
@@ -738,9 +738,9 @@ export default function TicketDetailsWorkspace({
                                 >
                                   <div className="flex items-center gap-2">
                                     {isImg ? <ImageIcon className="w-4 h-4 text-blue-500" /> : isZip ? <FileArchive className="w-4 h-4 text-purple-500" /> : <FileText className="w-4 h-4 text-emerald-500" />}
-                                    <span className="text-[10.5px] font-mono font-bold text-slate-600 dark:text-slate-300 truncate max-w-[180px]">{file.name}</span>
+                                    <span className="text-2xs font-mono font-bold text-slate-600 dark:text-slate-300 truncate max-w-[180px]">{file.name}</span>
                                   </div>
-                                  <span className="text-[9px] font-mono font-black text-slate-400 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded-md shrink-0">
+                                  <span className="text-3xs font-mono font-black text-slate-400 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded-md shrink-0">
                                     {file.size}
                                   </span>
                                 </div>
@@ -760,7 +760,7 @@ export default function TicketDetailsWorkspace({
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 5 }}
-                      className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-black"
+                      className="flex items-center gap-2 text-2xs text-slate-400 dark:text-slate-500 font-black"
                     >
                       <span className="flex gap-1">
                         <span className="w-1.5 h-1.5 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -843,7 +843,7 @@ export default function TicketDetailsWorkspace({
                           <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div className="h-full bg-brand-500 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                           </div>
-                          <span className="text-[10px] font-mono font-bold text-slate-400">{uploadProgress}% بارگذاری شد</span>
+                          <span className="text-2xs font-mono font-bold text-slate-400">{uploadProgress}% بارگذاری شد</span>
                         </div>
                       </motion.div>
                     )}
@@ -929,7 +929,7 @@ export default function TicketDetailsWorkspace({
                 </div>
 
                 {/* Keyboard Shortcut Indicator */}
-                <div className="text-left text-[9.5px] text-slate-400 font-bold">
+                <div className="text-left text-3xs text-slate-400 font-bold">
                   ارسال سریع پاسخ: <kbd className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono">Ctrl + Enter</kbd>
                 </div>
               </div>
@@ -962,11 +962,11 @@ export default function TicketDetailsWorkspace({
                       {previewFile.type === 'img' ? (
                         <div className="space-y-3">
                           <div className="h-40 bg-slate-900/10 dark:bg-slate-900/70 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-center relative overflow-hidden">
-                            <span className="text-[10px] text-slate-400 font-black absolute top-2 right-2 bg-slate-900/60 px-2 py-0.5 rounded-md text-white">تصویر سیستم مانیتورینگ</span>
+                            <span className="text-2xs text-slate-400 font-black absolute top-2 right-2 bg-slate-900/60 px-2 py-0.5 rounded-md text-white">تصویر سیستم مانیتورینگ</span>
                             <div className="text-center p-4">
                               <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
-                              <div className="text-rose-500 font-mono text-[10px] font-bold">CRITICAL: Sync Database Fault</div>
-                              <div className="text-[9px] text-slate-400 font-bold mt-1">Error code: DB_DOCKER_PORT_8443_FILTERED</div>
+                              <div className="text-rose-500 font-mono text-2xs font-bold">CRITICAL: Sync Database Fault</div>
+                              <div className="text-3xs text-slate-400 font-bold mt-1">Error code: DB_DOCKER_PORT_8443_FILTERED</div>
                             </div>
                           </div>
                         </div>
@@ -974,32 +974,32 @@ export default function TicketDetailsWorkspace({
                         <div className="space-y-2">
                           <FileArchive className="w-12 h-12 text-purple-500 mx-auto" />
                           <span className="text-xs font-black text-slate-800 dark:text-white block">{previewFile.name}</span>
-                          <span className="text-[10px] text-slate-400 block font-semibold">بسته فایل پشتیبان تنظیمات سرور لینوکس </span>
+                          <span className="text-2xs text-slate-400 block font-semibold">بسته فایل پشتیبان تنظیمات سرور لینوکس </span>
                         </div>
                       ) : (
                         <div className="space-y-2">
                           <FileText className="w-12 h-12 text-emerald-500 mx-auto" />
                           <span className="text-xs font-black text-slate-800 dark:text-white block">{previewFile.name}</span>
-                          <span className="text-[10px] text-slate-400 block font-semibold">دفترچه گزارش لاگ خطاهای بروزرسانی امضای فایروال</span>
+                          <span className="text-2xs text-slate-400 block font-semibold">دفترچه گزارش لاگ خطاهای بروزرسانی امضای فایروال</span>
                         </div>
                       )}
                     </div>
 
                     <div className="flex justify-between items-center text-xs font-bold pt-2">
                       <div className="space-y-0.5">
-                        <span className="text-slate-400 text-[10px] block">حجم خالص پرونده</span>
+                        <span className="text-slate-400 text-2xs block">حجم خالص پرونده</span>
                         <span className="text-slate-800 dark:text-slate-200 font-mono">{previewFile.size}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => showCustomerToast('فایل برای ویرایش مجدد و ممیزی آماده شد.', 'success')}
-                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-[10.5px] font-black transition-all"
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-2xs font-black transition-all"
                         >
                           تحلیل لاگ‌ها
                         </button>
                         <button
                           onClick={() => showCustomerToast('فایل با موفقیت در سیستم محلی بارگذاری شد.', 'success')}
-                          className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-[10.5px] font-black transition-all flex items-center gap-1"
+                          className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-2xs font-black transition-all flex items-center gap-1"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span>دانلود فایل</span>
@@ -1012,7 +1012,7 @@ export default function TicketDetailsWorkspace({
                 <div className="p-6 bg-slate-100/30 dark:bg-slate-950/20 border border-slate-150 dark:border-slate-800/80 rounded-3xl text-center">
                   <BookOpen className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-2.5" />
                   <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">نمایشگر ممیزی پرونده‌ها</h4>
-                  <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold max-w-xs mx-auto mt-1 leading-relaxed">
+                  <p className="text-2xs text-slate-400 dark:text-slate-500 font-bold max-w-xs mx-auto mt-1 leading-relaxed">
                     با کلیک روی فایل‌های پیوست در پیام‌ها، ممیزی هوشمند لاگ‌ها و نمایش مستقیم کدهای پیکربندی را در این بخش مانیتور کنید.
                   </p>
                 </div>
@@ -1047,7 +1047,7 @@ export default function TicketDetailsWorkspace({
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400 font-bold">آخرین تعامل سیستم:</span>
-                  <span className="font-mono text-[10.5px] font-black text-slate-500">{currentTicket.date}</span>
+                  <span className="font-mono text-2xs font-black text-slate-500">{currentTicket.date}</span>
                 </div>
               </div>
             </div>
@@ -1066,7 +1066,7 @@ export default function TicketDetailsWorkspace({
                   return (
                     <>
                       <div className="space-y-1.5">
-                        <div className="flex justify-between text-[11px] font-bold">
+                        <div className="flex justify-between text-xs font-bold">
                           <span className="text-slate-400">پاسخگویی اولیه:</span>
                           <span className={`${hasReply ? 'text-emerald-500' : 'text-amber-500'} font-black`}>
                             {hasReply ? 'پاسخ داده شد' : 'در انتظار پاسخ'}
@@ -1077,7 +1077,7 @@ export default function TicketDetailsWorkspace({
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <div className="flex justify-between text-[11px] font-bold">
+                        <div className="flex justify-between text-xs font-bold">
                           <span className="text-slate-400">وضعیت نهایی:</span>
                           <span className={`${isClosed ? 'text-emerald-500' : 'text-brand-500'} font-black`}>
                             {isClosed ? 'بسته شده' : currentTicket.status}
@@ -1102,19 +1102,19 @@ export default function TicketDetailsWorkspace({
 
               <div className="space-y-3.5 text-xs font-semibold">
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 block font-bold">عنوان کامل سازمان:</span>
+                  <span className="text-2xs text-slate-400 block font-bold">عنوان کامل سازمان:</span>
                   <span className="text-slate-900 dark:text-white font-black">{customerInfo.name}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 block font-bold">مسئول فنی / رابط ارشد:</span>
+                  <span className="text-2xs text-slate-400 block font-bold">مسئول فنی / رابط ارشد:</span>
                   <span className="text-slate-800 dark:text-slate-200 font-extrabold">{customerInfo.managerName}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 block font-bold">شماره تماس ثابت ممیزی:</span>
+                  <span className="text-2xs text-slate-400 block font-bold">شماره تماس ثابت ممیزی:</span>
                   <span className="text-slate-800 dark:text-slate-200 font-mono">{customerInfo.managerPhone}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 block font-bold">پست الکترونیکی مکتوب:</span>
+                  <span className="text-2xs text-slate-400 block font-bold">پست الکترونیکی مکتوب:</span>
                   <span className="text-slate-800 dark:text-slate-200 font-mono truncate block">{customerInfo.managerEmail}</span>
                 </div>
 
@@ -1122,7 +1122,7 @@ export default function TicketDetailsWorkspace({
                   onClick={() => {
                     showCustomerToast('ارجاع به پرونده هویت کلاینت در بخش CRM صادر شد.', 'success');
                   }}
-                  className="w-full py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-xl text-[10.5px] font-black text-brand-600 dark:text-brand-400 transition-all text-center cursor-pointer block"
+                  className="w-full py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-xl text-2xs font-black text-brand-600 dark:text-brand-400 transition-all text-center cursor-pointer block"
                 >
                   مشاهده پروفایل جامع مشتری
                 </button>
@@ -1138,15 +1138,15 @@ export default function TicketDetailsWorkspace({
 
               <div className="space-y-3.5 text-xs font-semibold">
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 block font-bold">سیستم نرم‌افزاری ارجاعی:</span>
+                  <span className="text-2xs text-slate-400 block font-bold">سیستم نرم‌افزاری ارجاعی:</span>
                   <span className="text-slate-900 dark:text-white font-black">{productInfo.name}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 block font-bold">نسخه فعال نصب شده:</span>
+                  <span className="text-2xs text-slate-400 block font-bold">نسخه فعال نصب شده:</span>
                   <span className="text-slate-800 dark:text-slate-200 font-mono font-black">{productInfo.version}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 block font-bold">وضعیت اعتبار لایسنس:</span>
+                  <span className="text-2xs text-slate-400 block font-bold">وضعیت اعتبار لایسنس:</span>
                   <span className="text-emerald-500 font-black">{productInfo.supportStatus}</span>
                 </div>
 
@@ -1154,7 +1154,7 @@ export default function TicketDetailsWorkspace({
                   onClick={() => {
                     showCustomerToast('ارجاع به مستندات و لایسنس‌های این محصول در هسته صادر شد.', 'success');
                   }}
-                  className="w-full py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-xl text-[10.5px] font-black text-brand-600 dark:text-brand-400 transition-all text-center cursor-pointer block"
+                  className="w-full py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-xl text-2xs font-black text-brand-600 dark:text-brand-400 transition-all text-center cursor-pointer block"
                 >
                   مشاهده اطلاعات فنی محصول
                 </button>
@@ -1171,7 +1171,7 @@ export default function TicketDetailsWorkspace({
               <div className="relative z-0 border-r-2 border-slate-100 dark:border-slate-800 mr-2.5 space-y-5 pr-4 text-right max-h-64 overflow-y-auto">
                 <div className="relative z-0">
                   <div className="absolute -right-[21px] top-1 z-20 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
-                  <span className="text-[11px] font-mono text-slate-400 block font-bold">{currentTicket.date || ''}</span>
+                  <span className="text-xs font-mono text-slate-400 block font-bold">{currentTicket.date || ''}</span>
                   <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">ثبت اولیه تیکت</span>
                 </div>
                 {threads.map((msg, idx) => {
@@ -1182,7 +1182,7 @@ export default function TicketDetailsWorkspace({
                   return (
                     <div key={idx} className="relative">
                       <div className={`absolute -right-[21px] top-1 w-2.5 h-2.5 rounded-full ${color} border-2 border-white dark:border-slate-900`} />
-                      <span className="text-[11px] font-mono text-slate-400 block font-bold">{msg.time || ''}</span>
+                      <span className="text-xs font-mono text-slate-400 block font-bold">{msg.time || ''}</span>
                       <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">{label}</span>
                     </div>
                   );
@@ -1208,7 +1208,7 @@ export default function TicketDetailsWorkspace({
               <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <div className="flex items-center gap-3">
                   <h3 className="text-sm font-black text-slate-900 dark:text-white">پیش‌نمایش چاپ پرونده</h3>
-                  <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={includeInternalNotes}
@@ -1238,7 +1238,7 @@ export default function TicketDetailsWorkspace({
                     <span>•</span>
                     <span>وضعیت: {currentTicket.status}</span>
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-xs text-slate-400">
                     تاریخ ثبت: {currentTicket.date || ''}
                     {currentTicket.assignedTo && <span> • کارشناس: {currentTicket.assignedTo}</span>}
                   </div>
@@ -1265,9 +1265,9 @@ export default function TicketDetailsWorkspace({
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-black text-slate-800 dark:text-slate-200">
                               {msg.name}
-                              {isNote && <span className="text-amber-500 mr-1 text-[10px]">(یادداشت داخلی)</span>}
+                              {isNote && <span className="text-amber-500 mr-1 text-2xs">(یادداشت داخلی)</span>}
                             </span>
-                            <span className="text-[10px] text-slate-400">{msg.time}</span>
+                            <span className="text-2xs text-slate-400">{msg.time}</span>
                           </div>
                           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400 whitespace-pre-line">{msg.message}</p>
                         </div>

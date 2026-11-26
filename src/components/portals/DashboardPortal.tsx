@@ -1126,14 +1126,14 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <Bell className="w-4 h-4 text-brand-500" />
                         <span className="text-xs font-black text-slate-900 dark:text-white">اعلان‌های سیستم</span>
                         {unreadNotificationCount > 0 && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
+                          <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
                             {unreadNotificationCount} جدید
                           </span>
                         )}
                       </div>
                       <button 
                         onClick={() => markAllNotificationsRead()}
-                        className="text-[10px] font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+                        className="text-2xs font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                       >
                         خوانده شدن همه
                       </button>
@@ -1152,9 +1152,9 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
                               {n.title}
                             </span>
-                            <span className="text-[9px] font-mono text-slate-400 shrink-0">{n.time}</span>
+                            <span className="text-3xs font-mono text-slate-400 shrink-0">{n.time}</span>
                           </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
                             {n.description}
                           </p>
                         </div>
@@ -1176,17 +1176,6 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
             </AnimatePresence>
           </div>
 
-          {/* User Profile Mini Block */}
-          <div className="h-9 w-[1px] bg-slate-200 dark:bg-slate-800" />
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs shadow-inner">
-              {currentUserInitials || '؟'}
-            </div>
-            <div className="hidden lg:flex flex-col text-right">
-              <span className="text-xs font-black text-slate-800 dark:text-slate-200">{currentUserName}</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">{currentUserRoleLabel}</span>
-            </div>
-          </div>
         </div>
       </header>
 
@@ -1218,7 +1207,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               {!sidebarCollapsed && (
                 <div className="text-right">
                   <span className="text-sm font-black text-slate-900 dark:text-white block tracking-tight">سامانه ابری مدیریت مشتریان</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">پشتیبانی و امور مشتریان</span>
+                  <span className="text-2xs text-slate-400 dark:text-slate-500">پشتیبانی و امور مشتریان</span>
                 </div>
               )}
             </div>
@@ -1250,7 +1239,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               <Layers className="w-4.5 h-4.5 shrink-0" />
               {!sidebarCollapsed && <span className="whitespace-nowrap">محصولات</span>}
               {!sidebarCollapsed && (
-                <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
+                <span className="mr-auto text-2xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
                   {products.length}
                 </span>
               )}
@@ -1268,7 +1257,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               <Inbox className="w-4.5 h-4.5 shrink-0" />
               {!sidebarCollapsed && <span className="whitespace-nowrap">تیکت‌ها</span>}
               {!sidebarCollapsed && (
-                <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
+                <span className="mr-auto text-2xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
                   {tickets.filter(t => t.status !== 'بسته شده').length}
                 </span>
               )}
@@ -1286,7 +1275,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               <Users2 className="w-4.5 h-4.5 shrink-0" />
               {!sidebarCollapsed && <span className="whitespace-nowrap">مشتریان</span>}
               {!sidebarCollapsed && (
-                <span className="mr-auto text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
+                <span className="mr-auto text-2xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400 font-mono">
                   {customers.length}
                 </span>
               )}
@@ -1304,7 +1293,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               <ClipboardList className="w-4.5 h-4.5 shrink-0" />
               {!sidebarCollapsed && <span className="whitespace-nowrap">درخواست‌ها</span>}
               {!sidebarCollapsed && pendingRequests.length > 0 && (
-                <span className="mr-auto text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono font-extrabold">
+                <span className="mr-auto text-2xs bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono font-extrabold">
                   {pendingRequests.length}
                 </span>
               )}
@@ -1348,7 +1337,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               <Bell className="w-4.5 h-4.5 shrink-0" />
               {!sidebarCollapsed && <span className="whitespace-nowrap">اعلان‌ها</span>}
               {unreadNotificationCount > 0 && !sidebarCollapsed && (
-                <span className="mr-auto text-[10px] bg-rose-500 text-white px-2 py-0.5 rounded-full font-mono font-bold">
+                <span className="mr-auto text-2xs bg-rose-500 text-white px-2 py-0.5 rounded-full font-mono font-bold">
                   {unreadNotificationCount}
                 </span>
               )}
@@ -1405,12 +1394,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{currentUserName}</h4>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{currentUserRoleLabel}</p>
+                    <p className="text-2xs text-slate-400 dark:text-slate-500 truncate">{currentUserRoleLabel}</p>
                   </div>
                 </div>
                 <button
                   onClick={onLogout}
-                  className="w-full py-2 px-3 rounded-xl border border-rose-200/50 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center justify-center gap-2 text-[11px] font-bold transition-all cursor-pointer"
+                  className="w-full py-2 px-3 rounded-xl border border-rose-200/50 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center justify-center gap-2 text-xs font-bold transition-all cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>خروج از حساب</span>
@@ -1462,7 +1451,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                   <div className="max-w-xl space-y-5 relative z-10">
                     <h2 className="text-xl md:text-2xl font-black">سلام، خوش آمدید</h2>
-                    <span className="text-[10px] uppercase tracking-wider font-extrabold bg-white/10 dark:bg-brand-500/20 px-3 py-1 rounded-full text-brand-100 dark:text-brand-300">
+                    <span className="text-2xs uppercase tracking-wider font-extrabold bg-white/10 dark:bg-brand-500/20 px-3 py-1 rounded-full text-brand-100 dark:text-brand-300">
                       محیط مدیریت فعال
                     </span>
                   </div>
@@ -1478,7 +1467,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="space-y-1">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-semibold">تعداد محصولات</span>
                       <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{products.length}</span>
-                      <span className="text-[10px] text-emerald-500 block font-medium">{products.filter(p => p.status === 'فعال').length} محصول فعال</span>
+                      <span className="text-2xs text-emerald-500 block font-medium">{products.filter(p => p.status === 'فعال').length} محصول فعال</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-500/20 text-brand-500 flex items-center justify-center">
                       <Layers className="w-6 h-6" />
@@ -1495,7 +1484,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
                         {tickets.filter(t => t.status !== 'بسته شده').length}
                       </span>
-                      <span className="text-[10px] text-amber-500 block font-medium">پاسخ سریع برای حفظ SLA</span>
+                      <span className="text-2xs text-amber-500 block font-medium">پاسخ سریع برای حفظ SLA</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 flex items-center justify-center animate-pulse">
                       <Inbox className="w-6 h-6" />
@@ -1510,7 +1499,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="space-y-1">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-semibold">مشتریان فعال</span>
                       <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{customers.length}</span>
-                      <span className="text-[10px] text-brand-500 block font-medium">{customers.filter(c => c.status === 'فعال').length} مشتری فعال</span>
+                      <span className="text-2xs text-brand-500 block font-medium">{customers.filter(c => c.status === 'فعال').length} مشتری فعال</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-brand-500/10 dark:bg-brand-500/20 text-brand-500 flex items-center justify-center">
                       <Users2 className="w-6 h-6" />
@@ -1525,7 +1514,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="space-y-1">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-semibold">میانگین زمان پاسخ</span>
                       <span className="text-2xl font-black text-slate-900 dark:text-white">۲ ساعت</span>
-                      <span className="text-[10px] text-emerald-500 block font-medium">سریع‌تر از سطح توافق (SLA)</span>
+                      <span className="text-2xs text-emerald-500 block font-medium">سریع‌تر از سطح توافق (SLA)</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
                       <Clock className="w-6 h-6" />
@@ -1547,7 +1536,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <select
                           value={recentTicketsLimit}
                           onChange={(e) => setRecentTicketsLimit(Number(e.target.value))}
-                          className="text-[10px] font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                          className="text-2xs font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                           style={{ colorScheme: 'dark' }}
                           title="تعداد تیکت‌های نمایش داده شده"
                         >
@@ -1568,7 +1557,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="overflow-auto max-h-[420px]">
                       <table className="w-full text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-[10px] font-bold sticky top-0 bg-white dark:bg-slate-900">
+                          <tr className="border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-2xs font-bold sticky top-0 bg-white dark:bg-slate-900">
                             <th className="p-4 pr-5">موضوع تیکت</th>
                             <th className="p-4">مشتری</th>
                             <th className="p-4">اولویت</th>
@@ -1585,7 +1574,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                               <td className="p-4 pr-5 font-semibold text-slate-900 dark:text-white max-w-[200px] truncate">{ticket.title}</td>
                               <td className="p-4">{ticket.customer}</td>
                               <td className="p-4">
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold ${
                                   ticket.priority === 'بحرانی' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
                                   ticket.priority === 'بالا' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
                                   ticket.priority === 'متوسط' ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400' :
@@ -1601,7 +1590,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                 </span>
                               </td>
                               <td className="p-4">
-                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-bold ${
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-3xs font-bold ${
                                   ticket.status === 'باز' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
                                   ticket.status === 'در حال بررسی' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
                                   ticket.status === 'منتظر پاسخ مشتری' ? 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400' :
@@ -1628,7 +1617,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <select
                         value={recentActivitiesLimit}
                         onChange={(e) => setRecentActivitiesLimit(Number(e.target.value))}
-                        className="text-[10px] font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                        className="text-2xs font-bold px-2 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/40 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         style={{ colorScheme: 'dark' }}
                         title="تعداد فعالیت‌های نمایش داده شده"
                       >
@@ -1646,18 +1635,18 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       {activitiesError ? (
                         <div className="flex flex-col items-center justify-center py-10 text-center">
                           <AlertTriangle className="w-8 h-8 text-amber-500 mb-2" />
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500">خطا در بارگذاری فعالیت‌ها</p>
+                          <p className="text-2xs text-slate-400 dark:text-slate-500">خطا در بارگذاری فعالیت‌ها</p>
                         </div>
                       ) : activitiesLoading ? (
                         <div className="flex flex-col items-center justify-center py-10 text-center">
                           <Loader2 className="w-8 h-8 text-slate-300 dark:text-slate-600 animate-spin mb-2" />
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500">در حال بارگذاری...</p>
+                          <p className="text-2xs text-slate-400 dark:text-slate-500">در حال بارگذاری...</p>
                         </div>
                       ) : activities.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10 text-center">
                           <Activity className="w-10 h-10 text-slate-300 dark:text-slate-600 mb-3" />
                           <p className="text-xs font-bold text-slate-400 dark:text-slate-500">هنوز فعالیتی ثبت نشده است</p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">فعالیت‌هایی مانند ثبت تیکت، افزودن محصول و ایجاد مشتری در این بخش نمایش داده می‌شود.</p>
+                          <p className="text-2xs text-slate-400 dark:text-slate-500 mt-1">فعالیت‌هایی مانند ثبت تیکت، افزودن محصول و ایجاد مشتری در این بخش نمایش داده می‌شود.</p>
                         </div>
                       ) : (
                         activities.slice(0, recentActivitiesLimit).map((act) => (
@@ -1680,9 +1669,9 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           <div className="flex-1 min-w-0 space-y-0.5">
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-bold text-slate-900 dark:text-white">{act.title}</span>
-                              <span className="text-[9px] font-mono text-slate-400 font-bold">{act.time}</span>
+                              <span className="text-3xs font-mono text-slate-400 font-bold">{act.time}</span>
                             </div>
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-normal">{act.subtitle}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">{act.subtitle}</p>
                           </div>
                         </div>
                       )))}
@@ -1740,7 +1729,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           setIsProductLoading(true);
                           setTimeout(() => setIsProductLoading(false), 1200);
                         }}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-white dark:bg-slate-900 shadow-xs cursor-pointer flex items-center gap-1 transition-colors"
+                        className="px-2.5 py-1.5 rounded-lg text-2xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-white dark:bg-slate-900 shadow-xs cursor-pointer flex items-center gap-1 transition-colors"
                         title="شبیه‌سازی بارگذاری سرور با اسکلتون"
                       >
                         <RefreshCw className="w-3 h-3 text-brand-500 animate-spin" />
@@ -1749,7 +1738,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                       <button
                         onClick={() => setProductErrorState(!productErrorState)}
-                        className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                        className={`px-2.5 py-1.5 rounded-lg text-2xs font-bold transition-all cursor-pointer ${
                           productErrorState
                             ? 'bg-rose-500 text-white shadow-xs'
                             : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-white dark:bg-slate-900'
@@ -1794,7 +1783,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <select
                           value={productStatusFilter}
                           onChange={(e) => { setProductStatusFilter(e.target.value); setProductPage(1); }}
-                          className="w-full text-[11px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                          className="w-full text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         >
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">وضعیت: همه</option>
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="فعال">فعال</option>
@@ -1808,7 +1797,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <select
                           value={productVersionFilter}
                           onChange={(e) => { setProductVersionFilter(e.target.value); setProductPage(1); }}
-                          className="w-full text-[11px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                          className="w-full text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         >
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">نسخه: همه</option>
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="v2.4.1">v2.4.1</option>
@@ -1825,7 +1814,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <select
                           value={productDateFilter}
                           onChange={(e) => { setProductDateFilter(e.target.value); setProductPage(1); }}
-                          className="w-full text-[11px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
+                          className="w-full text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3 py-2.5 outline-none focus:border-brand-500 text-slate-600 dark:text-slate-300 cursor-pointer"
                         >
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="همه">تاریخ ایجاد: همه</option>
                           <option className="dark:bg-slate-800 dark:text-slate-200" value="۱۴۰۲">امسال (۱۴۰۲)</option>
@@ -1979,12 +1968,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                   >
                                     {p.name}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-bold">دسته: {p.category}</div>
+                                  <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5 font-bold">دسته: {p.category}</div>
                                 </td>
 
                                 {/* Version */}
                                 <td className="p-4 font-mono font-semibold">
-                                  <span className="px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800 text-[10px] bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400">
+                                  <span className="px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800 text-2xs bg-slate-50 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400">
                                     {p.version}
                                   </span>
                                 </td>
@@ -1996,7 +1985,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                                 {/* Status */}
                                 <td className="p-4">
-                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-black ${
                                     p.status === 'فعال' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
                                     p.status === 'غیرفعال' ? 'bg-slate-100 text-slate-500 dark:bg-slate-800/80 dark:text-slate-400' :
                                     'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'
@@ -2058,7 +2047,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                                 setMenuFixedStyle(undefined);
                                                 handleOpenProductDetails(p);
                                               }}
-                                              className="w-full px-3.5 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
+                                              className="w-full px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
                                             >
                                               <Eye className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                               <span>مشاهده جزئیات</span>
@@ -2067,7 +2056,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                             <button
                                               type="button"
                                               onClick={() => handleOpenDrawerForEdit(p)}
-                                              className="w-full px-3.5 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
+                                              className="w-full px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
                                             >
                                               <Edit className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                               <span>ویرایش محصول</span>
@@ -2080,7 +2069,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                                 setMenuFixedStyle(undefined);
                                                 showFeedback(`بخش مدیریت مشتریان محصول "${p.name}" فراخوانی شد.`);
                                               }}
-                                              className="w-full px-3.5 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
+                                              className="w-full px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
                                             >
                                               <Users2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                               <span>مدیریت مشتریان</span>
@@ -2097,7 +2086,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                                 setActiveTab('tickets');
                                                 showFeedback(`نمایش تیکت‌های مربوط به محصول "${p.name}"`);
                                               }}
-                                              className="w-full px-3.5 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
+                                              className="w-full px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center gap-2 cursor-pointer transition-colors text-right"
                                             >
                                               <Inbox className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                               <span>مشاهده تیکت‌ها</span>
@@ -2108,7 +2097,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                             <button
                                               type="button"
                                               onClick={() => handleToggleProductStatus(p.id)}
-                                              className={`w-full px-3.5 py-2 text-[11px] font-bold flex items-center gap-2 cursor-pointer transition-colors text-right ${
+                                              className={`w-full px-3.5 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors text-right ${
                                                 p.status === 'فعال'
                                                   ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10'
                                                   : 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10'
@@ -2123,7 +2112,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                             <button
                                               type="button"
                                               onClick={() => handleDeleteProduct(p)}
-                                              className="w-full px-3.5 py-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer transition-colors text-right"
+                                              className="w-full px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer transition-colors text-right"
                                             >
                                               <Trash2 className="w-3.5 h-3.5 shrink-0" />
                                               <span>حذف محصول</span>
@@ -2144,7 +2133,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/30">
                       
                       {/* Left: count description */}
-                      <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                      <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
                         نمایش{' '}
                         <span className="font-mono text-slate-800 dark:text-slate-200">
                           {Math.min((productPage - 1) * productItemsPerPage + 1, filteredProducts.length)}
@@ -2165,11 +2154,11 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         
                         {/* Selector items count */}
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-slate-400 font-semibold">تعداد در صفحه:</span>
+                          <span className="text-2xs text-slate-400 font-semibold">تعداد در صفحه:</span>
                           <select
                             value={productItemsPerPage}
                             onChange={(e) => { setProductItemsPerPage(Number(e.target.value)); setProductPage(1); }}
-                            className="text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
+                            className="text-2xs font-bold px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
                           >
                             <option className="dark:bg-slate-800 dark:text-slate-200" value={2}>۲ تایی</option>
                             <option className="dark:bg-slate-800 dark:text-slate-200" value={5}>۵ تایی</option>
@@ -2189,7 +2178,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             <ChevronRight className="w-4 h-4" />
                           </button>
 
-                          <div className="text-[11px] font-mono px-2">
+                          <div className="text-xs font-mono px-2">
                             صفحه <span className="text-slate-900 dark:text-white font-extrabold">{productPage}</span> از <span className="text-slate-400">{Math.ceil(filteredProducts.length / productItemsPerPage)}</span>
                           </div>
 
@@ -2243,7 +2232,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                 {drawerMode === 'edit' && 'ویرایش مشخصات محصول'}
                                 {drawerMode === 'view' && 'جزئیات و مشخصات فنی محصول'}
                               </h3>
-                              <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+                              <p className="text-2xs text-slate-400 font-bold mt-0.5">
                                 {drawerMode === 'create' && 'کاتالوگ و شناسنامه جدید ثبت کنید'}
                                 {drawerMode === 'edit' && `ویرایش شناسه ${selectedProduct?.id}`}
                                 {drawerMode === 'view' && `شناسه فنی: ${selectedProduct?.id}`}
@@ -2268,15 +2257,15 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                               {drawerName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'PR'}
                             </div>
                             <div className="min-w-0">
-                              <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">پیش‌نمایش زنده لوگو</div>
+                              <div className="text-2xs text-slate-400 dark:text-slate-500 font-bold">پیش‌نمایش زنده لوگو</div>
                               <h4 className="text-xs font-black text-slate-900 dark:text-white truncate mt-0.5">{drawerName || 'نام محصول شما'}</h4>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-mono truncate">{drawerVersion || 'v1.0.0'}</p>
+                              <p className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5 font-mono truncate">{drawerVersion || 'v1.0.0'}</p>
                             </div>
                           </div>
 
                           {/* Field 1: Name */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">نام محصول / پلتفرم</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">نام محصول / پلتفرم</label>
                             <input
                               type="text"
                               required
@@ -2296,13 +2285,13 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                               } disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 dark:text-slate-100`}
                             />
                             {drawerErrors.name && (
-                              <p className="text-[10px] text-rose-500 font-bold">{drawerErrors.name}</p>
+                              <p className="text-2xs text-rose-500 font-bold">{drawerErrors.name}</p>
                             )}
                           </div>
 
                           {/* Field 2: Description */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">توضیحات کلی و کاربردی</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">توضیحات کلی و کاربردی</label>
                             <textarea
                               disabled={drawerMode === 'view'}
                               placeholder="توضیحاتی درباره این پلتفرم، کاربرد اصلی آن و زیرسرویس‌های متصل بنویسید..."
@@ -2316,7 +2305,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           {/* Field 3 & 4 Grid: Version & Category */}
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                              <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">نسخه پلتفرم</label>
+                              <label className="block text-xs font-black text-slate-600 dark:text-slate-400">نسخه پلتفرم</label>
                               <input
                                 type="text"
                                 required
@@ -2336,12 +2325,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                 } disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 dark:text-slate-100`}
                               />
                               {drawerErrors.version && (
-                                <p className="text-[10px] text-rose-500 font-bold">{drawerErrors.version}</p>
+                                <p className="text-2xs text-rose-500 font-bold">{drawerErrors.version}</p>
                               )}
                             </div>
 
                             <div className="space-y-1.5">
-                              <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">دسته‌بندی پلتفرم</label>
+                              <label className="block text-xs font-black text-slate-600 dark:text-slate-400">دسته‌بندی پلتفرم</label>
                               <select
                                 disabled={drawerMode === 'view'}
                                 value={drawerCategory}
@@ -2360,7 +2349,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                           {/* Field 5: Logo background gradients */}
                           <div className="space-y-2">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">طرح لوگو و رنگ پیش‌زمینه</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">طرح لوگو و رنگ پیش‌زمینه</label>
                             {drawerMode !== 'view' ? (
                               <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950/20 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                 {[
@@ -2400,7 +2389,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                           {/* Field 6: Status Toggle */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">وضعیت فعلی پلتفرم</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">وضعیت فعلی پلتفرم</label>
                             <div className="grid grid-cols-3 gap-2 p-1.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
                               {[
                                 { status: 'فعال', label: '🟢 فعال' },
@@ -2412,7 +2401,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                   key={item.status}
                                   disabled={drawerMode === 'view'}
                                   onClick={() => setDrawerStatus(item.status as Product['status'])}
-                                  className={`py-2 text-[10px] font-black rounded-lg transition-all ${
+                                  className={`py-2 text-2xs font-black rounded-lg transition-all ${
                                     drawerMode === 'view' ? 'cursor-not-allowed' : 'cursor-pointer'
                                   } ${
                                     drawerStatus === item.status
@@ -2429,8 +2418,8 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           {/* If View Mode, display technical audits */}
                           {drawerMode === 'view' && selectedProduct && (
                             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                              <h5 className="text-[11px] font-black text-slate-800 dark:text-slate-200">گزارش تله‌متری و آمار فنی</h5>
-                              <div className="grid grid-cols-2 gap-3 text-[10px] font-bold">
+                              <h5 className="text-xs font-black text-slate-800 dark:text-slate-200">گزارش تله‌متری و آمار فنی</h5>
+                              <div className="grid grid-cols-2 gap-3 text-2xs font-bold">
                                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/80">
                                   <span className="text-slate-400 block mb-1">مشتریان متصل</span>
                                   <span className="text-xs text-slate-800 dark:text-slate-200 font-mono font-black">{selectedProduct.clientsCount} سازمان</span>
@@ -2508,11 +2497,11 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <div className="flex items-center gap-2">
                         <span className={`inline-block w-2 h-2 rounded-full ${(selectedDetailProduct || products[0]).status === 'فعال' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                         <h2 className="text-lg font-black text-slate-900 dark:text-white">{(selectedDetailProduct || products[0]).name}</h2>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        <span className="px-2 py-0.5 rounded-md text-2xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                           {(selectedDetailProduct || products[0]).id}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-1">
+                      <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">
                         دسته: {(selectedDetailProduct || products[0]).category} | آخرین بروزرسانی: {(selectedDetailProduct || products[0]).lastUpdated}
                       </p>
                     </div>
@@ -2605,12 +2594,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <Icon className={`w-4 h-4 ${isActive ? 'text-brand-500' : 'text-slate-400'}`} />
                         <span>{tab.label}</span>
                         {tab.id === 'customers' && (
-                          <span className="mr-1 font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
+                          <span className="mr-1 font-mono text-2xs px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
                             {productCustomerConnections.filter(c => c.productId === detailPrd.id).length}
                           </span>
                         )}
                         {tab.id === 'tickets' && (
-                          <span className="mr-1 font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
+                          <span className="mr-1 font-mono text-2xs px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
                             {tickets.filter(t => t.product === detailPrd.name).length}
                           </span>
                         )}
@@ -2643,12 +2632,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           </p>
 
                           <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-3">
-                            <h4 className="text-[11px] font-black text-slate-800 dark:text-white">قابلیت‌ها و ماژول‌های فنی</h4>
+                            <h4 className="text-xs font-black text-slate-800 dark:text-white">قابلیت‌ها و ماژول‌های فنی</h4>
                             <div className="flex flex-wrap gap-2">
                               {['تشخیص نفوذ بلادرنگ (IDS)', 'پایش ترافیک رمزنگاری شده TLS', 'یکپارچگی هوشمند با Active Directory', 'رمزنگاری پایگاه داده محلی AES-256', 'تولید خودکار گواهی امنیتی SSL', 'پروتکل پاسخ سریع پورت‌ها', 'سیستم لاگین پیشرفته دو عاملی'].map((feat, idx) => (
                                 <span 
                                   key={idx} 
-                                  className="px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800/60 text-[10px] bg-slate-50 dark:bg-slate-950/20 text-slate-600 dark:text-slate-400 font-bold"
+                                  className="px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800/60 text-2xs bg-slate-50 dark:bg-slate-950/20 text-slate-600 dark:text-slate-400 font-bold"
                                 >
                                   🛡️ {feat}
                                 </span>
@@ -2668,7 +2657,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           </div>
 
                           <div className="p-4 rounded-xl border border-emerald-100 dark:border-emerald-950/30 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] space-y-3">
-                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                            <div className="flex justify-between items-center text-2xs font-bold text-slate-400">
                               <span>پایش وضعیت ۳۰ روز گذشته</span>
                               <span className="text-emerald-500 font-semibold">۱۰۰٪ بدون قطعی بحرانی</span>
                             </div>
@@ -2686,7 +2675,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                               ))}
                             </div>
 
-                            <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 pt-1">
+                            <div className="flex justify-between items-center text-3xs font-bold text-slate-400 pt-1">
                               <span>۳۰ روز قبل</span>
                               <span>امروز</span>
                             </div>
@@ -2695,15 +2684,15 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           {/* Latency and technical specs */}
                           <div className="grid grid-cols-3 gap-4 text-center">
                             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
-                              <span className="block text-[10px] font-bold text-slate-400 mb-1">متوسط زمان پاسخ‌دهی</span>
+                              <span className="block text-2xs font-bold text-slate-400 mb-1">متوسط زمان پاسخ‌دهی</span>
                               <span className="text-xs font-mono font-black text-slate-800 dark:text-white">۱۴ میلی‌ثانیه</span>
                             </div>
                             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
-                              <span className="block text-[10px] font-bold text-slate-400 mb-1">گره‌های مستقر شده</span>
+                              <span className="block text-2xs font-bold text-slate-400 mb-1">گره‌های مستقر شده</span>
                               <span className="text-xs font-mono font-black text-slate-800 dark:text-white">۳ گره ابری</span>
                             </div>
                             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800">
-                              <span className="block text-[10px] font-bold text-slate-400 mb-1">رویدادهای ثبت شده</span>
+                              <span className="block text-2xs font-bold text-slate-400 mb-1">رویدادهای ثبت شده</span>
                               <span className="text-xs font-mono font-black text-slate-800 dark:text-white">۴.۵ میلیون لاگ</span>
                             </div>
                           </div>
@@ -2753,7 +2742,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <div className="p-6 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-800 text-white space-y-4 shadow-md shadow-brand-500/10">
                           <div className="space-y-1.5">
                             <h4 className="text-xs font-black">پورتال راهنمای توسعه‌دهندگان</h4>
-                            <p className="text-[10px] text-brand-100 leading-relaxed font-medium">
+                            <p className="text-2xs text-brand-100 leading-relaxed font-medium">
                               زیرسیستم‌ها و کدهای نمونه جهت اتصال ساده‌ترین کلاینت‌ها با استفاده از توکن اهدا شده در تب مستندات فنی موجود است.
                             </p>
                           </div>
@@ -2779,7 +2768,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-xs font-black text-slate-900 dark:text-white">مشتریان متصل و مجوزها</h3>
-                          <p className="text-[10px] text-slate-400 mt-1">مدیریت مشتریان اختصاص یافته به محصول و فعال‌سازی/تمدید دوره‌ای اشتراک‌ها.</p>
+                          <p className="text-2xs text-slate-400 mt-1">مدیریت مشتریان اختصاص یافته به محصول و فعال‌سازی/تمدید دوره‌ای اشتراک‌ها.</p>
                         </div>
                         <button
                           onClick={() => {
@@ -2800,7 +2789,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           <Building className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
                           <div className="max-w-xs mx-auto space-y-1">
                             <h4 className="text-xs font-black text-slate-900 dark:text-white">هیچ مشتری تخصیص داده نشده است</h4>
-                            <p className="text-[10px] text-slate-400">شما می‌توانید از دکمه بالا برای اتصال اولین کلاینت به این محصول استفاده کنید.</p>
+                            <p className="text-2xs text-slate-400">شما می‌توانید از دکمه بالا برای اتصال اولین کلاینت به این محصول استفاده کنید.</p>
                           </div>
                         </div>
                       ) : (
@@ -2818,7 +2807,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                   <th className="p-4 pl-6 text-left">عملیات</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs font-medium text-slate-700 dark:text-slate-300">
                                 {productCustomerConnections
                                   .filter(c => c.productId === (selectedDetailProduct || products[0]).id)
                                   .map((conn) => (
@@ -2830,12 +2819,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                           </div>
                                           <div>
                                             <div className="font-black text-slate-900 dark:text-white text-xs">{conn.customerName}</div>
-                                            <div className="text-[10px] text-slate-400 mt-0.5 font-bold">مسئول فنی: {conn.managerName}</div>
+                                            <div className="text-2xs text-slate-400 mt-0.5 font-bold">مسئول فنی: {conn.managerName}</div>
                                           </div>
                                         </div>
                                       </td>
                                       <td className="p-4">
-                                        <span className={`px-2 py-0.5 rounded-md border font-bold text-[10px] ${
+                                        <span className={`px-2 py-0.5 rounded-md border font-bold text-2xs ${
                                           conn.subscriptionType === 'Enterprise' ? 'border-indigo-100 dark:border-indigo-950/40 bg-indigo-50/50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' :
                                           conn.subscriptionType === 'Premium' ? 'border-amber-100 dark:border-amber-950/40 bg-amber-50/50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' :
                                           'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400'
@@ -2855,7 +2844,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                       </td>
                                       <td className="p-4">
                                         <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 max-w-[160px] justify-between">
-                                          <span className="font-mono text-[9px] text-slate-500 truncate select-all">{conn.activationKey}</span>
+                                          <span className="font-mono text-3xs text-slate-500 truncate select-all">{conn.activationKey}</span>
                                           <button
                                             type="button"
                                             onClick={() => {
@@ -2875,7 +2864,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                         </div>
                                       </td>
                                       <td className="p-4">
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black ${
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-black ${
                                           conn.licenseStatus === 'فعال' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
                                           conn.licenseStatus === 'منقضی شده' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
                                           'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
@@ -2888,7 +2877,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                         <div className="flex items-center justify-end gap-1">
                                           <button
                                             onClick={() => handleRenewConnection(conn.id)}
-                                            className="px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-brand-500 hover:border-brand-500 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-all font-bold text-[10px]"
+                                            className="px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-brand-500 hover:border-brand-500 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-all font-bold text-2xs"
                                             title="تمدید یکساله لایسنس"
                                           >
                                             تمدید
@@ -2923,7 +2912,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-xs font-black text-slate-900 dark:text-white">تیکت‌های باز و تاریخچه حوادث</h3>
-                          <p className="text-[10px] text-slate-400 mt-1">لیست تیکت‌های پشتیبانی کلاینت‌ها که روی این زیرسرویس فنی ثبت شده است.</p>
+                          <p className="text-2xs text-slate-400 mt-1">لیست تیکت‌های پشتیبانی کلاینت‌ها که روی این زیرسرویس فنی ثبت شده است.</p>
                         </div>
                         <button
                           onClick={() => {
@@ -2945,7 +2934,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           <Inbox className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
                           <div className="max-w-xs mx-auto space-y-1">
                             <h4 className="text-xs font-black text-slate-900 dark:text-white">تیکتی برای این محصول ثبت نشده</h4>
-                            <p className="text-[10px] text-slate-400">تمام تیکت‌های این پلتفرم در وضعیت بسته شده قرار دارند یا هنوز گزارش مشکلی ثبت نشده است.</p>
+                            <p className="text-2xs text-slate-400">تمام تیکت‌های این پلتفرم در وضعیت بسته شده قرار دارند یا هنوز گزارش مشکلی ثبت نشده است.</p>
                           </div>
                         </div>
                       ) : (
@@ -2963,14 +2952,14 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                   <th className="p-4 pl-6 text-left">عملیات</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs font-medium text-slate-700 dark:text-slate-300">
                                 {tickets
                                   .filter(t => t.product === (selectedDetailProduct || products[0]).name)
                                   .map((t) => (
                                     <tr key={t.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 group transition-colors">
                                       <td className="p-4 pr-6">
                                         <div className="flex items-start gap-2.5">
-                                          <span className="font-mono font-bold text-slate-400 text-[10px] shrink-0 mt-0.5">{t.id}</span>
+                                          <span className="font-mono font-bold text-slate-400 text-2xs shrink-0 mt-0.5">{t.id}</span>
                                           <div>
                                             <div className="font-black text-slate-900 dark:text-white text-xs group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-1">{t.title}</div>
                                           </div>
@@ -2980,7 +2969,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                         {t.customer}
                                       </td>
                                       <td className="p-4">
-                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
+                                        <span className={`px-2 py-0.5 rounded-full text-3xs font-black ${
                                           t.priority === 'بحرانی' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
                                           t.priority === 'بالا' ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400' :
                                           t.priority === 'متوسط' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
@@ -2990,7 +2979,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                         </span>
                                       </td>
                                       <td className="p-4">
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black ${
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-black ${
                                           t.status === 'باز' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
                                           t.status === 'در حال بررسی' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
                                           t.status === 'منتظر پاسخ مشتری' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
@@ -3039,7 +3028,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     >
                       <div>
                         <h3 className="text-xs font-black text-slate-900 dark:text-white">آرشیو و خط‌زمان انتشار نسخه‌ها</h3>
-                        <p className="text-[10px] text-slate-400 mt-1">تغییرات فنی، وصله‌های امنیتی و ویژگی‌های معرفی شده در طول چرخه‌ی حیات نرم‌افزار.</p>
+                        <p className="text-2xs text-slate-400 mt-1">تغییرات فنی، وصله‌های امنیتی و ویژگی‌های معرفی شده در طول چرخه‌ی حیات نرم‌افزار.</p>
                       </div>
 
                       {/* Release Timeline */}
@@ -3051,8 +3040,8 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-mono font-black text-slate-900 dark:text-white">{(selectedDetailProduct || products[0]).version}</span>
-                              <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">آخرین نسخه پایدار فعلی</span>
-                              <span className="text-[10px] text-slate-400 font-bold font-mono">انتشار در ۱۴۰۲/۱۰/۱۲</span>
+                              <span className="px-1.5 py-0.5 rounded-md text-4xs font-black bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">آخرین نسخه پایدار فعلی</span>
+                              <span className="text-2xs text-slate-400 font-bold font-mono">انتشار در ۱۴۰۲/۱۰/۱۲</span>
                             </div>
                             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                               بهینه‌سازی مصرف حافظه موقت در فیلتر کردن رویدادهای زنده، ارتقای کتابخانه رمزنگاری هسته به آخرین استاندارد ایمن OpenSSL، و رفع باگ جزئی در پاسخگویی وب‌هوک به کلاینت‌های با ترافیک بالا.
@@ -3067,7 +3056,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-mono font-black text-slate-800 dark:text-slate-350">v2.3.0</span>
-                              <span className="text-[10px] text-slate-400 font-bold font-mono">انتشار در ۱۴۰۲/۰۶/۰۵</span>
+                              <span className="text-2xs text-slate-400 font-bold font-mono">انتشار در ۱۴۰۲/۰۶/۰۵</span>
                             </div>
                             <p className="text-xs text-slate-600 dark:text-slate-450 leading-relaxed font-medium">
                               افزودن داشبورد مانیتورینگ بلادرنگ، قابلیت برون‌سپاری گزارش‌های امنیتی به فرمت PDF استاندارد، افزایش محدودیت توابع وب‌سرویس و همگام‌سازی سریع‌تر با اکتیو دایرکتوری.
@@ -3082,7 +3071,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-mono font-black text-slate-800 dark:text-slate-350">v2.0.0</span>
-                              <span className="text-[10px] text-slate-400 font-bold font-mono">انتشار در ۱۴۰۱/۱۲/۲۰</span>
+                              <span className="text-2xs text-slate-400 font-bold font-mono">انتشار در ۱۴۰۱/۱۲/۲۰</span>
                             </div>
                             <p className="text-xs text-slate-600 dark:text-slate-450 leading-relaxed font-medium">
                               بازنویسی کامل هسته پلتفرم به زبان Go جهت دستیابی به پایداری پردازشی فوق‌العاده و پاسخگویی به درخواست‌های موازی بالا، به همراه‌ پیاده‌سازی مکانیزم کش چندلایه‌ای.
@@ -3108,23 +3097,23 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             <BookOpen className="w-4 h-4 text-brand-500" />
                             <span>مستندات راه‌اندازی و ادغام کلاینت</span>
                           </h3>
-                          <p className="text-[10px] text-slate-400">کدهای نمونه جهت هدیه و تایید اعتبار کلید اشتراک محصول در زیرسیستم شرکت مقصد.</p>
+                          <p className="text-2xs text-slate-400">کدهای نمونه جهت هدیه و تایید اعتبار کلید اشتراک محصول در زیرسیستم شرکت مقصد.</p>
                         </div>
 
                         <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
                           
                           <div className="space-y-2">
-                            <h4 className="text-[11px] font-black text-slate-800 dark:text-white flex items-center gap-1">
+                            <h4 className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1">
                               <Terminal className="w-3.5 h-3.5 text-slate-400" />
                               <span>گام اول: احراز هویت با هدر هدیه لایسنس</span>
                             </h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                              کلید فعال‌سازی دریافت شده در پنل مدیریت را با هدر <code className="font-mono bg-slate-50 dark:bg-slate-950 px-1 py-0.5 rounded text-rose-500 text-[10px]">X-CMP-License</code> در بدنه درخواست‌ها به آدرس API محصول ارسال کنید.
+                              کلید فعال‌سازی دریافت شده در پنل مدیریت را با هدر <code className="font-mono bg-slate-50 dark:bg-slate-950 px-1 py-0.5 rounded text-rose-500 text-2xs">X-CMP-License</code> در بدنه درخواست‌ها به آدرس API محصول ارسال کنید.
                             </p>
                           </div>
 
                           {/* Code Block */}
-                          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-950 text-slate-300 p-4 space-y-2 font-mono text-[10px] text-left relative" dir="ltr">
+                          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-950 text-slate-300 p-4 space-y-2 font-mono text-2xs text-left relative" dir="ltr">
                             <button
                               type="button"
                               onClick={() => {
@@ -3136,7 +3125,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                               title="کپی نمونه کد"
                             >
                               {copiedTextId === 'curl-code' ? (
-                                <span className="text-[8px] bg-emerald-500 text-white px-1.5 py-0.5 rounded font-sans">Copied!</span>
+                                <span className="text-4xs bg-emerald-500 text-white px-1.5 py-0.5 rounded font-sans">Copied!</span>
                               ) : (
                                 <Copy className="w-3.5 h-3.5" />
                               )}
@@ -3149,12 +3138,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           </div>
 
                           <div className="space-y-2 pt-2">
-                            <h4 className="text-[11px] font-black text-slate-800 dark:text-white flex items-center gap-1">
+                            <h4 className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1">
                               <Terminal className="w-3.5 h-3.5 text-slate-400" />
                               <span>گام دوم: مدیریت کدهای خطا</span>
                             </h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                              در صورتی که اعتبار پروانه مشتری به اتمام رسیده باشد، پاسخ سیستم با کد وضعیت <code className="font-mono bg-slate-50 dark:bg-slate-950 px-1 py-0.5 rounded text-rose-500 text-[10px]">402 Payment Required</code> برگشت داده خواهد شد و پروسه به تمدید فوری نیاز دارد.
+                              در صورتی که اعتبار پروانه مشتری به اتمام رسیده باشد، پاسخ سیستم با کد وضعیت <code className="font-mono bg-slate-50 dark:bg-slate-950 px-1 py-0.5 rounded text-rose-500 text-2xs">402 Payment Required</code> برگشت داده خواهد شد و پروسه به تمدید فوری نیاز دارد.
                             </p>
                           </div>
 
@@ -3197,7 +3186,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     >
                       <div>
                         <h3 className="text-xs font-black text-slate-900 dark:text-white">تنظیمات سیستمی و مدیریتی پلتفرم</h3>
-                        <p className="text-[10px] text-slate-400 mt-1">پیکربندی پارامترهای تله‌متری، لاگ‌برداری، و محدودیت‌های ترافیکی در سطح محصول.</p>
+                        <p className="text-2xs text-slate-400 mt-1">پیکربندی پارامترهای تله‌متری، لاگ‌برداری، و محدودیت‌های ترافیکی در سطح محصول.</p>
                       </div>
 
                       {/* Settings Form */}
@@ -3230,13 +3219,13 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                         {/* Option 3: Checkboxes */}
                         <div className="space-y-3 pt-2">
-                          <h4 className="text-[11px] font-black text-slate-800 dark:text-white">گزینه‌های دسترسی و ارتباطی</h4>
+                          <h4 className="text-xs font-black text-slate-800 dark:text-white">گزینه‌های دسترسی و ارتباطی</h4>
                           
                           <label className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all">
                             <input type="checkbox" defaultChecked className="rounded text-brand-600 focus:ring-brand-500/20 cursor-pointer" />
                             <div className="text-right">
                               <span className="block text-xs font-bold text-slate-800 dark:text-white">ارسال هشدار به ایمیل مدیران فنی در صورت خطا</span>
-                              <span className="block text-[10px] text-slate-400 mt-0.5">در صورت ریزش پایداری یا قطع گره به سرعت پیامک و ایمیل فرستاده شود.</span>
+                              <span className="block text-2xs text-slate-400 mt-0.5">در صورت ریزش پایداری یا قطع گره به سرعت پیامک و ایمیل فرستاده شود.</span>
                             </div>
                           </label>
 
@@ -3244,7 +3233,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             <input type="checkbox" defaultChecked className="rounded text-brand-600 focus:ring-brand-500/20 cursor-pointer" />
                             <div className="text-right">
                               <span className="block text-xs font-bold text-slate-800 dark:text-white">تجدید دوره‌ای کلیدهای توکن بدون قطع لایسنس فعال</span>
-                              <span className="block text-[10px] text-slate-400 mt-0.5">امکان استفاده موازی از کلید قدیمی و جدید برای ۲۴ ساعت.</span>
+                              <span className="block text-2xs text-slate-400 mt-0.5">امکان استفاده موازی از کلید قدیمی و جدید برای ۲۴ ساعت.</span>
                             </div>
                           </label>
                         </div>
@@ -3293,7 +3282,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             </div>
                             <div>
                               <h3 className="text-xs font-black text-slate-950 dark:text-white">اتصال مشتری به {(selectedDetailProduct || products[0]).name}</h3>
-                              <p className="text-[9px] text-slate-400 mt-0.5">تخصیص مجوز استفاده به همراه تعداد کاربران و زمان اعتبار لایسنس.</p>
+                              <p className="text-3xs text-slate-400 mt-0.5">تخصیص مجوز استفاده به همراه تعداد کاربران و زمان اعتبار لایسنس.</p>
                             </div>
                           </div>
                           <button
@@ -3308,7 +3297,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                         <form onSubmit={handleAssignCustomerSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 font-medium text-xs">
                           {/* Field 1: Customer select */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">نام کلاینت سازمانی</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">نام کلاینت سازمانی</label>
                             <select
                               required
                               value={assignCustomerName}
@@ -3324,7 +3313,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                           {/* Field 2: Subscription Type */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">نوع اشتراک تخصیص یافته</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">نوع اشتراک تخصیص یافته</label>
                             <select
                               value={assignSubscriptionType}
                               onChange={(e) => setAssignSubscriptionType(e.target.value)}
@@ -3338,7 +3327,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                           {/* Field 3: Max Users */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">سقف تعداد کاربران مجاز</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">سقف تعداد کاربران مجاز</label>
                             <input
                               type="number"
                               required
@@ -3352,7 +3341,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           {/* Field 4: Dates */}
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1.5">
-                              <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">تاریخ شروع اعتبار</label>
+                              <label className="block text-xs font-black text-slate-600 dark:text-slate-400">تاریخ شروع اعتبار</label>
                               <input
                                 type="text"
                                 value={assignStartDate}
@@ -3361,7 +3350,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">تاریخ اتمام اعتبار</label>
+                              <label className="block text-xs font-black text-slate-600 dark:text-slate-400">تاریخ اتمام اعتبار</label>
                               <input
                                 type="text"
                                 value={assignEndDate}
@@ -3373,18 +3362,18 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                           {/* Field 5: Activation Key */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">کلید لایسنس تولید شده</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">کلید لایسنس تولید شده</label>
                             <input
                               type="text"
                               value={assignActivationKey}
                               onChange={(e) => setAssignActivationKey(e.target.value)}
-                              className="w-full font-mono text-[11px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3.5 py-3 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300"
+                              className="w-full font-mono text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 px-3.5 py-3 outline-none focus:border-brand-500 text-slate-700 dark:text-slate-300"
                             />
                           </div>
 
                           {/* Field 6: Notes */}
                           <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">توضیحات و الزامات اختصاصی</label>
+                            <label className="block text-xs font-black text-slate-600 dark:text-slate-400">توضیحات و الزامات اختصاصی</label>
                             <textarea
                               rows={3}
                               value={assignNotes}
@@ -3487,7 +3476,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <span className="w-2.5 h-2.5 rounded-full bg-brand-500" />
                       <h2 className="text-base font-black text-slate-900 dark:text-white">مدیریت مشتریان سازمانی</h2>
                     </div>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                       مشاهده، مدیریت پروانه‌ها، کاربران و تیکت‌های پشتیبانی شرکت‌های تابعه و مشتریان بزرگ 
                     </p>
                   </div>
@@ -3519,7 +3508,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="space-y-1 text-right">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-bold">کل سازمان‌ها</span>
                       <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">320</span>
-                      <span className="text-[10px] text-emerald-500 block font-bold">+۵ سازمان جدید در این ماه</span>
+                      <span className="text-2xs text-emerald-500 block font-bold">+۵ سازمان جدید در این ماه</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-500 flex items-center justify-center">
                       <Building className="w-5.5 h-5.5" />
@@ -3533,7 +3522,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
                         {285 + customers.filter(c => c.status === 'فعال').length - 5}
                       </span>
-                      <span className="text-[10px] text-brand-500 block font-bold">۹۲٪ نرخ ماندگاری سالانه</span>
+                      <span className="text-2xs text-brand-500 block font-bold">۹۲٪ نرخ ماندگاری سالانه</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
                       <CheckCircle className="w-5.5 h-5.5" />
@@ -3545,7 +3534,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="space-y-1 text-right">
                       <span className="text-xs text-slate-400 dark:text-slate-500 block font-bold">تمدید لایسنس نزدیک</span>
                       <span className="text-2xl font-black text-amber-500 font-mono">18</span>
-                      <span className="text-[10px] text-amber-500 block font-bold">اقدام فوری تمدید دوره</span>
+                      <span className="text-2xs text-amber-500 block font-bold">اقدام فوری تمدید دوره</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                       <AlertTriangle className="w-5.5 h-5.5" />
@@ -3559,7 +3548,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
                         {tickets.filter(t => t.status !== 'بسته شده').length}
                       </span>
-                      <span className="text-[10px] text-emerald-500 block font-bold">پشتیبانی فعال زیر SLA</span>
+                      <span className="text-2xs text-emerald-500 block font-bold">پشتیبانی فعال زیر SLA</span>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
                       <MessageSquare className="w-5.5 h-5.5" />
@@ -3680,7 +3669,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       )}
 
                       {/* Server Error Simulation Toggle */}
-                      <label className="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-950/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 transition-all text-[11px] text-slate-500 font-bold">
+                      <label className="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-950/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 transition-all text-xs text-slate-500 font-bold">
                         <input
                           type="checkbox"
                           checked={customerErrorState}
@@ -3707,7 +3696,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <div className="flex-1 space-y-1">
                         <h4 className="text-sm font-black text-rose-700 dark:text-rose-400">خطای برقراری ارتباط با پایگاه داده مشتریان</h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                          سامانه در دریافت لیست سازمان‌ها با خطای <code className="font-mono bg-rose-500/10 px-1 py-0.5 rounded text-rose-600 text-[10px]">503 Service Unavailable</code> مواجه گردید. لطفاً اتصال سرورهای لودبالانسر را بررسی نموده یا دکمه تلاش مجدد را کلیک کنید.
+                          سامانه در دریافت لیست سازمان‌ها با خطای <code className="font-mono bg-rose-500/10 px-1 py-0.5 rounded text-rose-600 text-2xs">503 Service Unavailable</code> مواجه گردید. لطفاً اتصال سرورهای لودبالانسر را بررسی نموده یا دکمه تلاش مجدد را کلیک کنید.
                         </p>
                         <div className="pt-2">
                           <button
@@ -3789,7 +3778,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                             {c.name}
                                             <ArrowUpRight className="w-3 h-3 text-brand-500" />
                                           </span>
-                                          <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-full ${
+                                          <span className={`text-4xs font-extrabold px-1.5 py-0.5 rounded-full ${
                                             c.customerType === 'Enterprise' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' :
                                             c.customerType === 'Business' ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' :
                                             'bg-slate-100 dark:bg-slate-800 text-slate-500'
@@ -3797,7 +3786,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                             {c.customerType === 'Enterprise' ? 'Enterprise' : c.customerType === 'Business' ? 'Business' : 'Standard'}
                                           </span>
                                         </div>
-                                        <div className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5 font-bold">
+                                        <div className="text-2xs text-slate-400 dark:text-slate-500 flex items-center gap-1.5 font-bold">
                                           <span className="font-mono">{c.id}</span>
                                           <span className="text-slate-300">•</span>
                                           <span>{c.industry}</span>
@@ -3810,14 +3799,14 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                   <td className="p-4">
                                     <div className="space-y-0.5">
                                       <div className="font-black text-slate-800 dark:text-slate-200">{c.managerName || 'ثبت نشده'}</div>
-                                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono font-bold">{c.managerEmail || '-'}</div>
+                                      <div className="text-2xs text-slate-400 dark:text-slate-500 font-mono font-bold">{c.managerEmail || '-'}</div>
                                     </div>
                                   </td>
 
                                   {/* Active Products Count & List */}
                                   <td className="p-4">
                                     <div className="relative">
-                                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black ${
+                                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-2xs font-black ${
                                         (c.activeProductsCount || 0) > 0 
                                           ? 'bg-brand-500/10 text-brand-500' 
                                           : 'bg-slate-100 text-slate-400 dark:bg-slate-800'
@@ -3830,7 +3819,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                                   {/* Subscription Status pill */}
                                   <td className="p-4">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-2xs font-extrabold ${
                                       c.status === 'فعال' 
                                         ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' 
                                         : c.status === 'در انتظار'
@@ -3894,7 +3883,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                               setMenuFixedStyle(undefined);
                                               showWorkspaceToast(`کارپوشه مدیریتی ${c.name} با موفقیت بارگذاری شد.`, 'success');
                                             }}
-                                            className="w-full text-right text-[11px] font-black px-3 py-2 rounded-xl text-brand-650 dark:text-brand-400 hover:bg-brand-500/5 dark:hover:bg-brand-500/10 flex items-center gap-2 cursor-pointer border-b border-slate-100 dark:border-slate-800 pb-2"
+                                            className="w-full text-right text-xs font-black px-3 py-2 rounded-xl text-brand-650 dark:text-brand-400 hover:bg-brand-500/5 dark:hover:bg-brand-500/10 flex items-center gap-2 cursor-pointer border-b border-slate-100 dark:border-slate-800 pb-2"
                                           >
                                             <Sparkles className="w-4.5 h-4.5 text-brand-500 shrink-0 animate-pulse" />
                                             <span>ورود به میز کار (Workspace)</span>
@@ -3908,7 +3897,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                               setActiveRowActionId(null);
                                               setMenuFixedStyle(undefined);
                                             }}
-                                            className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-right text-xs font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
                                             <Eye className="w-4.5 h-4.5 text-slate-400" />
                                             <span>مشاهده پروفایل کامل</span>
@@ -3923,7 +3912,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                               setActiveRowActionId(null);
                                               setMenuFixedStyle(undefined);
                                             }}
-                                            className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-right text-xs font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
                                             <Shield className="w-4.5 h-4.5 text-slate-400" />
                                             <span>مشاهده لایسنس‌ها</span>
@@ -3937,7 +3926,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                               setActiveRowActionId(null);
                                               setMenuFixedStyle(undefined);
                                             }}
-                                            className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-right text-xs font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
                                             <MessageSquare className="w-4.5 h-4.5 text-slate-400" />
                                             <span>مشاهده تیکت‌های فعال</span>
@@ -3949,7 +3938,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                               setActiveRowActionId(null);
                                               setMenuFixedStyle(undefined);
                                             }}
-                                            className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-right text-xs font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer"
                                           >
                                             <Users2 className="w-4.5 h-4.5 text-slate-400" />
                                             <span>مدیریت کاربران رابط</span>
@@ -3957,7 +3946,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                                           <button
                                             onClick={() => handleOpenEditCustomer(c)}
-                                            className="w-full text-right text-[11px] font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                                            className="w-full text-right text-xs font-bold px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
                                           >
                                             <Edit className="w-4.5 h-4.5 text-slate-400" />
                                             <span>ویرایش اطلاعات</span>
@@ -3965,7 +3954,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                                           <button
                                             onClick={() => handleDeactivateCustomer(c)}
-                                            className={`w-full text-right text-[11px] font-black px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800 ${
+                                            className={`w-full text-right text-xs font-black px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800 ${
                                               c.status === 'فعال' ? 'text-rose-600 hover:bg-rose-500/10' : 'text-emerald-600 hover:bg-emerald-500/10'
                                             }`}
                                           >
@@ -3975,7 +3964,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                                           <button
                                             onClick={() => handleDeleteCustomer(c)}
-                                            className="w-full text-right text-[11px] font-black px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                                            className="w-full text-right text-xs font-black px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
                                           >
                                             <Trash2 className="w-4.5 h-4.5 text-rose-400 shrink-0" />
                                             <span>حذف دائمی شرکت</span>
@@ -4050,12 +4039,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
                     <div className="text-right">
                       <h3 className="text-sm font-black text-slate-950 dark:text-white">نمودار حجم تیکت‌های دریافتی روزانه</h3>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500">میانگین توزیع تیکت‌های پشتیبانی در بازه زمانی اخیر</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">میانگین توزیع تیکت‌های پشتیبانی در بازه زمانی اخیر</p>
                     </div>
 
                     <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/60 dark:border-slate-800/60 self-start sm:self-auto font-bold">
-                      <span className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-[10px] text-slate-900 dark:text-white shadow-xs">۷ روز اخیر</span>
-                      <span className="px-3 py-1.5 text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer">۳۰ روز اخیر</span>
+                      <span className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-2xs text-slate-900 dark:text-white shadow-xs">۷ روز اخیر</span>
+                      <span className="px-3 py-1.5 text-2xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer">۳۰ روز اخیر</span>
                     </div>
                   </div>
 
@@ -4076,10 +4065,10 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <line x1="50" y1="210" x2="680" y2="210" stroke="#cbd5e1" strokeWidth="1" className="dark:stroke-slate-800" />
 
                       {/* Y-Axis Labels */}
-                      <text x="35" y="34" className="text-[10px] fill-slate-400 font-mono" textAnchor="end">۶۰ تیکت</text>
-                      <text x="35" y="94" className="text-[10px] fill-slate-400 font-mono" textAnchor="end">۴۰ تیکت</text>
-                      <text x="35" y="154" className="text-[10px] fill-slate-400 font-mono" textAnchor="end">۲۰ تیکت</text>
-                      <text x="35" y="214" className="text-[10px] fill-slate-400 font-mono" textAnchor="end">۰</text>
+                      <text x="35" y="34" className="text-2xs fill-slate-400 font-mono" textAnchor="end">۶۰ تیکت</text>
+                      <text x="35" y="94" className="text-2xs fill-slate-400 font-mono" textAnchor="end">۴۰ تیکت</text>
+                      <text x="35" y="154" className="text-2xs fill-slate-400 font-mono" textAnchor="end">۲۰ تیکت</text>
+                      <text x="35" y="214" className="text-2xs fill-slate-400 font-mono" textAnchor="end">۰</text>
 
                       {/* Area Fill */}
                       <path 
@@ -4107,13 +4096,13 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <circle cx="680" cy="50" r="5" fill="#3b82f6" stroke="#fff" strokeWidth="2" className="dark:stroke-slate-900" />
 
                       {/* X-Axis Labels */}
-                      <text x="140" y="232" className="text-[10px] fill-slate-400 font-bold" textAnchor="middle">شنبه</text>
-                      <text x="230" y="232" className="text-[10px] fill-slate-400 font-bold" textAnchor="middle">یکشنبه</text>
-                      <text x="320" y="232" className="text-[10px] fill-slate-400 font-bold" textAnchor="middle">دوشنبه</text>
-                      <text x="410" y="232" className="text-[10px] fill-slate-400 font-bold" textAnchor="middle">سه‌شنبه</text>
-                      <text x="500" y="232" className="text-[10px] fill-slate-400 font-bold" textAnchor="middle">چهارشنبه</text>
-                      <text x="590" y="232" className="text-[10px] fill-slate-400 font-bold" textAnchor="middle">پنجشنبه</text>
-                      <text x="680" y="232" className="text-[10px] fill-slate-400 font-bold" textAnchor="middle">جمعه</text>
+                      <text x="140" y="232" className="text-2xs fill-slate-400 font-bold" textAnchor="middle">شنبه</text>
+                      <text x="230" y="232" className="text-2xs fill-slate-400 font-bold" textAnchor="middle">یکشنبه</text>
+                      <text x="320" y="232" className="text-2xs fill-slate-400 font-bold" textAnchor="middle">دوشنبه</text>
+                      <text x="410" y="232" className="text-2xs fill-slate-400 font-bold" textAnchor="middle">سه‌شنبه</text>
+                      <text x="500" y="232" className="text-2xs fill-slate-400 font-bold" textAnchor="middle">چهارشنبه</text>
+                      <text x="590" y="232" className="text-2xs fill-slate-400 font-bold" textAnchor="middle">پنجشنبه</text>
+                      <text x="680" y="232" className="text-2xs fill-slate-400 font-bold" textAnchor="middle">جمعه</text>
                     </svg>
                   </div>
                 </div>
@@ -4158,14 +4147,14 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs flex flex-col justify-between">
                     <div>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-2">انطباق با قوانین SLA</h4>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed mb-4">میزان پاسخگویی صحیح به تعهدات سطح خدمات نسبت به کل ماه‌های سال جاری.</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed mb-4">میزان پاسخگویی صحیح به تعهدات سطح خدمات نسبت به کل ماه‌های سال جاری.</p>
                     </div>
                     <div className="flex items-end justify-between">
                       <div className="space-y-1">
                         <span className="text-3xl font-black text-emerald-500 font-mono">99.2%</span>
-                        <span className="text-[10px] text-slate-400 block font-bold">هدف سازمانی: بالای ۹۸.۵٪</span>
+                        <span className="text-2xs text-slate-400 block font-bold">هدف سازمانی: بالای ۹۸.۵٪</span>
                       </div>
-                      <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded-lg font-bold">بسیار عالی</span>
+                      <span className="text-2xs bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded-lg font-bold">بسیار عالی</span>
                     </div>
                   </div>
                 </div>
@@ -4292,8 +4281,8 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       <h2 className="text-base font-black text-slate-900 dark:text-white">{currentUserName}</h2>
                       <p className="text-xs text-slate-500 mt-0.5">{currentUserRoleLabel}</p>
                       <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-full font-bold">{userEmail}</span>
-                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold ${currentUserData?.active === false ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                        <span className="text-2xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-full font-bold">{userEmail}</span>
+                        <span className={`text-2xs px-2.5 py-0.5 rounded-full font-bold ${currentUserData?.active === false ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
                           {currentUserData?.active === false ? 'غیرفعال' : 'فعال'}
                         </span>
                       </div>
@@ -4321,7 +4310,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-400 font-bold">ایمیل:</span>
-                        <span className="font-mono text-[10.5px] font-black text-slate-500 truncate">{userEmail}</span>
+                        <span className="font-mono text-2xs font-black text-slate-500 truncate">{userEmail}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-400 font-bold">شماره تماس:</span>
@@ -4411,7 +4400,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="overflow-x-auto">
                       <table className="w-full text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase">
+                          <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-2xs font-extrabold uppercase">
                             <th className="p-3 pr-0">نام درخواست‌کننده</th>
                             <th className="p-3">شرکت / سازمان</th>
                             <th className="p-3">ایمیل</th>
@@ -4427,17 +4416,17 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                               <td className="p-3">{req.companyName}</td>
                               <td className="p-3 font-mono text-slate-500">{req.email}</td>
                               <td className="p-3 font-mono">{req.phone}</td>
-                              <td className="p-3 text-slate-500 text-[10px]">{new Date(req.createdAt).toLocaleDateString('fa-IR')}</td>
+                              <td className="p-3 text-slate-500 text-2xs">{new Date(req.createdAt).toLocaleDateString('fa-IR')}</td>
                               <td className="p-3 pl-0 text-left space-x-2 space-x-reverse">
                                 <button
                                   onClick={() => handleApproveRequest(req)}
-                                  className="text-[10px] bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                                  className="text-2xs bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                                 >
                                   تأیید و فعال‌سازی
                                 </button>
                                 <button
                                   onClick={() => handleRejectRequest(req)}
-                                  className="text-[10px] bg-rose-500/10 hover:bg-rose-500/15 text-rose-600 dark:text-rose-400 font-black px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                                  className="text-2xs bg-rose-500/10 hover:bg-rose-500/15 text-rose-600 dark:text-rose-400 font-black px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                                 >
                                   رد درخواست
                                 </button>
@@ -4506,7 +4495,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
             <form onSubmit={handleCreateTicket} className="space-y-4 text-right">
               <div>
-                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">موضوع و عنوان خطا</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">موضوع و عنوان خطا</label>
                 <input
                   type="text"
                   required
@@ -4518,7 +4507,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">مشتری سازمانی / شرکت تابعه</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">مشتری سازمانی / شرکت تابعه</label>
                 <select
                   required
                   value={newTicketCustomer}
@@ -4534,7 +4523,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">زیرسرویس مربوطه</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">زیرسرویس مربوطه</label>
                   <select
                     value={newTicketProduct}
                     onChange={(e) => setNewTicketProduct(e.target.value)}
@@ -4547,7 +4536,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">اولویت تیکت</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">اولویت تیکت</label>
                   <select
                     value={newTicketPriority}
                     onChange={(e) => setNewTicketPriority(e.target.value as Ticket['priority'])}
@@ -4605,7 +4594,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
             <form onSubmit={handleCreateProduct} className="space-y-4 text-right">
               <div>
-                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">نام زیرسرویس جدید</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">نام زیرسرویس جدید</label>
                 <input
                   type="text"
                   required
@@ -4618,7 +4607,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">دسته‌بندی فنی</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">دسته‌بندی فنی</label>
                   <select
                     value={newProductCategory}
                     onChange={(e) => setNewProductCategory(e.target.value)}
@@ -4633,7 +4622,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">نسخه اولیه</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">نسخه اولیه</label>
                   <input
                     type="text"
                     required
@@ -4699,7 +4688,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <h3 className="text-sm font-black text-slate-950 dark:text-white">
                       {customerDrawerMode === 'create' ? 'ثبت مشتری سازمانی جدید' : `ویرایش اطلاعات: ${companyName}`}
                     </h3>
-                    <p className="text-[10px] text-slate-400 mt-0.5 font-bold">
+                    <p className="text-2xs text-slate-400 mt-0.5 font-bold">
                       وارد کردن مشخصات ثبتی، اطلاعات مالی و رابط‌های فنی کلاینت
                     </p>
                   </div>
@@ -4726,12 +4715,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                 <div className="space-y-4">
                   <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800/60">
                     <Building className="w-4 h-4 text-slate-400" />
-                    <h4 className="text-[11px] font-black text-slate-900 dark:text-white">اطلاعات ثبتی و شرکتی</h4>
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white">اطلاعات ثبتی و شرکتی</h4>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">نام رسمی سازمان <span className="text-rose-500">*</span></label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">نام رسمی سازمان <span className="text-rose-500">*</span></label>
                       <input
                         type="text"
                         required
@@ -4743,7 +4732,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">نام تجاری / برند</label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">نام تجاری / برند</label>
                       <input
                         type="text"
                         value={companyCommercialName}
@@ -4756,7 +4745,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">صنعت و حوزه فعالیت</label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">صنعت و حوزه فعالیت</label>
                       <input
                         type="text"
                         value={companyIndustry}
@@ -4767,7 +4756,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">تلفن تماس شرکت</label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">تلفن تماس شرکت</label>
                       <input
                         type="text"
                         value={companyPhone}
@@ -4781,7 +4770,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">سطح مشتری (Tier)</label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">سطح مشتری (Tier)</label>
                       <select
                         value={businessType}
                         onChange={(e) => setBusinessType(e.target.value as 'Enterprise' | 'Business' | 'Standard')}
@@ -4794,7 +4783,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">وب‌سایت رسمی</label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">وب‌سایت رسمی</label>
                       <input
                         type="text"
                         value={companyWebsite}
@@ -4807,7 +4796,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">آدرس پستی دفتر مرکزی</label>
+                    <label className="block text-xs font-black text-slate-600 dark:text-slate-400">آدرس پستی دفتر مرکزی</label>
                     <textarea
                       rows={2}
                       value={companyAddress}
@@ -4822,12 +4811,12 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                 <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800/60">
                     <UserCheck className="w-4 h-4 text-slate-400" />
-                    <h4 className="text-[11px] font-black text-slate-900 dark:text-white">رابط اصلی و مسئول فنی سازمان</h4>
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white">رابط اصلی و مسئول فنی سازمان</h4>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">نام و نام‌خانوادگی <span className="text-rose-500">*</span></label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">نام و نام‌خانوادگی <span className="text-rose-500">*</span></label>
                       <input
                         type="text"
                         required
@@ -4839,7 +4828,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">شماره همراه رابط</label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">شماره همراه رابط</label>
                       <input
                         type="text"
                         value={contactPhone}
@@ -4852,7 +4841,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">پست الکترونیکی رابط <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-black text-slate-600 dark:text-slate-400">پست الکترونیکی رابط <span className="text-rose-500">*</span></label>
                     <input
                       type="email"
                       required
@@ -4870,11 +4859,11 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                   <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800/60">
                       <ShieldAlert className="w-4 h-4 text-slate-400" />
-                      <h4 className="text-[11px] font-black text-slate-900 dark:text-white">وضعیت پلتفرم و دسترسی</h4>
+                      <h4 className="text-xs font-black text-slate-900 dark:text-white">وضعیت پلتفرم و دسترسی</h4>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-black text-slate-600 dark:text-slate-400">وضعیت دسترسی سازمان</label>
+                      <label className="block text-xs font-black text-slate-600 dark:text-slate-400">وضعیت دسترسی سازمان</label>
                       <select
                         value={businessStatus}
                         onChange={(e) => setBusinessStatus(e.target.value as 'فعال' | 'غیرفعال' | 'در انتظار')}
@@ -4960,7 +4949,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-black text-slate-950 dark:text-white">{selectedCustomerProfile.name}</h3>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                        <span className={`text-2xs font-black px-2 py-0.5 rounded-full ${
                           selectedCustomerProfile.customerType === 'Enterprise' ? 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400' :
                           selectedCustomerProfile.customerType === 'Business' ? 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' :
                           'bg-slate-100 dark:bg-slate-800 text-slate-500'
@@ -5116,7 +5105,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                           <MapPin className="w-4 h-4 text-brand-500" />
                           <span>موقعیت جغرافیایی و سرورها</span>
                         </h4>
-                        <div className="h-28 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 relative overflow-hidden font-bold text-[10px]">
+                        <div className="h-28 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 relative overflow-hidden font-bold text-2xs">
                           {/* Simulated Maps view */}
                           <div className="absolute inset-0 opacity-45 dark:opacity-20 bg-radial from-slate-600 via-slate-400 to-transparent flex items-center justify-center" />
                           <div className="z-10 text-center space-y-1">
@@ -5137,7 +5126,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     >
                       <table className="w-full text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-bold">
+                          <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-2xs font-bold">
                             <th className="p-4 pr-6">عنوان محصول فعال</th>
                             <th className="p-4">نسخه</th>
                             <th className="p-4">نوع اشتراک</th>
@@ -5146,7 +5135,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             <th className="p-4 pl-6 text-left">انقضا</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs font-semibold text-slate-700 dark:text-slate-300">
                           {productCustomerConnections
                             .filter(conn => conn.customerName === selectedCustomerProfile.name)
                             .map((conn) => (
@@ -5157,19 +5146,19 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                      conn.productId === 'PRD-02' ? 'Identity Protection Suite' : 
                                      'Elastic Compute Module'}
                                   </div>
-                                  <div className="text-[9px] text-slate-400 mt-0.5 font-bold">شناسه: {conn.productId}</div>
+                                  <div className="text-3xs text-slate-400 mt-0.5 font-bold">شناسه: {conn.productId}</div>
                                 </td>
                                 <td className="p-4 font-mono font-bold text-slate-500">v3.4.0</td>
                                 <td className="p-4">
-                                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-black ${
+                                  <span className={`px-2 py-0.5 rounded-md text-3xs font-black ${
                                     conn.subscriptionType === 'Enterprise' ? 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400' : 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                                   }`}>
                                     {conn.subscriptionType === 'Enterprise' ? 'Enterprise' : 'Premium'}
                                   </span>
                                 </td>
                                 <td className="p-4 font-mono text-slate-800 dark:text-slate-200">{conn.userCount} کاربر</td>
-                                <td className="p-4 font-mono text-[10px] text-slate-500 select-all">{conn.activationKey}</td>
-                                <td className="p-4 pl-6 text-left font-mono text-rose-500 text-[10px]">{conn.endDate}</td>
+                                <td className="p-4 font-mono text-2xs text-slate-500 select-all">{conn.activationKey}</td>
+                                <td className="p-4 pl-6 text-left font-mono text-rose-500 text-2xs">{conn.endDate}</td>
                               </tr>
                             ))}
                           {productCustomerConnections.filter(conn => conn.customerName === selectedCustomerProfile.name).length === 0 && (
@@ -5194,7 +5183,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     >
                       <table className="w-full text-right border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-bold">
+                          <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-2xs font-bold">
                             <th className="p-4 pr-6">شناسه تیکت</th>
                             <th className="p-4">موضوع تیکت پشتیبانی</th>
                             <th className="p-4">زیرسرویس مربوطه</th>
@@ -5203,7 +5192,7 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             <th className="p-4 pl-6 text-left">آخرین بروزرسانی</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-xs font-bold text-slate-700 dark:text-slate-300">
                           {tickets
                             .filter(t => t.customer === selectedCustomerProfile.name)
                             .map((t) => (
@@ -5211,25 +5200,25 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                                 <td className="p-4 pr-6 font-mono font-black text-slate-400">{t.id}</td>
                                 <td className="p-4 max-w-xs truncate text-slate-900 dark:text-white">{t.title}</td>
                                 <td className="p-4">
-                                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded text-[10px] font-medium">
+                                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded text-2xs font-medium">
                                     {t.product}
                                   </span>
                                 </td>
                                 <td className="p-4">
-                                  <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold ${
+                                  <span className={`px-2 py-0.5 rounded text-3xs font-extrabold ${
                                     t.priority === 'بحرانی' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10' : 'bg-slate-100 text-slate-500'
                                   }`}>
                                     {t.priority}
                                   </span>
                                 </td>
                                 <td className="p-4 text-center">
-                                  <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold ${
+                                  <span className={`px-2 py-0.5 rounded text-3xs font-extrabold ${
                                     t.status === 'باز' ? 'text-blue-500' : 'text-slate-400'
                                   }`}>
                                     {t.status}
                                   </span>
                                 </td>
-                                <td className="p-4 pl-6 text-left font-mono text-[10px] text-slate-400">{t.date}</td>
+                                <td className="p-4 pl-6 text-left font-mono text-2xs text-slate-400">{t.date}</td>
                               </tr>
                             ))}
                           {tickets.filter(t => t.customer === selectedCustomerProfile.name).length === 0 && (
@@ -5267,8 +5256,8 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                             <div className="absolute -right-[25px] top-1 w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 border-2 border-white dark:border-slate-900" />
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-[10px] font-bold text-slate-400">{evt.time}</span>
-                                <span className="text-[10px] text-brand-500 font-extrabold">{evt.user}</span>
+                                <span className="font-mono text-2xs font-bold text-slate-400">{evt.time}</span>
+                                <span className="text-2xs text-brand-500 font-extrabold">{evt.user}</span>
                               </div>
                               <p className="text-slate-600 dark:text-slate-400 font-bold leading-relaxed">{evt.text}</p>
                             </div>

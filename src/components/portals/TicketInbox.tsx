@@ -447,7 +447,7 @@ export default function TicketInboxView({
             <span className="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse" />
             <h2 className="text-lg font-black text-slate-900 dark:text-white">مدیریت تیکت‌ها</h2>
           </div>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold">
             مشاهده، پیگیری و مدیریت درخواست‌های پشتیبانی فنی و امنیتی لایه سازمانی
           </p>
         </div>
@@ -507,12 +507,12 @@ export default function TicketInboxView({
           </div>
           <div className="space-y-1.5 flex-1">
             <h4 className="text-xs font-black text-rose-800 dark:text-rose-400">خطای موقت در ارتباط با API صادرکننده لایسنس </h4>
-            <p className="text-[11px] text-rose-700/80 dark:text-rose-450 leading-relaxed font-bold">
+            <p className="text-xs text-rose-700/80 dark:text-rose-450 leading-relaxed font-bold">
               مجموعه داده‌های پشتیبانی با تاخیر مواجه شدند. لطفاً اتصال شبکه خود را بررسی کرده و مجدداً تلاش کنید. همچنین می‌توانید با زدن دکمه زیر مشکل را ریست نمایید.
             </p>
             <button
               onClick={() => setHasError(false)}
-              className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black rounded-lg transition-all cursor-pointer"
+              className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-2xs font-black rounded-lg transition-all cursor-pointer"
             >
               تلاش مجدد و رفع خطا
             </button>
@@ -532,9 +532,9 @@ export default function TicketInboxView({
           }`}
         >
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">تیکت‌های باز</span>
             <h4 className="text-2xl font-black text-slate-900 dark:text-white font-mono leading-none">{totalOpenTickets}</h4>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">جریان کار فعال در سیستم</span>
+            <span className="text-2xs font-bold text-slate-400 dark:text-slate-500">جریان کار فعال در سیستم</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
             <Inbox className="w-5 h-5" />
@@ -551,9 +551,9 @@ export default function TicketInboxView({
           }`}
         >
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">در انتظار پاسخ</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">در انتظار پاسخ</span>
             <h4 className="text-2xl font-black text-amber-500 font-mono leading-none">{totalWaitingResponse}</h4>
-            <span className="text-[10px] font-bold text-amber-500">نیاز به اقدام و مانیتورینگ</span>
+            <span className="text-2xs font-bold text-amber-500">نیاز به اقدام و مانیتورینگ</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
@@ -570,9 +570,9 @@ export default function TicketInboxView({
           }`}
         >
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">حل شده</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">حل شده</span>
             <h4 className="text-2xl font-black text-emerald-500 font-mono leading-none">{totalResolved}</h4>
-            <span className="text-[10px] font-bold text-emerald-500">تیکت‌های خاتمه‌یافته نهایی</span>
+            <span className="text-2xs font-bold text-emerald-500">تیکت‌های خاتمه‌یافته نهایی</span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0">
             <CheckCircle className="w-5 h-5" />
@@ -582,9 +582,9 @@ export default function TicketInboxView({
         {/* KPI 4: Avg Response Time */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5 flex items-center justify-between shadow-xs hover:border-brand-500/30 transition-all duration-200">
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">میانگین زمان پاسخ</span>
+            <span className="text-2xs font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">میانگین زمان پاسخ</span>
             <h4 className="text-md font-black text-indigo-600 dark:text-indigo-400 leading-none mt-1.5">۱ ساعت و ۴۵ دقیقه</h4>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5 mt-1 font-sans">
+            <span className="text-2xs font-bold text-emerald-500 flex items-center gap-0.5 mt-1 font-sans">
               <UserCheck className="w-3 h-3" />
               <span>تحت پوشش کامل تعهدات SLA</span>
             </span>
@@ -763,7 +763,7 @@ export default function TicketInboxView({
               }`}
             >
               <span>{c.label}</span>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+              <span className={`text-2xs font-mono px-2 py-0.5 rounded-full ${
                 isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
               }`}>
                 {c.count}
@@ -840,7 +840,7 @@ export default function TicketInboxView({
                           {ag.name}
                         </button>
                       )) : (
-                        <div className="text-slate-500 text-[10px] px-4 py-3 text-center">کارشناسی برای این محصول تخصیص داده نشده است</div>
+                        <div className="text-slate-500 text-2xs px-4 py-3 text-center">کارشناسی برای این محصول تخصیص داده نشده است</div>
                       );
                     })()}
                   </div>
@@ -913,7 +913,7 @@ export default function TicketInboxView({
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full min-w-[1100px] text-right border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-slate-450 dark:text-slate-550 text-[10px] font-extrabold uppercase">
+                  <tr className="border-b border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-slate-450 dark:text-slate-550 text-2xs font-extrabold uppercase">
                     <th className="p-4 pr-6 w-10">
                       <input
                         type="checkbox"
@@ -972,7 +972,7 @@ export default function TicketInboxView({
                             >
                               {t.title}
                             </span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block">
+                            <span className="text-2xs text-slate-400 dark:text-slate-500 font-bold block">
                               ثبت شده توسط نماینده شرکت
                             </span>
                           </div>
@@ -987,7 +987,7 @@ export default function TicketInboxView({
 
                         {/* Product */}
                         <td className="p-4 whitespace-nowrap">
-                          <span className="bg-slate-100 dark:bg-slate-800/80 text-slate-650 dark:text-slate-400 px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-slate-150 dark:border-slate-700/50">
+                          <span className="bg-slate-100 dark:bg-slate-800/80 text-slate-650 dark:text-slate-400 px-2.5 py-1 rounded-lg text-2xs font-extrabold border border-slate-150 dark:border-slate-700/50">
                             {t.product}
                           </span>
                         </td>
@@ -995,7 +995,7 @@ export default function TicketInboxView({
                         {/* Assigned Agent */}
                         <td className="p-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center font-black text-[9px] font-sans border border-slate-200 dark:border-slate-700">
+                            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center font-black text-3xs font-sans border border-slate-200 dark:border-slate-700">
                               {t.assignedTo === 'بدون تخصیص (هوشمند)' ? '؟؟' : t.assignedTo.substring(0, 2)}
                             </div>
                             <span className="font-bold text-slate-800 dark:text-slate-200">
@@ -1006,7 +1006,7 @@ export default function TicketInboxView({
 
                         {/* Priority */}
                         <td className="p-4 text-center whitespace-nowrap">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-black border ${
                             t.priority === 'بحرانی' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
                             t.priority === 'بالا' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
                             t.priority === 'متوسط' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' :
@@ -1023,7 +1023,7 @@ export default function TicketInboxView({
 
                         {/* Status */}
                         <td className="p-4 text-center whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black ${
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-2xs font-black ${
                             t.status === 'باز' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 border border-blue-500/20' :
                             t.status === 'در حال بررسی' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400 border border-amber-500/20' :
                             t.status === 'منتظر پاسخ مشتری' ? 'bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400 border border-purple-500/20' :
@@ -1166,8 +1166,8 @@ export default function TicketInboxView({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-bold text-slate-400">#{t.ticketNumber}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
+                      <span className="font-mono text-2xs font-bold text-slate-400">#{t.ticketNumber}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-3xs font-black ${
                         t.priority === 'بحرانی' ? 'bg-rose-500/10 text-rose-600' :
                         t.priority === 'بالا' ? 'bg-amber-500/10 text-amber-600' :
                         'bg-blue-500/10 text-blue-600'
@@ -1183,16 +1183,16 @@ export default function TicketInboxView({
                       >
                         {t.title}
                       </h4>
-                      <p className="text-[10px] text-slate-400 font-bold">{t.customer} • {t.product}</p>
+                      <p className="text-2xs text-slate-400 font-bold">{t.customer} • {t.product}</p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-2xs">
                       <span className="font-bold text-slate-500">پشتیبان: {t.assignedTo}</span>
                       <span className="font-mono text-slate-400 font-bold">{formatTimeAgo(t.updatedAt)}</span>
                     </div>
 
                     <div className="flex items-center justify-between pt-2">
-                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black ${
+                      <span className={`px-2 py-0.5 rounded-md text-3xs font-black ${
                         t.status === 'باز' ? 'bg-blue-50 text-blue-600' :
                         t.status === 'منتظر پاسخ مشتری' ? 'bg-purple-50 text-purple-600' :
                         'bg-slate-100 text-slate-500'
@@ -1203,7 +1203,7 @@ export default function TicketInboxView({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleToggleSelectRow(t.id)}
-                          className={`text-[10px] px-2.5 py-1 rounded-lg border font-bold ${
+                          className={`text-2xs px-2.5 py-1 rounded-lg border font-bold ${
                             isSelected ? 'bg-brand-500 text-white border-transparent' : 'bg-slate-50 text-slate-600 border-slate-200'
                           }`}
                         >
@@ -1211,7 +1211,7 @@ export default function TicketInboxView({
                         </button>
                         <button
                           onClick={() => setSelectedTicketForDetail(t)}
-                          className="text-[10px] px-2.5 py-1 bg-brand-50 text-brand-600 hover:bg-brand-100 rounded-lg font-bold"
+                          className="text-2xs px-2.5 py-1 bg-brand-50 text-brand-600 hover:bg-brand-100 rounded-lg font-bold"
                         >
                           مشاهده
                         </button>

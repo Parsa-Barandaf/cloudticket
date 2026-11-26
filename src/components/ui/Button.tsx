@@ -23,7 +23,7 @@ const variants = {
 };
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-[11px] rounded-lg gap-1.5',
+  sm: 'px-3 py-1.5 text-xs rounded-lg gap-1.5',
   md: 'px-4 py-2.5 text-xs rounded-xl gap-2',
   lg: 'px-6 py-3 text-sm rounded-xl gap-2',
 };

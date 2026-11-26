@@ -198,7 +198,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
               <motion.p 
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-[10px] text-rose-500 flex items-center gap-1 mt-1 font-semibold"
+                className="text-2xs text-rose-500 flex items-center gap-1 mt-1 font-semibold"
               >
                 <AlertCircle className="w-3.5 h-3.5" />
                 {errors.email}
@@ -213,7 +213,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
               <button
                 type="button"
                 onClick={() => onScreenChange('forgot_password')}
-                className="text-[11px] text-slate-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
+                className="text-xs text-slate-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
               >
                 رمز عبور را فراموش کرده‌اید؟
               </button>
@@ -246,7 +246,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
               <motion.p 
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-[10px] text-rose-500 flex items-center gap-1 mt-1 font-semibold"
+                className="text-2xs text-rose-500 flex items-center gap-1 mt-1 font-semibold"
               >
                 <AlertCircle className="w-3.5 h-3.5" />
                 {errors.password}
@@ -272,7 +272,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
             <motion.p
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-[10px] text-rose-500 flex items-center gap-1 font-semibold bg-rose-50 dark:bg-rose-500/10 p-3 rounded-xl"
+              className="text-2xs text-rose-500 flex items-center gap-1 font-semibold bg-rose-50 dark:bg-rose-500/10 p-3 rounded-xl"
             >
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {apiError}
@@ -364,7 +364,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
                 />
               </div>
               {errors.email && (
-                <p className="text-[10px] text-rose-500 flex items-center gap-1 mt-1 font-semibold">
+                <p className="text-2xs text-rose-500 flex items-center gap-1 mt-1 font-semibold">
                   <AlertCircle className="w-3.5 h-3.5" />
                   {errors.email}
                 </p>
@@ -433,7 +433,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
                   } outline-none focus:border-brand-500 transition-all`}
                 />
               </div>
-              {errors.name && <p className="text-[10px] text-rose-500 font-semibold">{errors.name}</p>}
+              {errors.name && <p className="text-2xs text-rose-500 font-semibold">{errors.name}</p>}
             </div>
 
             {/* Company Name */}
@@ -454,7 +454,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
                   } outline-none focus:border-brand-500 transition-all`}
                 />
               </div>
-              {errors.companyName && <p className="text-[10px] text-rose-500 font-semibold">{errors.companyName}</p>}
+              {errors.companyName && <p className="text-2xs text-rose-500 font-semibold">{errors.companyName}</p>}
             </div>
 
             {/* Corporate Email */}
@@ -475,7 +475,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
                   } outline-none focus:border-brand-500 transition-all`}
                 />
               </div>
-              {errors.email && <p className="text-[10px] text-rose-500 font-semibold">{errors.email}</p>}
+              {errors.email && <p className="text-2xs text-rose-500 font-semibold">{errors.email}</p>}
             </div>
 
             {/* Phone Number */}
@@ -496,7 +496,7 @@ export default function LoginForm({ onSuccess, onScreenChange, currentScreen }: 
                   } outline-none focus:border-brand-500 transition-all`}
                 />
               </div>
-              {errors.phone && <p className="text-[10px] text-rose-500 font-semibold">{errors.phone}</p>}
+              {errors.phone && <p className="text-2xs text-rose-500 font-semibold">{errors.phone}</p>}
             </div>
 
             <button

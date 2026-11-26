@@ -105,7 +105,7 @@ export default function JalaliDatePicker({ value, onChange }: JalaliDatePickerPr
 
           <div className="grid grid-cols-7 gap-0.5 text-center">
             {weekdayNames.map((d, i) => (
-              <span key={i} className="text-[10px] font-black text-slate-400 py-1">{d}</span>
+              <span key={i} className="text-2xs font-black text-slate-400 py-1">{d}</span>
             ))}
             {cells.map((d, i) =>
               d === null ? (
@@ -115,7 +115,7 @@ export default function JalaliDatePicker({ value, onChange }: JalaliDatePickerPr
                   key={i}
                   type="button"
                   onClick={() => selectDay(d)}
-                  className={`h-8 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                  className={`h-8 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                     isSelected(d)
                       ? 'bg-brand-600 text-white'
                       : isToday(d)
