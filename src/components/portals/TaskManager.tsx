@@ -193,6 +193,51 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
   const dragScrollContainerRef = useRef<HTMLElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  // Per-user, per-task "last activity seen" markers (stored locally per account).
+  const activitySeenStorageKey = `task-activity-seen:${currentUserId}`;
+  const [activitySeenMap, setActivitySeenMap] = useState<Record<string, string>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(`task-activity-seen:${currentUserId}`) || '{}');
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      setActivitySeenMap(JSON.parse(localStorage.getItem(`task-activity-seen:${currentUserId}`) || '{}'));
+    } catch {
+      setActivitySeenMap({});
+    }
+  }, [currentUserId]);
+
+  const getLatestActivity = (task: TaskItem) =>
+    task.comments.length > 0 ? task.comments[task.comments.length - 1] : null;
+
+  const isActivityUnread = (task: TaskItem) => {
+    const latest = getLatestActivity(task);
+    if (!latest || latest.authorId === currentUserId) return false;
+    const lastSeen = activitySeenMap[task.id];
+    return !lastSeen || new Date(lastSeen).getTime() < new Date(latest.createdAt).getTime();
+  };
+
+  const markActivitySeen = (task: TaskItem) => {
+    const latest = getLatestActivity(task);
+    if (!latest || latest.authorId === currentUserId) return;
+    setActivitySeenMap(prev => {
+      const lastSeen = prev[task.id];
+      if (lastSeen && new Date(lastSeen).getTime() >= new Date(latest.createdAt).getTime()) return prev;
+      const next = { ...prev, [task.id]: latest.createdAt };
+      try {
+        localStorage.setItem(activitySeenStorageKey, JSON.stringify(next));
+      } catch {
+        /* storage unavailable */
+      }
+      return next;
+    });
+  };
 
   // Find the nearest vertically scrollable ancestor (or fall back to the page).
   const findScrollContainer = (node: HTMLElement | null): HTMLElement | null => {
@@ -205,6 +250,23 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
     }
     return null;
   };
+
+  // Lock background scrolling while the task detail drawer is open.
+  useEffect(() => {
+    if (!selectedTask) return;
+
+    const scrollContainer = findScrollContainer(rootRef.current);
+    const previousContainerOverflow = scrollContainer?.style.overflow ?? '';
+    const previousBodyOverflow = document.body.style.overflow;
+
+    if (scrollContainer) scrollContainer.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      if (scrollContainer) scrollContainer.style.overflow = previousContainerOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [selectedTask]);
 
   // Auto-scroll while dragging near the top/bottom edge of the scrollable area.
   useEffect(() => {
@@ -572,6 +634,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
 
   const openDetail = async (t: TaskItem) => {
     setSelectedTask(t);
+    markActivitySeen(t);
     if (!isUnreadForMe(t)) return;
 
     const seenTask = await markSeen(t.id, currentUserId);
@@ -612,7 +675,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
       : 0;
 
   return (
-    <div className="space-y-6 text-right font-sans pb-12 relative">
+    <div ref={rootRef} className="space-y-6 text-right font-sans pb-12 relative">
       {/* Header */}
       <div ref={headerRef} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-brand-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
@@ -903,6 +966,8 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   const unseen = isUnreadForMe(t);
                   const seenByAssignee = hasAssigneeSeen(t);
                   const isSelected = selectedIds.has(t.id);
+                  const latestActivity = getLatestActivity(t);
+                  const unreadActivity = isActivityUnread(t);
                   return (
                   <motion.div
                     key={t.id}
@@ -995,9 +1060,26 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                               <span>مسئول: <b className="text-slate-600 dark:text-slate-300">{t.assigneeName}</b></span>
                             </span>
                           )}
-                          <span className="flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>{t.comments.length} فعالیت</span>
+                          <span className="relative flex items-center gap-1 group/activity cursor-help">
+                            <span className="relative flex items-center">
+                              <MessageSquare className="w-3 h-3" />
+                              {unreadActivity && (
+                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900 animate-pulse" />
+                              )}
+                            </span>
+                            <span className={unreadActivity ? 'text-rose-500 font-bold' : ''}>{t.comments.length} فعالیت</span>
+                            {latestActivity && (
+                              <span className="pointer-events-none absolute bottom-full right-0 mb-2 z-50 hidden group-hover/activity:block w-64 max-w-[70vw] p-3 rounded-xl bg-slate-900/95 dark:bg-slate-800 text-white shadow-xl text-right whitespace-normal">
+                                <span className="flex items-center justify-between gap-2 mb-1.5">
+                                  <span className="text-2xs font-black text-brand-300">
+                                    {latestActivity.type === 'timeline' ? 'آخرین فعالیت' : 'آخرین یادداشت'}
+                                  </span>
+                                  <span className="text-2xs text-slate-400">{latestActivity.time}</span>
+                                </span>
+                                <span className="block text-2xs font-bold text-slate-300 mb-1">{latestActivity.authorName}</span>
+                                <span className="block text-xs font-medium leading-relaxed text-slate-100 line-clamp-3">{latestActivity.text}</span>
+                              </span>
+                            )}
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/70 text-2xs">
