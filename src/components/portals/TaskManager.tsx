@@ -62,6 +62,7 @@ type ConfirmAction =
   | { type: 'status'; task: TaskItem; status: TaskStatus }
   | { type: 'archive'; task: TaskItem }
   | { type: 'restore'; task: TaskItem }
+  | { type: 'bulk-archive'; ids: string[]; restore: boolean }
   | { type: 'bulk-delete'; ids: string[] };
 
 const statusMeta: Record<TaskStatus, { label: string; cls: string; iconCls: string }> = {
@@ -159,7 +160,7 @@ function TaskCheckbox({ checked, onChange, label }: TaskCheckboxProps) {
 
 export default function TaskManager({ mode, currentUserId, currentUserName, users, showToast }: TaskManagerProps) {
   const isAdmin = mode === 'admin';
-  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask , bulkUpdateStatus, bulkDelete  } =
+  const { tasks, loading, error, refetch, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask, bulkUpdateStatus, bulkDelete, bulkArchive } =
     useTasks(isAdmin ? 'all' : 'mine', isAdmin ? '' : currentUserId);
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -297,6 +298,11 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
     } finally {
       setBulkBusy(false);
     }
+  };
+
+  const requestBulkArchive = () => {
+    if (selectedIds.size === 0 || bulkBusy) return;
+    setConfirmAction({ type: 'bulk-archive', ids: Array.from(selectedIds), restore: showArchived });
   };
 
   const requestBulkDelete = () => {
@@ -445,6 +451,21 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
       } else if (confirmAction.type === 'restore') {
         await unarchiveTask(confirmAction.task.id);
         showToast('وظیفه از آرشیو بازگردانده شد.', 'success');
+      } else if (confirmAction.type === 'bulk-archive') {
+        const { ids, restore } = confirmAction;
+        const cancelledCount = restore
+          ? 0
+          : tasks.filter(t => ids.includes(t.id) && t.statusRaw !== 'DONE').length;
+        await bulkArchive(ids, restore);
+        clearSelection();
+        showToast(
+          restore
+            ? `${ids.length} وظیفه از آرشیو خارج شد.`
+            : cancelledCount > 0
+              ? `${ids.length} وظیفه آرشیو شد و وضعیت ${cancelledCount} وظیفه به «لغو شده» تغییر یافت.`
+              : `${ids.length} وظیفه آرشیو شد.`,
+          'success',
+        );
       } else if (confirmAction.type === 'bulk-delete') {
         const ids = confirmAction.ids;
         await bulkDelete(ids);
@@ -528,6 +549,11 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
   const today = new Date();
 
   const assigneeOptions = users.filter(u => !u.isCustomer);
+
+  const bulkArchiveCancelledCount =
+    confirmAction?.type === 'bulk-archive' && !confirmAction.restore
+      ? tasks.filter(t => confirmAction.ids.includes(t.id) && t.statusRaw !== 'DONE').length
+      : 0;
 
   return (
     <div className="space-y-6 text-right font-sans pb-12 relative">
@@ -723,7 +749,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className={`sticky z-20 transition-[top] duration-200 ${showStickyBar ? 'top-[9.25rem]' : 'top-[5.5rem]'} bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800/70 p-2.5 rounded-2xl shadow-lg shadow-slate-900/5 flex flex-wrap items-center gap-2`}
+                  className={`sticky z-20 transition-[top] duration-200 ${showStickyBar ? 'top-[9.25rem]' : 'top-[5.5rem]'} bg-white/95 dark:bg-slate-800/95 border border-slate-200/70 dark:border-slate-700/60 p-2.5 rounded-2xl shadow-lg shadow-slate-900/5 flex flex-wrap items-center gap-2`}
                 >
                   <div className="flex items-center gap-2 text-[11px] font-black text-slate-700 dark:text-slate-200">
                     <span className="p-1.5 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-400">
@@ -752,6 +778,16 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                       </select>
                       <ChevronDown className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     </div>
+                    <button
+                      type="button"
+                      onClick={requestBulkArchive}
+                      disabled={bulkBusy}
+                      aria-label={showArchived ? 'خروج گروهی از آرشیو' : 'آرشیو وظایف انتخاب‌شده'}
+                      title={showArchived ? 'خروج از آرشیو' : 'آرشیو'}
+                      className="p-2 rounded-xl bg-slate-100 hover:bg-amber-50 dark:bg-slate-700 dark:hover:bg-amber-950/30 text-slate-500 dark:text-slate-400 hover:text-amber-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {showArchived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+                    </button>
                     {isAdmin && (
                       <button
                         type="button"
@@ -759,7 +795,7 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                         disabled={bulkBusy}
                         aria-label="حذف وظایف انتخاب‌شده"
                         title="حذف"
-                        className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/30 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-slate-700 dark:hover:bg-rose-950/30 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1247,28 +1283,38 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                 <h3 className="text-sm font-black text-slate-950 dark:text-white">
                   {confirmAction.type === 'bulk-delete'
                     ? 'حذف گروهی وظایف'
-                    : confirmAction.type === 'delete'
-                      ? 'حذف وظیفه'
-                      : confirmAction.type === 'archive'
-                        ? 'آرشیو وظیفه'
-                        : confirmAction.type === 'restore'
-                          ? 'بازگردانی وظیفه'
-                          : 'تغییر وضعیت وظیفه'}
+                    : confirmAction.type === 'bulk-archive'
+                      ? confirmAction.restore
+                        ? 'بازگردانی گروهی از آرشیو'
+                        : 'آرشیو گروهی وظایف'
+                      : confirmAction.type === 'delete'
+                        ? 'حذف وظیفه'
+                        : confirmAction.type === 'archive'
+                          ? 'آرشیو وظیفه'
+                          : confirmAction.type === 'restore'
+                            ? 'بازگردانی وظیفه'
+                            : 'تغییر وضعیت وظیفه'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                   {confirmAction.type === 'bulk-delete'
                     ? `آیا از حذف ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده مطمئن هستید؟ این عملیات قابل بازگشت نیست.`
-                    : confirmAction.type === 'delete'
-                      ? `آیا از حذف «${confirmAction.task.title}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.`
-                      : confirmAction.type === 'archive'
-                        ? confirmAction.task.statusRaw !== 'DONE'
-                          ? `«${confirmAction.task.title}» آرشیو شود؟ با آرشیو کردن، وضعیت این وظیفه به «لغو شده» تغییر می‌کند.`
-                          : `«${confirmAction.task.title}» آرشیو شود؟`
-                        : confirmAction.type === 'restore'
-                          ? `«${confirmAction.task.title}» از آرشیو خارج شود؟`
-                          : confirmAction.status
-                            ? `وضعیت «${confirmAction.task.title}» به «${statusMeta[confirmAction.status].label}» تغییر یابد؟`
-                            : ''}
+                    : confirmAction.type === 'bulk-archive'
+                      ? confirmAction.restore
+                        ? `آیا از خروج ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده از آرشیو مطمئن هستید؟`
+                        : bulkArchiveCancelledCount > 0
+                          ? `آیا از آرشیو ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده مطمئن هستید؟ وضعیت ${bulkArchiveCancelledCount.toLocaleString('fa-IR')} وظیفه (به‌جز موارد «انجام شده») به «لغو شده» تغییر می‌کند.`
+                          : `آیا از آرشیو ${confirmAction.ids.length.toLocaleString('fa-IR')} وظیفه انتخاب‌شده مطمئن هستید؟`
+                      : confirmAction.type === 'delete'
+                        ? `آیا از حذف «${confirmAction.task.title}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.`
+                        : confirmAction.type === 'archive'
+                          ? confirmAction.task.statusRaw !== 'DONE'
+                            ? `«${confirmAction.task.title}» آرشیو شود؟ با آرشیو کردن، وضعیت این وظیفه به «لغو شده» تغییر می‌کند.`
+                            : `«${confirmAction.task.title}» آرشیو شود؟`
+                          : confirmAction.type === 'restore'
+                            ? `«${confirmAction.task.title}» از آرشیو خارج شود؟`
+                            : confirmAction.status
+                              ? `وضعیت «${confirmAction.task.title}» به «${statusMeta[confirmAction.status].label}» تغییر یابد؟`
+                              : ''}
                 </p>
               </div>
               <div className="flex items-center gap-2 pt-1">
@@ -1285,9 +1331,9 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   className={`flex-1 px-4 py-2 text-white text-xs font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 ${
                     confirmAction.type === 'status'
                       ? 'bg-brand-600 hover:bg-brand-700'
-                      : confirmAction.type === 'archive'
+                      : confirmAction.type === 'archive' || (confirmAction.type === 'bulk-archive' && !confirmAction.restore)
                         ? 'bg-amber-600 hover:bg-amber-700'
-                        : confirmAction.type === 'restore'
+                        : confirmAction.type === 'restore' || (confirmAction.type === 'bulk-archive' && confirmAction.restore)
                           ? 'bg-emerald-600 hover:bg-emerald-700'
                           : 'bg-rose-600 hover:bg-rose-700'
                   }`}
@@ -1296,9 +1342,9 @@ export default function TaskManager({ mode, currentUserId, currentUserName, user
                   <span>
                     {confirmAction.type === 'status'
                       ? 'تأیید تغییر'
-                      : confirmAction.type === 'archive'
+                      : confirmAction.type === 'archive' || (confirmAction.type === 'bulk-archive' && !confirmAction.restore)
                         ? 'آرشیو'
-                        : confirmAction.type === 'restore'
+                        : confirmAction.type === 'restore' || (confirmAction.type === 'bulk-archive' && confirmAction.restore)
                           ? 'بازگردانی'
                           : 'حذف'}
                   </span>

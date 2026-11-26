@@ -176,6 +176,24 @@ export function useTasks(scope: 'all' | 'mine' = 'all', userId = '') {
     }
   }, [fetchTasks]);
 
+  const bulkArchive = useCallback(async (ids: string[], restore = false) => {
+    const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+    if (uniqueIds.length === 0) return;
+    setError(null);
+    try {
+      await runWithConcurrency(
+        uniqueIds,
+        BULK_CONCURRENCY,
+        id => gql(restore ? UNARCHIVE_TASK : ARCHIVE_TASK, { id }),
+      );
+      await fetchTasks();
+    } catch (e) {
+      setError((e as Error).message);
+      await fetchTasks();
+      throw e;
+    }
+  }, [fetchTasks]);
+
   const markSeen = useCallback(async (id: string, userId: string) => {
     try {
       const data = await gql<{ markTaskSeen: ApiTask }>(MARK_TASK_SEEN, { input: { id, userId } });
@@ -216,5 +234,5 @@ export function useTasks(scope: 'all' | 'mine' = 'all', userId = '') {
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask, bulkUpdateStatus, bulkDelete };
+  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask, bulkUpdateStatus, bulkDelete, bulkArchive };
 }
