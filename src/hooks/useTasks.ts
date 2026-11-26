@@ -17,6 +17,20 @@ import type { ApiTask, TaskPriority, TaskStatus } from '../api/types';
 import type { TaskItem } from '../types';
 import { mapTask } from '../api/transform';
 
+// اجرای محدود و کنترل‌شده درخواست‌های گروهی تا سرور با موج درخواست مواجه نشود
+async function runWithConcurrency<T>(items: T[], limit: number, worker: (item: T) => Promise<unknown>) {
+  const queue = [...items];
+  const runners = Array.from({ length: Math.min(limit, queue.length) }, async () => {
+    while (queue.length > 0) {
+      const item = queue.shift() as T;
+      await worker(item);
+    }
+  });
+  await Promise.all(runners);
+}
+
+const BULK_CONCURRENCY = 5;
+
 export interface CreateTaskInput {
   title: string;
   description?: string;
@@ -126,6 +140,42 @@ export function useTasks(scope: 'all' | 'mine' = 'all', userId = '') {
     }
   }, [fetchTasks]);
 
+  const bulkUpdateStatus = useCallback(async (ids: string[], status: TaskStatus) => {
+    const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+    if (uniqueIds.length === 0) return;
+    setError(null);
+    try {
+      await runWithConcurrency(
+        uniqueIds,
+        BULK_CONCURRENCY,
+        id => gql(UPDATE_TASK_STATUS, { input: { id, status } }),
+      );
+      await fetchTasks();
+    } catch (e) {
+      setError((e as Error).message);
+      await fetchTasks();
+      throw e;
+    }
+  }, [fetchTasks]);
+
+  const bulkDelete = useCallback(async (ids: string[]) => {
+    const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+    if (uniqueIds.length === 0) return;
+    setError(null);
+    try {
+      await runWithConcurrency(
+        uniqueIds,
+        BULK_CONCURRENCY,
+        id => gql(DELETE_TASK, { id }),
+      );
+      await fetchTasks();
+    } catch (e) {
+      setError((e as Error).message);
+      await fetchTasks();
+      throw e;
+    }
+  }, [fetchTasks]);
+
   const markSeen = useCallback(async (id: string, userId: string) => {
     try {
       const data = await gql<{ markTaskSeen: ApiTask }>(MARK_TASK_SEEN, { input: { id, userId } });
@@ -166,5 +216,5 @@ export function useTasks(scope: 'all' | 'mine' = 'all', userId = '') {
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask };
+  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask, bulkUpdateStatus, bulkDelete };
 }
