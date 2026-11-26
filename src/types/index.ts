@@ -139,6 +139,7 @@ export interface TaskItem {
   completedAt?: string;
   sortOrder: number;
   seenAt?: string;
+  archivedAt?: string;
   createdAt: string;
   updatedAt: string;
   createdById: string;

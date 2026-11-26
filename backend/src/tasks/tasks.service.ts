@@ -249,6 +249,35 @@ export class TasksService {
     );
   }
 
+  async archive(id: string) {
+    const existing = await this.prisma.task.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Task not found');
+    if (existing.archivedAt) return this.findById(id);
+
+    return this.prisma.task.update({
+      where: { id },
+      data: {
+        archivedAt: new Date(),
+        // آرشیو وظایف باز، آن‌ها را به وضعیت «لغو شده» می‌برد
+        ...(existing.status !== 'DONE'
+          ? { status: 'CANCELLED' as TaskStatus, completedAt: null }
+          : {}),
+      },
+      include: this.include(),
+    });
+  }
+
+  async unarchive(id: string) {
+    const existing = await this.prisma.task.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Task not found');
+
+    return this.prisma.task.update({
+      where: { id },
+      data: { archivedAt: null },
+      include: this.include(),
+    });
+  }
+
   async markSeen(id: string, userId: string) {
     const task = await this.prisma.task.findUnique({ where: { id } });
     if (!task) throw new NotFoundException('Task not found');

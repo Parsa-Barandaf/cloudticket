@@ -222,6 +222,7 @@ type MePayload {
 type Mutation {
   addTaskComment(input: AddTaskCommentInput!): TaskComment!
   approveAccessRequest(input: ApproveAccessRequestInput!): AccessRequest!
+  archiveTask(id: String!): Task!
   assignRoleToUser(input: AssignRoleInput!): [RoleEntity!]!
   createConnection(input: CreateConnectionInput!): ProductCustomerConnection!
   createCustomer(input: CreateCustomerInput!): Customer!
@@ -254,6 +255,7 @@ type Mutation {
   reorderTasks(input: ReorderTasksInput!): Boolean!
   requestAccess(input: RequestAccessInput!): AccessRequest!
   toggleNotificationArchive(id: String!): Notification
+  unarchiveTask(id: String!): Task!
   unassignRoleFromUser(input: UnassignRoleInput!): [RoleEntity!]!
   updateConnection(input: UpdateConnectionInput!): ProductCustomerConnection!
   updateCustomer(input: UpdateCustomerInput!): Customer!
@@ -431,6 +433,7 @@ type RoleUserCount {
 }
 
 type Task {
+  archivedAt: DateTime
   assignee: User
   assigneeId: String
   comments: [TaskComment!]!

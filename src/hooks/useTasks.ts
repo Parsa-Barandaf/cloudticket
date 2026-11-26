@@ -9,6 +9,8 @@ import {
   DELETE_TASK,
   REORDER_TASKS,
   MARK_TASK_SEEN,
+  ARCHIVE_TASK,
+  UNARCHIVE_TASK,
   ADD_TASK_COMMENT,
 } from '../api/queries';
 import type { ApiTask, TaskPriority, TaskStatus } from '../api/types';
@@ -136,7 +138,33 @@ export function useTasks(scope: 'all' | 'mine' = 'all', userId = '') {
     }
   }, []);
 
+  const applyTaskUpdate = useCallback((id: string, task: ApiTask) => {
+    const mapped = mapTask(task);
+    setTasks(prev => prev.map(item => (item.id === id ? mapped : item)));
+    return mapped;
+  }, []);
+
+  const archiveTask = useCallback(async (id: string) => {
+    try {
+      const data = await gql<{ archiveTask: ApiTask }>(ARCHIVE_TASK, { id });
+      return applyTaskUpdate(id, data.archiveTask);
+    } catch (e) {
+      setError((e as Error).message);
+      return null;
+    }
+  }, [applyTaskUpdate]);
+
+  const unarchiveTask = useCallback(async (id: string) => {
+    try {
+      const data = await gql<{ unarchiveTask: ApiTask }>(UNARCHIVE_TASK, { id });
+      return applyTaskUpdate(id, data.unarchiveTask);
+    } catch (e) {
+      setError((e as Error).message);
+      return null;
+    }
+  }, [applyTaskUpdate]);
+
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen };
+  return { tasks, loading, error, refetch: fetchTasks, createTask, updateTask, updateStatus, deleteTask, addComment, reorderTasks, markSeen, archiveTask, unarchiveTask };
 }

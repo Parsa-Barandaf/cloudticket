@@ -45,6 +45,16 @@ export class TasksResolver {
     return this.tasksService.updateStatus(input.id, input.status);
   }
 
+  @Mutation(() => Task)
+  async archiveTask(@Args('id') id: string) {
+    return this.tasksService.archive(id);
+  }
+
+  @Mutation(() => Task)
+  async unarchiveTask(@Args('id') id: string) {
+    return this.tasksService.unarchive(id);
+  }
+
   @Mutation(() => Boolean)
   async reorderTasks(@Args('input') input: ReorderTasksInput) {
     await this.tasksService.reorder(input.ids);
