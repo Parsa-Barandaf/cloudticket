@@ -110,14 +110,18 @@ services:
         condition: service_completed_successfully
     ports:
       - "${APP_PORT:-4000}:4000"
+    volumes:
+      - backup_data:/app/backend/backups
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-cmp}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cmp_crm}?schema=public
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
       PORT: 4000
       CORS_ORIGIN: ${CORS_ORIGIN:-}
+      BACKUP_DIR: /app/backend/backups
 
 volumes:
   postgres_data:
     external: true
     name: cloudticket_postgres_data
+  backup_data:

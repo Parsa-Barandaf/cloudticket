@@ -67,6 +67,7 @@ import UserManagementView from './UserManagement';
 import NotificationCenterView from './NotificationCenter';
 import SupportAgentPortalView from './AgentPortal';
 import TaskManagerView from './TaskManager';
+import BackupManagementView from './BackupManagement';
 import { useTickets } from '../../hooks/useTickets';
 import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
@@ -185,8 +186,18 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
   const currentUserInitials = currentUserName.split(' ').slice(0, 2).map(p => p[0] || '').join('');
   const currentUserRoleLabel = currentUserData?.role === 'ADMIN' ? 'مدیر سامانه' : currentUserData?.role === 'AGENT' ? 'کارشناس پشتیبانی' : 'کاربر';
 
+  // Only the "Super Admin" system role (مدیر کل) may access the backup tab.
+  const isSuperAdmin = useMemo(() => {
+    const roles = currentUserData?.userRoles ?? [];
+    return (
+      roles.some(role => role.id === 'role-super-admin' || role.name === 'Super Admin') ||
+      (currentUserData?.role === 'ADMIN' && roles.length === 0)
+    );
+  }, [currentUserData]);
+
   // Active Tab state
   const [activeTab, setActiveTab] = usePersistentState<AdminTab>('cmp_admin_active_tab', 'dashboard', RESTORABLE_ADMIN_TABS);
+  const [settingsTab, setSettingsTab] = useState<'general' | 'backup'>('general');
 
   const [selectedCustomerWorkspace, setSelectedCustomerWorkspace] = useState<Customer | null>(null);
   const [customerWorkspaceTab, setCustomerWorkspaceTab] = useState<'overview' | 'products' | 'users' | 'tickets' | 'licenses' | 'activities' | 'settings'>('overview');
@@ -4206,6 +4217,37 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                 exit={{ opacity: 0, y: -12 }}
                 className="space-y-6"
               >
+                {/* Settings sub-tabs: current settings page + super-admin backup */}
+                <div className="bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs inline-flex w-full sm:w-auto gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setSettingsTab('general')}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      settingsTab === 'general' || !isSuperAdmin
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Sliders className="w-4 h-4" />
+                    تنظیمات کلی
+                  </button>
+                  {isSuperAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setSettingsTab('backup')}
+                      className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                        settingsTab === 'backup'
+                          ? 'bg-brand-600 text-white shadow-sm'
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Database className="w-4 h-4" />
+                      پشتیبان‌گیری و تاریخچه
+                    </button>
+                  )}
+                </div>
+
+                {(settingsTab === 'general' || !isSuperAdmin) && (
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-xs space-y-6 text-right">
                   <h3 className="text-sm font-black text-slate-950 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
                     تنظیمات کلی سامانه پشتیبانی 
@@ -4256,6 +4298,11 @@ export default function DashboardPreview({ userEmail, onLogout, onSwitchPortalRo
                     </button>
                   </div>
                 </div>
+                )}
+
+                {settingsTab === 'backup' && isSuperAdmin && (
+                  <BackupManagementView showToast={showWorkspaceToast} />
+                )}
               </motion.div>
             )}
 

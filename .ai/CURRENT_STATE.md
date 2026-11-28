@@ -9,20 +9,22 @@
 
 | Field | Value |
 |-------|-------|
-| **Last Updated** | 2026-08-01 |
-| **Current Focus** | Support Portal (`AgentPortal.tsx`) |
+| **Last Updated** | 2026-11-28 |
+| **Current Focus** | Settings → Super Admin backup tab |
 | **Build Status** | ✅ frontend `npm run build`, backend `nest build` pass |
 | **Branch** | `main` |
 
 ---
 
-## What Changed Recently (committed)
+## What Changed Recently
 
-| Commit | Summary |
-|--------|---------|
-| `ef653b4` | Users table pagination (5/10/20/50 + prev/next); dashboard recent tickets & activities scrollable with count selectors |
-| `8e4ea42` | Customer portal option in role toggle; Customer Admin = protected system role; toast notifications on immutable-role actions |
-| `88a1ee1` | Full RBAC (Portal/Permission/Role/RolePortal/RolePermission/UserRoleAssignment); removed legacy CustomRole entirely |
+| Area | Summary |
+|------|---------|
+| Settings tabs | Settings page now has two tabs: «تنظیمات کلی» (existing page) and «پشتیبان‌گیری و تاریخچه» (Super Admin only) |
+| Backup API | `backend/src/backups/` — REST endpoints under `/api/backups` with JWT + `SuperAdminGuard`; logical JSON backup, per-table progress polling, server-side history, download and confirmed delete |
+| Storage | Files + `.meta.json` history records stored in `BACKUP_DIR` (default `backend/backups`, persistent Docker volume `backup_data`) |
+| Auth | `GET_CURRENT_USER` now also returns `userRoles` so the UI can detect the Super Admin role |
+
 
 ## Current Architecture (RBAC)
 

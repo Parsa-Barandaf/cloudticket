@@ -185,7 +185,7 @@ export const GET_CURRENT_USER = `
     me {
       accessiblePortals
       permissions
-      user { id email name role isCustomer customerId departmentId }
+      user { id email name role isCustomer customerId departmentId userRoles { id name } }
     }
   }
 `;
