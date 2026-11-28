@@ -9,4 +9,3 @@ coverage/
 tools/
 *.tar.gz
 backend/backups/
-backend/src/backups/
