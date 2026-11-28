@@ -2,6 +2,23 @@
 
 > Auto-generated schema at `backend/src/schema.gql`. All endpoints are served from `http://localhost:4000/graphql`.
 
+## Backup REST API (Super Admin only)
+
+The backup feature uses REST because it needs progress polling and file downloads. Every route requires a JWT (`Authorization: Bearer <token>`) whose user has the `Super Admin` system role.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/backups` | List stored backup files and their history metadata |
+| `POST` | `/api/backups` | Start a backup. Body: `{ "sections": ["users", "tickets", ...] }` |
+| `GET` | `/api/backups/:id` | Poll a running job (`progress`, `currentTable`, `recordsProcessed`, `status`) |
+| `GET` | `/api/backups/:id/download` | Download the completed JSON backup |
+| `DELETE` | `/api/backups/:id?confirm=true` | Permanently delete a backup file from the server |
+
+Available section keys: `users`, `rbac`, `customers`, `products`, `tickets`, `tasks`, `activities`, `notifications`, `accessRequests`. Selecting all keys produces a full database backup.
+
+Output format: a UTF-8 JSON file with `format: "cmp-crm-backup"`, version, creation time, generator, selected sections, table counts and a SHA-256 checksum stored in the history metadata.
+
+
 ## Authentication
 
 No authentication guards are currently enforced on any backend endpoint. Auth routes are open by design; all other routes are open due to missing RBAC implementation.

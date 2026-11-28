@@ -8,3 +8,5 @@ coverage/
 !.env.example
 tools/
 *.tar.gz
+backend/backups/
+backend/src/backups/

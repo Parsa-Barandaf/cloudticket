@@ -71,6 +71,7 @@ Set via `.env` file at project root or injected at runtime.
 | `JWT_SECRET` | `cmp-jwt-secret` | No | Secret key for JWT signing |
 | `JWT_EXPIRATION` | `7d` | No | JWT token expiry duration |
 | `PORT` | `4000` | No | Backend server port |
+| `BACKUP_DIR` | `<cwd>/backups` | No | Directory where backup JSON files and their history metadata are stored |
 
 Set via `backend/.env` file.
 

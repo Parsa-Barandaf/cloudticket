@@ -1,4 +1,4 @@
-import 'dotenv/config'; 
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
@@ -23,6 +23,8 @@ async function bootstrap() {
   app.use((req, res, next) => {
     if (req.method !== 'GET') return next();
     if (req.path.startsWith('/graphql')) return next();
+    // REST API endpoints (e.g. backup download) must not fall through to the SPA.
+    if (req.path.startsWith('/api/')) return next();
     if (req.path.includes('.')) return next();
     res.sendFile(join(publicDir, 'index.html'));
   });

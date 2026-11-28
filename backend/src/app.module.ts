@@ -13,6 +13,7 @@ import { DatabaseModule } from './common/database.module';
 import { RolesModule } from './roles/roles.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TasksModule } from './tasks/tasks.module';
+import { BackupsModule } from './backups/backups.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TasksModule } from './tasks/tasks.module';
     RolesModule,
     NotificationsModule,
     TasksModule,
+    BackupsModule,
   ],
 })
 export class AppModule {}
